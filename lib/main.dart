@@ -104,48 +104,20 @@ class BaseGearArchetype {
 }
 
 const List<BaseGearArchetype> standardArchetypesPool = [
-  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Standardowy Kunai', baseStat: 4, lore: 'Podstawowe narzędzie każdego ninja.'),
-  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Składany Shuriken Fūma', baseStat: 6, lore: 'Wirujące ostrza.'),
+  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Standardowy Kunai', baseStat: 4, setGroup: 'none', lore: 'Podstawowe narzędzie każdego ninja.'),
+  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Składany Shuriken Fūma', baseStat: 6, setGroup: 'none', lore: 'Wirujące ostrza.'),
   BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Krótki Miecz Tanto ANBU', baseStat: 8, setGroup: 'anbu', lore: 'Ostrze skrytobójców z Korzenia.'),
-  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Bliźniacze Tasaki Kiri', baseStat: 9, lore: 'Agresywny oręż sieczny z Mgły.'),
-  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Krótki Miecz Chidorigatana', baseStat: 12, lore: 'Ostrze idealnie przewodzące błyskawice.'),
-  BaseGearArchetype(slot: GearSlot.armor, baseName: 'Szata Treningowa Genina', baseStat: 3, lore: 'Lekki płócienny strój.'),
-  BaseGearArchetype(slot: GearSlot.armor, baseName: 'Kamizelka Jonina Konohy', baseStat: 9, lore: 'Oficjalny pancerz taktyczny.'),
+  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Bliźniacze Tasaki Kiri', baseStat: 9, setGroup: 'none', lore: 'Agresywny oręż sieczny z Mgły.'),
+  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Krótki Miecz Chidorigatana', baseStat: 12, setGroup: 'myoboku', lore: 'Ostrze idealnie przewodzące błyskawice.'),
+  BaseGearArchetype(slot: GearSlot.armor, baseName: 'Szata Treningowa Genina', baseStat: 3, setGroup: 'none', lore: 'Lekki płócienny strój.'),
+  BaseGearArchetype(slot: GearSlot.armor, baseName: 'Kamizelka Jonina Konohy', baseStat: 9, setGroup: 'none', lore: 'Oficjalny pancerz taktyczny.'),
   BaseGearArchetype(slot: GearSlot.armor, baseName: 'Szata Pustelnika Myōboku', baseStat: 13, setGroup: 'myoboku', lore: 'Szata nasycona energią senjutsu.'),
-  BaseGearArchetype(slot: GearSlot.helmet, baseName: 'Ochraniacz Czołowy Protektor', baseStat: 2, lore: 'Metalowa płytka z symbolem wioski.'),
+  BaseGearArchetype(slot: GearSlot.helmet, baseName: 'Ochraniacz Czołowy Protektor', baseStat: 2, setGroup: 'none', lore: 'Metalowa płytka z symbolem wioski.'),
   BaseGearArchetype(slot: GearSlot.helmet, baseName: 'Porcelanowa Maska Lisa ANBU', baseStat: 6, setGroup: 'anbu', lore: 'Zaciera tożsamość i aurę czakry.'),
-  BaseGearArchetype(slot: GearSlot.boots, baseName: 'Standardowe Sandały Shinobi', baseStat: 2, lore: 'Dobre oparcie stóp na drzewach.'),
+  BaseGearArchetype(slot: GearSlot.boots, baseName: 'Standardowe Sandały Shinobi', baseStat: 2, setGroup: 'none', lore: 'Dobre oparcie stóp na drzewach.'),
   BaseGearArchetype(slot: GearSlot.boots, baseName: 'Drewniane Geta Żabiego Mędrca', baseStat: 9, setGroup: 'myoboku', lore: 'Idealny balans na śliskich skałach.'),
-  BaseGearArchetype(slot: GearSlot.trinket, baseName: 'Amulet Ochronny z Liścia', baseStat: 3, lore: 'Błogosławieństwo kaplicy Konohy.'),
-  BaseGearArchetype(slot: GearSlot.trinket, baseName: 'Pieczęć Skupienia Czakry', baseStat: 8, lore: 'Zmniejsza straty energii przy jutsu.'),
-];
-
-class LegendaryGearTemplate {
-  final String name;
-  final GearSlot slot;
-  final int baseStat;
-  final String bonusEffect;
-  final int bonusValue;
-  final String setGroup;
-  final String lore;
-
-  const LegendaryGearTemplate({
-    required this.name,
-    required this.slot,
-    required this.baseStat,
-    required this.bonusEffect,
-    required this.bonusValue,
-    this.setGroup = 'none',
-    required this.lore,
-  });
-}
-
-const List<LegendaryGearTemplate> legendaryArtifactsPool = [
-  LegendaryGearTemplate(name: 'Miecz Totsuka (Sakegari)', slot: GearSlot.weapon, baseStat: 36, bonusEffect: 'Pieczęć Wiecznego Snu', bonusValue: 3, lore: 'Widmowe ostrze pieczętujące w tykwie.'),
-  LegendaryGearTemplate(name: 'Samehada (Żarłacz Kisame)', slot: GearSlot.weapon, baseStat: 34, bonusEffect: 'Pożeranie Czakry', bonusValue: 3, lore: 'Żywy miecz wysysający energię wroga.'),
-  LegendaryGearTemplate(name: 'Pancerz Ostatecznego Susanoo', slot: GearSlot.armor, baseStat: 38, bonusEffect: 'Bóstwo Zniszczenia', bonusValue: 3, lore: 'Skrzydlata zbroja niszcząca pasma górskie.'),
-  LegendaryGearTemplate(name: 'Korona Rogatej Bogini Kaguya', slot: GearSlot.helmet, baseStat: 32, bonusEffect: 'Wizja Byakugana', bonusValue: 3, lore: 'Boski relikt Świętego Drzewa.'),
-  LegendaryGearTemplate(name: 'Naszyjnik Pierwszego Hokage', slot: GearSlot.trinket, baseStat: 25, bonusEffect: 'Ocalenie Duszy Hashiramy', bonusValue: 3, lore: 'Kryształ czakry chroniący przed natychmiastowym zgonem.'),
+  BaseGearArchetype(slot: GearSlot.trinket, baseName: 'Amulet Ochronny z Liścia', baseStat: 3, setGroup: 'none', lore: 'Błogosławieństwo kaplicy Konohy.'),
+  BaseGearArchetype(slot: GearSlot.trinket, baseName: 'Pieczęć Skupienia Czakry', baseStat: 8, setGroup: 'anbu', lore: 'Zmniejsza straty energii przy jutsu.'),
 ];
 
 class NinjaGear {
@@ -311,37 +283,39 @@ const List<Jutsu> allJutsuPool = [
 ];
 
 class EnemyTemplate {
+  final String id;
   final String name;
   final String title;
   final int baseHp;
   final int baseAtk;
+  final String locationId;
   final bool isBoss;
-  final bool isBeast;
 
   const EnemyTemplate({
+    required this.id,
     required this.name,
     required this.title,
     required this.baseHp,
     required this.baseAtk,
+    required this.locationId,
     this.isBoss = false,
-    this.isBeast = false,
   });
 }
 
 const List<EnemyTemplate> standardEnemiesPool = [
-  EnemyTemplate(name: 'Dziki Ninja-Pies', title: 'Zdziczały Ninken', baseHp: 22, baseAtk: 6, isBeast: true),
-  EnemyTemplate(name: 'Bandyta z Kraju Fal', title: 'Pospolity Rabuś', baseHp: 26, baseAtk: 7),
-  EnemyTemplate(name: 'Zbuntowany Ninja Deszczu', title: 'Nuke-nin z Amegakure', baseHp: 32, baseAtk: 8),
-  EnemyTemplate(name: 'Szpieg z Iwagakure', title: 'Zwiadowca Skały', baseHp: 36, baseAtk: 9),
-  EnemyTemplate(name: 'Klon Białego Zetsu', title: 'Infiltrator Mokuton', baseHp: 40, baseAtk: 10),
-  EnemyTemplate(name: 'Leśny Odyniec Kraju Ognia', title: 'Szarżująca Bestia', baseHp: 28, baseAtk: 7, isBeast: true),
-  EnemyTemplate(name: 'Gigantyczny Pająk z Mgły', title: 'Drapieżnik Pajęczyn', baseHp: 24, baseAtk: 8, isBeast: true),
+  EnemyTemplate(id: 'e_dog', name: 'Dziki Ninja-Pies', title: 'Zdziczały Ninken', baseHp: 22, baseAtk: 6, locationId: 'loc_gate'),
+  EnemyTemplate(id: 'e_bandit', name: 'Bandyta z Kraju Fal', title: 'Pospolity Rabuś', baseHp: 26, baseAtk: 7, locationId: 'loc_gate'),
+  EnemyTemplate(id: 'e_rain', name: 'Zbuntowany Ninja Deszczu', title: 'Nuke-nin z Amegakure', baseHp: 32, baseAtk: 8, locationId: 'loc_forest'),
+  EnemyTemplate(id: 'e_rock', name: 'Szpieg z Iwagakure', title: 'Zwiadowca Skały', baseHp: 36, baseAtk: 9, locationId: 'loc_forest'),
+  EnemyTemplate(id: 'e_zetsu', name: 'Klon Białego Zetsu', title: 'Infiltrator Mokuton', baseHp: 40, baseAtk: 10, locationId: 'loc_valley'),
+  EnemyTemplate(id: 'e_mercenary', name: 'Najemnik z Mgły', title: 'Płatny Zabójca', baseHp: 44, baseAtk: 12, locationId: 'loc_waves'),
+  EnemyTemplate(id: 'e_akatsuki_agent', name: 'Agent Cienia Akatsuki', title: 'Posłaniec Zagłady', baseHp: 58, baseAtk: 15, locationId: 'loc_akatsuki'),
 ];
 
 const List<EnemyTemplate> bossesPool = [
-  EnemyTemplate(name: 'Zabuza Momochi', title: 'Demon Ukrytej Mgły', baseHp: 95, baseAtk: 16, isBoss: true),
-  EnemyTemplate(name: 'Gaara Pustyni', title: 'Głos Shukaku', baseHp: 120, baseAtk: 19, isBoss: true),
-  EnemyTemplate(name: 'Itachi Uchiha', title: 'Mistrz Mangekyō Sharingana', baseHp: 150, baseAtk: 25, isBoss: true),
+  EnemyTemplate(id: 'b_zabuza', name: 'Zabuza Momochi', title: 'Demon Ukrytej Mgły', baseHp: 95, baseAtk: 16, locationId: 'loc_waves', isBoss: true),
+  EnemyTemplate(id: 'b_gaara', name: 'Gaara Pustyni', title: 'Głos Shukaku', baseHp: 120, baseAtk: 19, locationId: 'loc_valley', isBoss: true),
+  EnemyTemplate(id: 'b_itachi', name: 'Itachi Uchiha', title: 'Mistrz Mangekyō Sharingana', baseHp: 150, baseAtk: 25, locationId: 'loc_akatsuki', isBoss: true),
 ];
 
 class ExamStage {
@@ -378,6 +352,8 @@ class ShinobiMission {
   final String id;
   final String rank;
   final int minRankIndex;
+  final String locationId;
+  final String targetEnemyId;
   final String title;
   final String desc;
   final int requiredKills;
@@ -388,6 +364,8 @@ class ShinobiMission {
     required this.id,
     required this.rank,
     required this.minRankIndex,
+    required this.locationId,
+    required this.targetEnemyId,
     required this.title,
     required this.desc,
     required this.requiredKills,
@@ -397,10 +375,12 @@ class ShinobiMission {
 }
 
 const List<ShinobiMission> allMissionsPool = [
-  ShinobiMission(id: 'm_d1', rank: 'D', minRankIndex: 0, title: 'Oczyszczenie Obrzeży', desc: 'Wyeliminuj 3 zagrożenia w pobliżu bramy.', requiredKills: 3, rewardRyo: 80, rewardExp: 35),
-  ShinobiMission(id: 'm_c1', rank: 'C', minRankIndex: 2, title: 'Eskorta w Kraju Fali', desc: 'Pokonaj 6 bandytów nękających szlak handlowy.', requiredKills: 6, rewardRyo: 220, rewardExp: 90),
-  ShinobiMission(id: 'm_b1', rank: 'B', minRankIndex: 3, title: 'Zwiad Szpiegów', desc: 'Zneutralizuj 8 wrogich agentów.', requiredKills: 8, rewardRyo: 450, rewardExp: 180),
-  ShinobiMission(id: 'm_a1', rank: 'A', minRankIndex: 4, title: 'Pościg za Rogue-Nin', desc: 'Pokonaj 10 niebezpiecznych zbiegów.', requiredKills: 10, rewardRyo: 800, rewardExp: 320),
+  ShinobiMission(id: 'm_d1', rank: 'D', minRankIndex: 0, locationId: 'loc_gate', targetEnemyId: 'e_dog', title: 'Oczyszczenie Bramy z Ninkenów', desc: 'Wyeliminuj 3 Dzikie Ninja-Psy terroryzujące obrzeża.', requiredKills: 3, rewardRyo: 90, rewardExp: 40),
+  ShinobiMission(id: 'm_d2', rank: 'D', minRankIndex: 0, locationId: 'loc_gate', targetEnemyId: 'e_bandit', title: 'Ujarzmianie Bandytów', desc: 'Pokonaj 4 Pospolitych Rabusiów przy szlaku.', requiredKills: 4, rewardRyo: 120, rewardExp: 55),
+  ShinobiMission(id: 'm_c1', rank: 'C', minRankIndex: 2, locationId: 'loc_forest', targetEnemyId: 'e_rain', title: 'Szpiegostwo w Lesie Śmierci', desc: 'Zneutralizuj 5 Nuke-ninów z Amegakure.', requiredKills: 5, rewardRyo: 250, rewardExp: 110),
+  ShinobiMission(id: 'm_c2', rank: 'C', minRankIndex: 2, locationId: 'loc_forest', targetEnemyId: 'e_rock', title: 'Czystka Zwiadowców Skały', desc: 'Eliminacja 5 szpiegów z Iwagakure.', requiredKills: 5, rewardRyo: 280, rewardExp: 125),
+  ShinobiMission(id: 'm_b1', rank: 'B', minRankIndex: 3, locationId: 'loc_waves', targetEnemyId: 'e_mercenary', title: 'Zagrożenie z Kraju Fali', desc: 'Pokonaj 6 Płatnych Zabójców.', requiredKills: 6, rewardRyo: 500, rewardExp: 220),
+  ShinobiMission(id: 'm_a1', rank: 'A', minRankIndex: 4, locationId: 'loc_akatsuki', targetEnemyId: 'e_akatsuki_agent', title: 'Agentura Cienia', desc: 'Zneutralizuj 6 Posłańców Zagłady w kryjówce.', requiredKills: 6, rewardRyo: 900, rewardExp: 400),
 ];
 
 const NinjaGear defaultStarterWeapon = NinjaGear(name: 'Podstawowy Kunai', rarity: ItemRarity.common, baseStat: 4, bonusEffect: 'Brak', bonusValue: 0, isSoulbound: true);
@@ -513,8 +493,40 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     }
   }
 
-  int get totalAttack => currentWeapon.effectiveStat + currentWeapon.bonusValue + currentTrinket.effectiveStat + bonusAtk + (level * 2);
-  int get totalDefense => currentArmor.effectiveStat + currentArmor.bonusValue + currentHelmet.effectiveStat + currentHelmet.bonusValue + currentBoots.effectiveStat + currentBoots.bonusValue;
+  // System Setów Ekwipunku
+  Map<String, int> get activeSetCounts {
+    Map<String, int> counts = {};
+    List<NinjaGear> equipped = [currentWeapon, currentArmor, currentHelmet, currentBoots, currentTrinket];
+    for (var gear in equipped) {
+      if (gear.setGroup != 'none') {
+        counts[gear.setGroup] = (counts[gear.setGroup] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }
+
+  int get setBonusAtk {
+    int bonus = 0;
+    activeSetCounts.forEach((setGroup, count) {
+      if (setGroup == 'anbu' && count >= 2) bonus += 5;
+      if (setGroup == 'myoboku' && count >= 2) bonus += 8;
+      if (count >= 4) bonus += 12;
+    });
+    return bonus;
+  }
+
+  int get setBonusDef {
+    int bonus = 0;
+    activeSetCounts.forEach((setGroup, count) {
+      if (setGroup == 'anbu' && count >= 2) bonus += 4;
+      if (setGroup == 'myoboku' && count >= 2) bonus += 6;
+      if (count >= 4) bonus += 10;
+    });
+    return bonus;
+  }
+
+  int get totalAttack => currentWeapon.effectiveStat + currentWeapon.bonusValue + currentTrinket.effectiveStat + bonusAtk + setBonusAtk + (level * 2);
+  int get totalDefense => currentArmor.effectiveStat + currentArmor.bonusValue + currentHelmet.effectiveStat + currentHelmet.bonusValue + currentBoots.effectiveStat + currentBoots.bonusValue + setBonusDef;
 
   @override
   void initState() {
@@ -638,11 +650,20 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       inVillage = true;
       hp = maxHp;
       chakra = maxChakra;
+
+      // System utraty niezabezpieczonego ekwipunku w razie porażki w terenie
+      if (fallenInBattle) {
+        if (!currentWeapon.isSoulbound) currentWeapon = defaultStarterWeapon;
+        if (!currentArmor.isSoulbound) currentArmor = defaultStarterArmor;
+        if (!currentHelmet.isSoulbound) currentHelmet = defaultStarterHelmet;
+        if (!currentBoots.isSoulbound) currentBoots = defaultStarterBoots;
+        if (!currentTrinket.isSoulbound) currentTrinket = defaultStarterTrinket;
+      }
       bag.clear();
     });
 
     if (fallenInBattle) {
-      addLog('💀 Porażka w terenie! Medyk ratował Twoje życie.');
+      addLog('💀 Porażka w terenie! Niezabezpieczony rynsztunek utracono, medyk uratował Ci życie.');
     } else {
       addLog('⛩️ Bezpieczny powrót do Konohy.');
     }
@@ -724,12 +745,16 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       ];
       addLog(emptyMessages[_rng.nextInt(emptyMessages.length)]);
     } else if (roll < 60) {
-      final enemy = standardEnemiesPool[_rng.nextInt(standardEnemiesPool.length)];
+      // Skalowanie spawnrate wrogów według ich mocy (Słabi 55%, Normalni 30%, Silni 15%)
+      final locationEnemies = standardEnemiesPool.where((e) => e.locationId == currentSelectedLocationId).toList();
+      final enemy = locationEnemies.isNotEmpty ? locationEnemies[_rng.nextInt(locationEnemies.length)] : standardEnemiesPool[0];
+
       final pRoll = _rng.nextInt(100);
-      EnemyPrefix p = pRoll < 30 ? EnemyPrefix.weak : (pRoll < 80 ? EnemyPrefix.normal : EnemyPrefix.strong);
+      EnemyPrefix p = pRoll < 55 ? EnemyPrefix.weak : (pRoll < 85 ? EnemyPrefix.normal : EnemyPrefix.strong);
       _startBattleWithEnemy(enemy, forcePrefix: p);
     } else if (roll < 76) {
-      final boss = bossesPool[_rng.nextInt(bossesPool.length)];
+      final locationBosses = bossesPool.where((b) => b.locationId == currentSelectedLocationId).toList();
+      final boss = locationBosses.isNotEmpty ? locationBosses[_rng.nextInt(locationBosses.length)] : bossesPool[0];
       addLog('⚠️ ${loc.name}: Pojawił się potężny boss -> ${boss.name}!');
       _startBattleWithEnemy(boss);
     } else if (roll < 84) {
@@ -854,7 +879,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setMedicState) {
-          final int vitalCost = 180 + (vitalTrainingCount * 45);
+          // Skalowana cena treningu witalności
+          final int vitalCost = 180 + (vitalTrainingCount * 65) + (vitalTrainingCount * vitalTrainingCount * 15);
 
           return AlertDialog(
             backgroundColor: const Color(0xFF102018),
@@ -899,7 +925,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       contentPadding: EdgeInsets.zero,
                       leading: const Text('🧬', style: TextStyle(fontSize: 24)),
                       title: Text('Trening Witalności (#${vitalTrainingCount + 1})', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                      subtitle: const Text('+10 Max HP i +10 Max CP (skalowany koszt)', style: TextStyle(fontSize: 10, color: Colors.white60)),
+                      subtitle: const Text('+10 Max HP i +10 Max CP (rosnący koszt)', style: TextStyle(fontSize: 10, color: Colors.white60)),
                       trailing: ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2E7D32)),
                         onPressed: ryo >= vitalCost
@@ -1144,13 +1170,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                   ? () {
                                       Navigator.pop(ctx);
                                       _startBattleWithEnemy(
-                                        EnemyTemplate(
-                                          name: nextExam.examinerName,
-                                          title: nextExam.examinerTitle,
-                                          baseHp: nextExam.hp,
-                                          baseAtk: nextExam.atk,
-                                          isBoss: true,
-                                        ),
+                                        EnemyTemplate(id: 'exam', name: nextExam.examinerName, title: nextExam.examinerTitle, baseHp: nextExam.hp, baseAtk: nextExam.atk, locationId: '', isBoss: true),
                                         isExamFight: true,
                                         examTargetRank: nextExam.targetRankIndex,
                                       );
@@ -1164,7 +1184,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       const SizedBox(height: 10),
                     ],
 
-                    const Text('Dostępne Zlecenia Hokage:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFFFFAB91))),
+                    const Text('Zlecenia Hokage (z podziałem na lokacje):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFFFFAB91))),
                     const SizedBox(height: 6),
 
                     if (activeMissionIndex != null)
@@ -1223,36 +1243,51 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                         ),
                       )
                     else
-                      ...allMissionsPool.map((m) {
-                        final bool isUnlocked = passedRankIndex >= m.minRankIndex;
-                        return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 3),
-                          child: ListTile(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            leading: CircleAvatar(
-                              radius: 14,
-                              backgroundColor: isUnlocked ? const Color(0xFFE65100) : const Color(0xFF263238),
-                              child: Text(m.rank, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: isUnlocked ? Colors.white : Colors.white38)),
+                      ...shinobiLocations.map((loc) {
+                        final locMissions = allMissionsPool.where((m) => m.locationId == loc.id).toList();
+                        if (locMissions.isEmpty) return const SizedBox.shrink();
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Text('${loc.icon} ${loc.name}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF80D8FF))),
                             ),
-                            title: Text(m.title, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isUnlocked ? Colors.white : Colors.white38)),
-                            subtitle: Text('Nagroda: ${m.rewardRyo} Ryo | +${m.rewardExp} EXP', style: const TextStyle(fontSize: 9, color: Colors.white60)),
-                            trailing: isUnlocked
-                                ? ElevatedButton(
-                                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), padding: const EdgeInsets.symmetric(horizontal: 8)),
-                                    onPressed: () {
-                                      setState(() {
-                                        activeMissionIndex = allMissionsPool.indexOf(m);
-                                        currentMissionKills = 0;
-                                      });
-                                      _saveGameData();
-                                      Navigator.pop(ctx);
-                                      addLog('📜 Przyjęto zlecenie: ${m.title}!');
-                                    },
-                                    child: const Text('Przyjmij', style: TextStyle(fontSize: 9)),
-                                  )
-                                : const Icon(Icons.lock, size: 16, color: Colors.grey),
-                          ),
+                            ...locMissions.map((m) {
+                              final bool isUnlocked = passedRankIndex >= m.minRankIndex;
+                              return Container(
+                                margin: const EdgeInsets.symmetric(vertical: 2),
+                                child: ListTile(
+                                  dense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: CircleAvatar(
+                                    radius: 13,
+                                    backgroundColor: isUnlocked ? const Color(0xFFE65100) : const Color(0xFF263238),
+                                    child: Text(m.rank, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 9, color: isUnlocked ? Colors.white : Colors.white38)),
+                                  ),
+                                  title: Text(m.title, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isUnlocked ? Colors.white : Colors.white38)),
+                                  subtitle: Text('Nagroda: ${m.rewardRyo} Ryo | +${m.rewardExp} EXP', style: const TextStyle(fontSize: 9, color: Colors.white60)),
+                                  trailing: isUnlocked
+                                      ? ElevatedButton(
+                                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), padding: const EdgeInsets.symmetric(horizontal: 8)),
+                                          onPressed: () {
+                                            setState(() {
+                                              activeMissionIndex = allMissionsPool.indexOf(m);
+                                              currentMissionKills = 0;
+                                            });
+                                            _saveGameData();
+                                            Navigator.pop(ctx);
+                                            addLog('📜 Przyjęto zlecenie: ${m.title}!');
+                                          },
+                                          child: const Text('Przyjmij', style: TextStyle(fontSize: 9)),
+                                        )
+                                      : const Icon(Icons.lock, size: 16, color: Colors.grey),
+                                ),
+                              );
+                            }),
+                            const Divider(color: Colors.white12),
+                          ],
                         );
                       }),
                   ],
@@ -1498,7 +1533,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                         _saveGameData();
                                         Navigator.pop(ctx);
                                         _startBattleWithEnemy(
-                                          EnemyTemplate(name: boss.name, title: boss.title, baseHp: boss.baseHp, baseAtk: boss.baseAtk, isBoss: true),
+                                          EnemyTemplate(id: boss.id, name: boss.name, title: boss.title, baseHp: boss.baseHp, baseAtk: boss.baseAtk, locationId: '', isBoss: true),
                                         );
                                       }
                                     : null,
@@ -1634,10 +1669,15 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
                 setState(() {
                   ryo += rewardRyo;
-                  if (activeMissionIndex != null) currentMissionKills++;
+                  if (activeMissionIndex != null) {
+                    final activeMission = allMissionsPool[activeMissionIndex!];
+                    if (activeMission.targetEnemyId == template.id) {
+                      currentMissionKills++;
+                    }
+                  }
                 });
                 addExperience(expGained);
-                addLog('🏆 Zwycięstwo nad ${prefixTitle}${template.name}! +$rewardRyo Ryo, +$expGained EXP.');
+                addLog('🏆 Zwycięstwo nad $prefixTitle${template.name}! +$rewardRyo Ryo, +$expGained EXP.');
                 _findLoot(guaranteedBossDrop: template.isBoss);
               } else {
                 enemyTurn();
@@ -1728,7 +1768,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     ),
                   ),
                   const Spacer(),
-                  // Jutsu ataki
                   Row(
                     children: equippedJutsu.map((jutsu) {
                       return Expanded(
@@ -1744,7 +1783,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     }).toList(),
                   ),
                   const SizedBox(height: 6),
-                  // Ergonomiczne przyciski kciukowe na dole (Plecak / Ucieczka)
                   Row(
                     children: [
                       Expanded(
@@ -1861,6 +1899,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       Text('($diffText)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: diffColor)),
                     ],
                   ),
+                  if (newGear.setGroup != 'none')
+                    Text('Set: ${newGear.setGroup.toUpperCase()}', style: const TextStyle(fontSize: 10, color: Color(0xFF80D8FF))),
                   if (newGear.bonusValue > 0)
                     Text('Atuty: +${newGear.bonusValue} dodatkowych statystyk', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
                 ],
@@ -1924,6 +1964,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
             Text('Rzadkość: ${gear.rarityLabel}', style: TextStyle(color: gear.color, fontSize: 12)),
             const SizedBox(height: 4),
             Text('Moc: +${gear.effectiveStat}', style: const TextStyle(fontSize: 12)),
+            if (gear.setGroup != 'none')
+              Text('Zestaw (Set): ${gear.setGroup.toUpperCase()}', style: const TextStyle(fontSize: 11, color: Color(0xFF80D8FF))),
             if (gear.bonusValue > 0)
               Text('Dodatkowe atuty: +${gear.bonusValue}', style: const TextStyle(fontSize: 11, color: Color(0xFFFFD54F))),
             const SizedBox(height: 6),
@@ -2071,7 +2113,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(vertical: 10)),
                             onPressed: _openBagDialog,
-                            child: Text('🎒 Plecak ($totalItemsInBag)', style: const TextStyle(fontSize: 11)),
+                            child: Text('🎒 Plecak ($totalItemsInBag)', style: TextStyle(fontSize: 11)),
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -2079,7 +2121,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), padding: const EdgeInsets.symmetric(vertical: 10)),
                             onPressed: _openScrollsDialog,
-                            child: Text('📜 Zwoje (${equippedJutsu.length}/3)', style: const TextStyle(fontSize: 11)),
+                            child: Text('📜 Zwoje (${equippedJutsu.length}/3)', style: TextStyle(fontSize: 11)),
                           ),
                         ),
                       ],
@@ -2130,7 +2172,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                 ),
               ),
               const Spacer(),
-              // Ergonomiczne przyciski kciukowe na dole podczas eksploracji
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: Row(
