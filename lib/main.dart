@@ -415,12 +415,12 @@ class ExamStage {
 }
 
 const List<ExamStage> shinobiExams = [
-  ExamStage(targetRankIndex: 1, rankTitle: 'Genin', requiredLevel: 4, examinerName: 'Iruka Umino', examinerTitle: 'Instruktor Akademii Ninja', hp: 60, atk: 10, lore: '„Pokaż mi skupienie!”', icon: '👨🏻‍🏫', critRate: 5, dodgeRate: 5),
-  ExamStage(targetRankIndex: 2, rankTitle: 'Chūnin', requiredLevel: 12, examinerName: 'Ibiki Morino', examinerTitle: 'Dowódca Śledczy', hp: 125, atk: 17, lore: '„Sprawdzę Twój próg bólu!”', icon: '🕵️', critRate: 8, dodgeRate: 8),
-  ExamStage(targetRankIndex: 3, rankTitle: 'Tokubetsu Jōnin', requiredLevel: 22, examinerName: 'Anko Mitarashi', examinerTitle: 'Egzaminatorka Lasu Śmierci', hp: 190, atk: 24, lore: '„Mordercze tempo!”', icon: '🐍', critRate: 12, dodgeRate: 12),
-  ExamStage(targetRankIndex: 4, rankTitle: 'Jōnin Bojowy', requiredLevel: 35, examinerName: 'Kakashi Hatake', examinerTitle: 'Kopiujący Ninja', hp: 280, atk: 32, lore: '„Test dzwonków.”', icon: '⚡', critRate: 18, dodgeRate: 16),
-  ExamStage(targetRankIndex: 5, rankTitle: 'Elita ANBU', requiredLevel: 48, examinerName: 'Danzō Shimura', examinerTitle: 'Dowódca Korzenia', hp: 380, atk: 40, lore: '„Ciemność i bezwzględność.”', icon: '🥷', critRate: 20, dodgeRate: 18),
-  ExamStage(targetRankIndex: 6, rankTitle: 'Legendarny Sannin / Kage', requiredLevel: 60, examinerName: 'Jiraiya', examinerTitle: 'Żabi Mędrzec', hp: 490, atk: 48, lore: '„Wola Ognia!”', icon: '🐸', critRate: 24, dodgeRate: 20),
+  ExamStage(targetRankIndex: 1, rankTitle: 'Genin', requiredLevel: 4, examinerName: 'Iruka Umino', examinerTitle: 'Instruktor Akademii Ninja', hp: 70, atk: 12, lore: '„Pokaż mi skupienie!”', icon: '👨🏻‍🏫', critRate: 5, dodgeRate: 5),
+  ExamStage(targetRankIndex: 2, rankTitle: 'Chūnin', requiredLevel: 12, examinerName: 'Ibiki Morino', examinerTitle: 'Dowódca Śledczy', hp: 140, atk: 19, lore: '„Sprawdzę Twój próg bólu!”', icon: '🕵️', critRate: 8, dodgeRate: 8),
+  ExamStage(targetRankIndex: 3, rankTitle: 'Tokubetsu Jōnin', requiredLevel: 22, examinerName: 'Anko Mitarashi', examinerTitle: 'Egzaminatorka Lasu Śmierci', hp: 210, atk: 26, lore: '„Mordercze tempo!”', icon: '🐍', critRate: 12, dodgeRate: 12),
+  ExamStage(targetRankIndex: 4, rankTitle: 'Jōnin Bojowy', requiredLevel: 35, examinerName: 'Kakashi Hatake', examinerTitle: 'Kopiujący Ninja', hp: 310, atk: 35, lore: '„Test dzwonków.”', icon: '⚡', critRate: 18, dodgeRate: 16),
+  ExamStage(targetRankIndex: 5, rankTitle: 'Elita ANBU', requiredLevel: 48, examinerName: 'Danzō Shimura', examinerTitle: 'Dowódca Korzenia', hp: 420, atk: 44, lore: '„Ciemność i bezwzględność.”', icon: '🥷', critRate: 20, dodgeRate: 18),
+  ExamStage(targetRankIndex: 6, rankTitle: 'Legendarny Sannin / Kage', requiredLevel: 60, examinerName: 'Jiraiya', examinerTitle: 'Żabi Mędrzec', hp: 550, atk: 52, lore: '„Wola Ognia!”', icon: '🐸', critRate: 24, dodgeRate: 20),
 ];
 
 enum MissionType { killCount, bossHunt, itemSupply }
@@ -682,7 +682,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
   NinjaGear currentBoots = defaultStarterBoots;
   NinjaGear currentTrinket = defaultStarterTrinket;
 
-  final List<String> log = ['Witaj w Konohagakure! Wybierz lokację w menu, aby rozpocząć rajd.'];
+  final List<String> log = ['Witaj w Konohagakure! Wybierz strefę w menu, aby rozpocząć rajd.'];
 
   static const int softCapLevel = 65;
 
@@ -885,21 +885,46 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
   }
 
   void showActionBlockedMessage(String msg) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.block, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
-            Expanded(child: Text(msg, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-          ],
+    final overlay = Overlay.of(context);
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (ctx) => Positioned(
+        top: 36,
+        left: 16,
+        right: 16,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFC62828),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: const [
+                BoxShadow(color: Colors.black87, blurRadius: 12, offset: Offset(0, 4)),
+              ],
+              border: Border.all(color: Colors.white24, width: 1.2),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    msg,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        backgroundColor: const Color(0xFFC62828),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
       ),
     );
+
+    overlay.insert(entry);
+    Future.delayed(const Duration(milliseconds: 2200), () {
+      if (entry.mounted) entry.remove();
+    });
   }
 
   void addExperience(int amount) {
@@ -1129,33 +1154,49 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     int cost = _getSealingCost(gear.rarity, gear.isBossSet);
                     String slotName = slot == GearSlot.weapon ? 'Broń' : (slot == GearSlot.armor ? 'Pancerz' : (slot == GearSlot.helmet ? 'Głowa' : (slot == GearSlot.boots ? 'Buty' : 'Talizman')));
 
-                    return ListTile(
-                      dense: true,
-                      leading: Text(gear.icon, style: const TextStyle(fontSize: 22)),
-                      title: Text('$slotName: ${gear.displayName}', style: TextStyle(color: gear.borderColor, fontSize: 12, fontWeight: FontWeight.bold)),
-                      subtitle: Text('Koszt: $cost Ryo', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
-                      trailing: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB71C1C)),
-                        onPressed: () {
-                          if (ryo < cost) {
-                            showActionBlockedMessage('💰 Brakuje Ci ${cost - ryo} Ryo!');
-                            return;
-                          }
-                          setState(() {
-                            ryo -= cost;
-                            switch (slot) {
-                              case GearSlot.weapon: currentWeapon = currentWeapon.copyWith(isSoulbound: true); break;
-                              case GearSlot.armor: currentArmor = currentArmor.copyWith(isSoulbound: true); break;
-                              case GearSlot.helmet: currentHelmet = currentHelmet.copyWith(isSoulbound: true); break;
-                              case GearSlot.boots: currentBoots = currentBoots.copyWith(isSoulbound: true); break;
-                              case GearSlot.trinket: currentTrinket = currentTrinket.copyWith(isSoulbound: true); break;
-                            }
-                          });
-                          _saveGameData();
-                          Navigator.pop(ctx);
-                          addLog('🈴 Zapieczętowano ${gear.name} (-$cost Ryo)!');
-                        },
-                        child: const Text('Pieczęć', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Text(gear.icon, style: const TextStyle(fontSize: 22)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 12, fontWeight: FontWeight.bold)),
+                                Text('Koszt: $cost Ryo', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFB71C1C),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            ),
+                            onPressed: () {
+                              if (ryo < cost) {
+                                showActionBlockedMessage('💰 Za mało Ryo! Brakuje Ci ${cost - ryo} Ryo.');
+                                return;
+                              }
+                              setState(() {
+                                ryo -= cost;
+                                switch (slot) {
+                                  case GearSlot.weapon: currentWeapon = currentWeapon.copyWith(isSoulbound: true); break;
+                                  case GearSlot.armor: currentArmor = currentArmor.copyWith(isSoulbound: true); break;
+                                  case GearSlot.helmet: currentHelmet = currentHelmet.copyWith(isSoulbound: true); break;
+                                  case GearSlot.boots: currentBoots = currentBoots.copyWith(isSoulbound: true); break;
+                                  case GearSlot.trinket: currentTrinket = currentTrinket.copyWith(isSoulbound: true); break;
+                                }
+                              });
+                              _saveGameData();
+                              Navigator.pop(ctx);
+                              addLog('🈴 Zapieczętowano ${gear.name} (-$cost Ryo)!');
+                            },
+                            child: const Text('Pieczęć', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
                       ),
                     );
                   }),
@@ -1453,7 +1494,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                       return;
                                     }
                                     if (ryo < ryoCost) {
-                                      showActionBlockedMessage('💰 Brakuje Ci ${ryoCost - ryo} Ryo!');
+                                      showActionBlockedMessage('💰 Za mało Ryo! Brakuje Ci ${ryoCost - ryo} Ryo.');
                                       return;
                                     }
                                     if (ownedMats < neededMatCount) {
@@ -2072,8 +2113,23 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       }
     }
 
-    final int enemyMaxHp = (template.baseHp * hpMult).round();
-    final int enemyBaseAtk = (template.baseAtk * atkMult).round();
+    int scaledHp = template.baseHp;
+    int scaledAtk = template.baseAtk;
+
+    if (isExamFight) {
+      int minExamHp = (totalAttack * 4).round();
+      scaledHp = max(template.baseHp + (level * 28), minExamHp);
+      scaledAtk = max(template.baseAtk + (level * 2), (totalDefense * 0.7).round() + 6);
+    } else if (template.isBoss) {
+      scaledHp = (template.baseHp * (1.0 + (level * 0.09))).round();
+      scaledAtk = (template.baseAtk * (1.0 + (level * 0.05))).round();
+    } else {
+      scaledHp = (template.baseHp * (1.0 + (level * 0.06))).round();
+      scaledAtk = (template.baseAtk * (1.0 + (level * 0.04))).round();
+    }
+
+    final int enemyMaxHp = (scaledHp * hpMult).round();
+    final int enemyBaseAtk = (scaledAtk * atkMult).round();
     int enemyHp = enemyMaxHp;
 
     String initialMsg = isExamFight ? '🥋 EGZAMIN: Egzaminator ${template.name} atakuje!' : (template.isBoss ? '⚠️ BOSS: Pojawia się ${template.name}!' : 'Z cienia atakuje $prefixTitle${template.name}!');
@@ -3086,44 +3142,58 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
           Row(
             children: [
               Expanded(
+                flex: 3,
                 child: SizedBox(
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00695C),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     onPressed: _openBagDialog,
-                    child: const Text('🎒 Plecak', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('🎒 Plecak', softWrap: false, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
-                flex: 2,
+                flex: 5,
                 child: SizedBox(
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE65100),
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     onPressed: proceedExploration,
-                    child: const Text('Idź naprzód 🌲', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('Idź naprzód 🌲', softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
+                flex: 3,
                 child: SizedBox(
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1B5E20),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     onPressed: returnToVillage,
-                    child: const Text('Powrót', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('Powrót', softWrap: false, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    ),
                   ),
                 ),
               ),
