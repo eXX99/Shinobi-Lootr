@@ -395,19 +395,158 @@ class ShinobiLooterApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Shinobi Lootr',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0F0E0D),
-        dialogBackgroundColor: const Color(0xFF181615),
-        cardColor: const Color(0xFF1B1917),
+        scaffoldBackgroundColor: const Color(0xFF140D0B),
+        dialogBackgroundColor: const Color(0xFF1E1412),
+        cardColor: const Color(0xFF1F1613),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFFE65100),
+          secondary: Color(0xFFFF8F00),
+          surface: Color(0xFF1E1412),
+        ),
       ),
-      home: const ShinobiScreen(),
+      home: const StartMenuScreen(),
+    );
+  }
+}
+
+class StartMenuScreen extends StatefulWidget {
+  const StartMenuScreen({super.key});
+
+  @override
+  State<StartMenuScreen> createState() => _StartMenuScreenState();
+}
+
+class _StartMenuScreenState extends State<StartMenuScreen> {
+  bool hasExistingSave = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSave();
+  }
+
+  Future<void> _checkSave() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      hasExistingSave = prefs.containsKey('ninjaExp') || prefs.containsKey('hp');
+    });
+  }
+
+  Future<void> _startNewGame() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const ShinobiScreen(isNewGame: true)),
+    );
+  }
+
+  void _continueGame() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const ShinobiScreen(isNewGame: false)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF2D150B), Color(0xFF0F0A08), Color(0xFF140D0B)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('🔥', style: TextStyle(fontSize: 48)),
+                const SizedBox(height: 8),
+                const Text(
+                  'SHINOBI LOOTR',
+                  style: TextStyle(
+                    fontFamily: 'serif',
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2.5,
+                    color: Color(0xFFFFB74D),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Droga Ninja i Legendarnego Łupu',
+                  style: TextStyle(fontSize: 12, color: Colors.white60),
+                ),
+                const SizedBox(height: 48),
+                if (hasExistingSave) ...[
+                  SizedBox(
+                    width: 220,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE65100),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: _continueGame,
+                      child: const Text('Kontynuuj', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                SizedBox(
+                  width: 220,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: hasExistingSave ? const Color(0xFF3E2723) : const Color(0xFFE65100),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: () {
+                      if (hasExistingSave) {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Nowa Gra'),
+                            content: const Text('Rozpoczęcie nowej gry nadpisze obecny postęp. Na pewno chcesz zacząć od nowa?'),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Anuluj')),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  _startNewGame();
+                                },
+                                child: const Text('Tak, nowa gra'),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        _startNewGame();
+                      }
+                    },
+                    child: const Text('Nowa Gra', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
 
 class ShinobiScreen extends StatefulWidget {
-  const ShinobiScreen({super.key});
+  final bool isNewGame;
+  const ShinobiScreen({super.key, required this.isNewGame});
 
   @override
   State<ShinobiScreen> createState() => _ShinobiScreenState();
@@ -493,7 +632,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     }
   }
 
-  // System Setów Ekwipunku
   Map<String, int> get activeSetCounts {
     Map<String, int> counts = {};
     List<NinjaGear> equipped = [currentWeapon, currentArmor, currentHelmet, currentBoots, currentTrinket];
@@ -531,7 +669,11 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
   @override
   void initState() {
     super.initState();
-    _loadGameData();
+    if (widget.isNewGame) {
+      setState(() => isLoading = false);
+    } else {
+      _loadGameData();
+    }
   }
 
   Future<void> _loadGameData() async {
@@ -651,7 +793,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       hp = maxHp;
       chakra = maxChakra;
 
-      // System utraty niezabezpieczonego ekwipunku w razie porażki w terenie
       if (fallenInBattle) {
         if (!currentWeapon.isSoulbound) currentWeapon = defaultStarterWeapon;
         if (!currentArmor.isSoulbound) currentArmor = defaultStarterArmor;
@@ -745,7 +886,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       ];
       addLog(emptyMessages[_rng.nextInt(emptyMessages.length)]);
     } else if (roll < 60) {
-      // Skalowanie spawnrate wrogów według ich mocy (Słabi 55%, Normalni 30%, Silni 15%)
       final locationEnemies = standardEnemiesPool.where((e) => e.locationId == currentSelectedLocationId).toList();
       final enemy = locationEnemies.isNotEmpty ? locationEnemies[_rng.nextInt(locationEnemies.length)] : standardEnemiesPool[0];
 
@@ -879,7 +1019,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setMedicState) {
-          // Skalowana cena treningu witalności
           final int vitalCost = 180 + (vitalTrainingCount * 65) + (vitalTrainingCount * vitalTrainingCount * 15);
 
           return AlertDialog(
@@ -1418,6 +1557,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                   children: [
                                     Text('${item.name} (x$qty)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
                                     Text(item.description, style: const TextStyle(fontSize: 9, color: Colors.white60)),
+                                    const SizedBox(height: 2),
+                                    Text(item.statBonusText, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFFFFD54F))),
                                   ],
                                 ),
                               ),
@@ -1592,8 +1733,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
     String initialMsg = isExamFight ? '🥋 EGZAMIN: Egzaminator ${template.name} atakuje!' : (template.isBoss ? '⚠️ BOSS: Pojawia się ${template.name}!' : 'Z cienia atakuje $prefixTitle${template.name}!');
     List<String> battleLogHistory = [initialMsg];
-    int burnTurns = 0;
-    int burnDmg = 0;
     int frozenTurns = 0;
 
     showModalBottomSheet(
@@ -1714,6 +1853,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                 dense: true,
                                 leading: Text(item.icon),
                                 title: Text('${item.name} (x${entry.value})', style: const TextStyle(fontSize: 11)),
+                                subtitle: Text(item.statBonusText, style: const TextStyle(fontSize: 9, color: Color(0xFFFFD54F))),
                                 trailing: ElevatedButton(
                                   style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(horizontal: 8)),
                                   onPressed: () {
@@ -2035,50 +2175,97 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       appBar: AppBar(
         title: Text(inVillage ? 'Konohagakure (Baza)' : 'Lokacja: ${activeLocation.name}'),
         centerTitle: true,
+        backgroundColor: const Color(0xFF1A100B),
+        leading: IconButton(
+          icon: const Text('🏠', style: TextStyle(fontSize: 18)),
+          tooltip: 'Menu Startowe',
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const StartMenuScreen()),
+            );
+          },
+        ),
       ),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(colors: [Color(0xFF141211), Color(0xFF0F0E0D)], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+          gradient: LinearGradient(colors: [Color(0xFF1C120E), Color(0xFF0F0A08)], begin: Alignment.topCenter, end: Alignment.bottomCenter),
         ),
         child: Column(
           children: [
             Container(
               margin: const EdgeInsets.all(10),
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: const Color(0xFF191716), borderRadius: BorderRadius.circular(12)),
-              child: Column(
+              decoration: BoxDecoration(
+                color: const Color(0xFF1B1310),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF3E2723), width: 1.2),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _badge('Ranga', 'Lvl $level ($ninjaRank)', rankColor),
-                      _badge('EXP', '$ninjaExp / $expForNextLevel', const Color(0xFF80D8FF)),
-                      _badge('HP', '$hp/$maxHp', const Color(0xFF69F0AE)),
-                      _badge('CP', '$chakra/$maxChakra', const Color(0xFF40C4FF)),
-                      _badge('Ryo', '$ryo', const Color(0xFFFFD54F)),
-                    ],
+                  // Lewa strona: Kafelki ekwipunku postaci
+                  Expanded(
+                    flex: 5,
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            _itemCardCompact('Broń', currentWeapon, 'Atak: +$totalAttack'),
+                            const SizedBox(width: 4),
+                            _itemCardCompact('Pancerz', currentArmor, 'Obr: +${currentArmor.effectiveStat}'),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            _itemCardCompact('Głowa', currentHelmet, 'Obr: +${currentHelmet.effectiveStat}'),
+                            const SizedBox(width: 4),
+                            _itemCardCompact('Buty', currentBoots, 'Obr: +${currentBoots.effectiveStat}'),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            _itemCardCompact('Talizman', currentTrinket, 'Moc: +${currentTrinket.effectiveStat}'),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      _itemCard('Broń', currentWeapon, 'Atak: +$totalAttack'),
-                      const SizedBox(width: 6),
-                      _itemCard('Pancerz', currentArmor, 'Obr: +${currentArmor.effectiveStat}'),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      _itemCard('Głowa', currentHelmet, 'Obr: +${currentHelmet.effectiveStat}'),
-                      const SizedBox(width: 6),
-                      _itemCard('Buty', currentBoots, 'Obr: +${currentBoots.effectiveStat}'),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      _itemCard('Talizman', currentTrinket, 'Moc: +${currentTrinket.effectiveStat}'),
-                    ],
+                  const SizedBox(width: 8),
+                  // Prawa strona: Ranga, EXP, HP, CP i Ryo
+                  Expanded(
+                    flex: 5,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF140E0C),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Ranga:', style: TextStyle(fontSize: 9, color: Colors.grey)),
+                              Expanded(
+                                child: Text('Lvl $level', textAlign: TextAlign.right, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: rankColor)),
+                              ),
+                            ],
+                          ),
+                          Text(ninjaRank, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: rankColor)),
+                          const Divider(color: Colors.white12, height: 8),
+                          _statRowMini('EXP', '$ninjaExp / $expForNextLevel', const Color(0xFF80D8FF)),
+                          _statRowMini('HP', '$hp/$maxHp', const Color(0xFF69F0AE)),
+                          _statRowMini('CP', '$chakra/$maxChakra', const Color(0xFF40C4FF)),
+                          _statRowMini('Ryo', '$ryo', const Color(0xFFFFD54F)),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -2210,27 +2397,31 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     );
   }
 
-  Widget _badge(String label, String value, Color color) {
-    return Column(
-      children: [
-        Text(label, style: const TextStyle(fontSize: 9, color: Colors.grey)),
-        Text(value, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color)),
-      ],
+  Widget _statRowMini(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 9, color: Colors.grey)),
+          Text(value, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color)),
+        ],
+      ),
     );
   }
 
-  Widget _itemCard(String slot, NinjaGear item, String statText) {
+  Widget _itemCardCompact(String slot, NinjaGear item, String statText) {
     return Expanded(
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _showItemDetailsDialog(slot, item),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFF141211),
-              borderRadius: BorderRadius.circular(8),
+              color: const Color(0xFF120C0A),
+              borderRadius: BorderRadius.circular(6),
               border: Border.all(color: item.isSoulbound ? const Color(0xFFFFD54F) : item.color.withAlpha(120)),
             ),
             child: Column(
@@ -2240,12 +2431,13 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: Text('$slot: ${item.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: item.color)),
+                      child: Text(slot, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: item.color)),
                     ),
-                    if (item.isSoulbound) const Text(' 📜', style: TextStyle(fontSize: 9)),
+                    if (item.isSoulbound) const Text('📜', style: TextStyle(fontSize: 7)),
                   ],
                 ),
-                Text(statText, style: const TextStyle(fontSize: 9, color: Colors.white70)),
+                Text(item.displayName, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: item.color)),
+                Text(statText, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 8, color: Colors.white70)),
               ],
             ),
           ),
