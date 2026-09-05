@@ -93,6 +93,7 @@ class BaseGearArchetype {
   final int baseStat;
   final String setGroup;
   final String lore;
+  final String icon;
 
   const BaseGearArchetype({
     required this.baseName,
@@ -100,24 +101,25 @@ class BaseGearArchetype {
     required this.baseStat,
     this.setGroup = 'none',
     required this.lore,
+    required this.icon,
   });
 }
 
 const List<BaseGearArchetype> standardArchetypesPool = [
-  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Standardowy Kunai', baseStat: 4, setGroup: 'none', lore: 'Podstawowe narzędzie każdego ninja.'),
-  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Składany Shuriken Fūma', baseStat: 6, setGroup: 'none', lore: 'Wirujące ostrza.'),
-  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Krótki Miecz Tanto ANBU', baseStat: 8, setGroup: 'anbu', lore: 'Ostrze skrytobójców z Korzenia.'),
-  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Bliźniacze Tasaki Kiri', baseStat: 9, setGroup: 'none', lore: 'Agresywny oręż sieczny z Mgły.'),
-  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Krótki Miecz Chidorigatana', baseStat: 12, setGroup: 'myoboku', lore: 'Ostrze idealnie przewodzące błyskawice.'),
-  BaseGearArchetype(slot: GearSlot.armor, baseName: 'Szata Treningowa Genina', baseStat: 3, setGroup: 'none', lore: 'Lekki płócienny strój.'),
-  BaseGearArchetype(slot: GearSlot.armor, baseName: 'Kamizelka Jonina Konohy', baseStat: 9, setGroup: 'none', lore: 'Oficjalny pancerz taktyczny.'),
-  BaseGearArchetype(slot: GearSlot.armor, baseName: 'Szata Pustelnika Myōboku', baseStat: 13, setGroup: 'myoboku', lore: 'Szata nasycona energią senjutsu.'),
-  BaseGearArchetype(slot: GearSlot.helmet, baseName: 'Ochraniacz Czołowy Protektor', baseStat: 2, setGroup: 'none', lore: 'Metalowa płytka z symbolem wioski.'),
-  BaseGearArchetype(slot: GearSlot.helmet, baseName: 'Porcelanowa Maska Lisa ANBU', baseStat: 6, setGroup: 'anbu', lore: 'Zaciera tożsamość i aurę czakry.'),
-  BaseGearArchetype(slot: GearSlot.boots, baseName: 'Standardowe Sandały Shinobi', baseStat: 2, setGroup: 'none', lore: 'Dobre oparcie stóp na drzewach.'),
-  BaseGearArchetype(slot: GearSlot.boots, baseName: 'Drewniane Geta Żabiego Mędrca', baseStat: 9, setGroup: 'myoboku', lore: 'Idealny balans na śliskich skałach.'),
-  BaseGearArchetype(slot: GearSlot.trinket, baseName: 'Amulet Ochronny z Liścia', baseStat: 3, setGroup: 'none', lore: 'Błogosławieństwo kaplicy Konohy.'),
-  BaseGearArchetype(slot: GearSlot.trinket, baseName: 'Pieczęć Skupienia Czakry', baseStat: 8, setGroup: 'anbu', lore: 'Zmniejsza straty energii przy jutsu.'),
+  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Standardowy Kunai', baseStat: 4, setGroup: 'none', lore: 'Podstawowe narzędzie każdego ninja.', icon: '🗡️'),
+  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Składany Shuriken Fūma', baseStat: 6, setGroup: 'none', lore: 'Wirujące ostrza.', icon: '🥏'),
+  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Krótki Miecz Tanto ANBU', baseStat: 8, setGroup: 'anbu', lore: 'Ostrze skrytobójców z Korzenia.', icon: '⚔️'),
+  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Bliźniacze Tasaki Kiri', baseStat: 9, setGroup: 'none', lore: 'Agresywny oręż sieczny z Mgły.', icon: '🔪'),
+  BaseGearArchetype(slot: GearSlot.weapon, baseName: 'Krótki Miecz Chidorigatana', baseStat: 12, setGroup: 'myoboku', lore: 'Ostrze idealnie przewodzące błyskawice.', icon: '⚡'),
+  BaseGearArchetype(slot: GearSlot.armor, baseName: 'Szata Treningowa Genina', baseStat: 3, setGroup: 'none', lore: 'Lekki płócienny strój.', icon: '🥋'),
+  BaseGearArchetype(slot: GearSlot.armor, baseName: 'Kamizelka Jonina Konohy', baseStat: 9, setGroup: 'none', lore: 'Oficjalny pancerz taktyczny.', icon: '🦺'),
+  BaseGearArchetype(slot: GearSlot.armor, baseName: 'Szata Pustelnika Myōboku', baseStat: 13, setGroup: 'myoboku', lore: 'Szata nasycona energią senjutsu.', icon: '👘'),
+  BaseGearArchetype(slot: GearSlot.helmet, baseName: 'Ochraniacz Czołowy Protektor', baseStat: 2, setGroup: 'none', lore: 'Metalowa płytka z symbolem wioski.', icon: '🛡️'),
+  BaseGearArchetype(slot: GearSlot.helmet, baseName: 'Porcelanowa Maska Lisa ANBU', baseStat: 6, setGroup: 'anbu', lore: 'Zaciera tożsamość i aurę czakry.', icon: '🎭'),
+  BaseGearArchetype(slot: GearSlot.boots, baseName: 'Standardowe Sandały Shinobi', baseStat: 2, setGroup: 'none', lore: 'Dobre oparcie stóp na drzewach.', icon: '🥾'),
+  BaseGearArchetype(slot: GearSlot.boots, baseName: 'Drewniane Geta Żabiego Mędrca', baseStat: 9, setGroup: 'myoboku', lore: 'Idealny balans na śliskich skałach.', icon: '🪵'),
+  BaseGearArchetype(slot: GearSlot.trinket, baseName: 'Amulet Ochronny z Liścia', baseStat: 3, setGroup: 'none', lore: 'Błogosławieństwo kaplicy Konohy.', icon: '📿'),
+  BaseGearArchetype(slot: GearSlot.trinket, baseName: 'Pieczęć Skupienia Czakry', baseStat: 8, setGroup: 'anbu', lore: 'Zmniejsza straty energii przy jutsu.', icon: '🔮'),
 ];
 
 class NinjaGear {
@@ -129,6 +131,7 @@ class NinjaGear {
   final String setGroup;
   final bool isSoulbound;
   final int upgradeLevel;
+  final String icon;
 
   const NinjaGear({
     required this.name,
@@ -139,6 +142,7 @@ class NinjaGear {
     this.setGroup = 'none',
     this.isSoulbound = false,
     this.upgradeLevel = 0,
+    this.icon = '🎒',
   });
 
   NinjaGear copyWith({
@@ -150,6 +154,7 @@ class NinjaGear {
     String? setGroup,
     bool? isSoulbound,
     int? upgradeLevel,
+    String? icon,
   }) {
     return NinjaGear(
       name: name ?? this.name,
@@ -160,6 +165,7 @@ class NinjaGear {
       setGroup: setGroup ?? this.setGroup,
       isSoulbound: isSoulbound ?? this.isSoulbound,
       upgradeLevel: upgradeLevel ?? this.upgradeLevel,
+      icon: icon ?? this.icon,
     );
   }
 
@@ -175,6 +181,7 @@ class NinjaGear {
         'setGroup': setGroup,
         'isSoulbound': isSoulbound,
         'upgradeLevel': upgradeLevel,
+        'icon': icon,
       };
 
   factory NinjaGear.fromJson(Map<String, dynamic> json) => NinjaGear(
@@ -186,6 +193,7 @@ class NinjaGear {
         setGroup: json['setGroup'] ?? 'none',
         isSoulbound: json['isSoulbound'] ?? false,
         upgradeLevel: json['upgradeLevel'] ?? 0,
+        icon: json['icon'] ?? '🎒',
       );
 
   Color get color {
@@ -290,6 +298,7 @@ class EnemyTemplate {
   final int baseAtk;
   final String locationId;
   final bool isBoss;
+  final String icon;
 
   const EnemyTemplate({
     required this.id,
@@ -299,23 +308,24 @@ class EnemyTemplate {
     required this.baseAtk,
     required this.locationId,
     this.isBoss = false,
+    this.icon = '👤',
   });
 }
 
 const List<EnemyTemplate> standardEnemiesPool = [
-  EnemyTemplate(id: 'e_dog', name: 'Dziki Ninja-Pies', title: 'Zdziczały Ninken', baseHp: 22, baseAtk: 6, locationId: 'loc_gate'),
-  EnemyTemplate(id: 'e_bandit', name: 'Bandyta z Kraju Fal', title: 'Pospolity Rabuś', baseHp: 26, baseAtk: 7, locationId: 'loc_gate'),
-  EnemyTemplate(id: 'e_rain', name: 'Zbuntowany Ninja Deszczu', title: 'Nuke-nin z Amegakure', baseHp: 32, baseAtk: 8, locationId: 'loc_forest'),
-  EnemyTemplate(id: 'e_rock', name: 'Szpieg z Iwagakure', title: 'Zwiadowca Skały', baseHp: 36, baseAtk: 9, locationId: 'loc_forest'),
-  EnemyTemplate(id: 'e_zetsu', name: 'Klon Białego Zetsu', title: 'Infiltrator Mokuton', baseHp: 40, baseAtk: 10, locationId: 'loc_valley'),
-  EnemyTemplate(id: 'e_mercenary', name: 'Najemnik z Mgły', title: 'Płatny Zabójca', baseHp: 44, baseAtk: 12, locationId: 'loc_waves'),
-  EnemyTemplate(id: 'e_akatsuki_agent', name: 'Agent Cienia Akatsuki', title: 'Posłaniec Zagłady', baseHp: 58, baseAtk: 15, locationId: 'loc_akatsuki'),
+  EnemyTemplate(id: 'e_dog', name: 'Dziki Ninja-Pies', title: 'Zdziczały Ninken', baseHp: 22, baseAtk: 6, locationId: 'loc_gate', icon: '🐕'),
+  EnemyTemplate(id: 'e_bandit', name: 'Bandyta z Kraju Fal', title: 'Pospolity Rabuś', baseHp: 26, baseAtk: 7, locationId: 'loc_gate', icon: '🥷'),
+  EnemyTemplate(id: 'e_rain', name: 'Zbuntowany Ninja Deszczu', title: 'Nuke-nin z Amegakure', baseHp: 32, baseAtk: 8, locationId: 'loc_forest', icon: '🌧️'),
+  EnemyTemplate(id: 'e_rock', name: 'Szpieg z Iwagakure', title: 'Zwiadowca Skały', baseHp: 36, baseAtk: 9, locationId: 'loc_forest', icon: '🗿'),
+  EnemyTemplate(id: 'e_zetsu', name: 'Klon Białego Zetsu', title: 'Infiltrator Mokuton', baseHp: 40, baseAtk: 10, locationId: 'loc_valley', icon: '🪴'),
+  EnemyTemplate(id: 'e_mercenary', name: 'Najemnik z Mgły', title: 'Płatny Zabójca', baseHp: 44, baseAtk: 12, locationId: 'loc_waves', icon: '⚔️'),
+  EnemyTemplate(id: 'e_akatsuki_agent', name: 'Agent Cienia Akatsuki', title: 'Posłaniec Zagłady', baseHp: 58, baseAtk: 15, locationId: 'loc_akatsuki', icon: '🩸'),
 ];
 
 const List<EnemyTemplate> bossesPool = [
-  EnemyTemplate(id: 'b_zabuza', name: 'Zabuza Momochi', title: 'Demon Ukrytej Mgły', baseHp: 95, baseAtk: 16, locationId: 'loc_waves', isBoss: true),
-  EnemyTemplate(id: 'b_gaara', name: 'Gaara Pustyni', title: 'Głos Shukaku', baseHp: 120, baseAtk: 19, locationId: 'loc_valley', isBoss: true),
-  EnemyTemplate(id: 'b_itachi', name: 'Itachi Uchiha', title: 'Mistrz Mangekyō Sharingana', baseHp: 150, baseAtk: 25, locationId: 'loc_akatsuki', isBoss: true),
+  EnemyTemplate(id: 'b_zabuza', name: 'Zabuza Momochi', title: 'Demon Ukrytej Mgły', baseHp: 95, baseAtk: 16, locationId: 'loc_waves', isBoss: true, icon: '🗡️'),
+  EnemyTemplate(id: 'b_gaara', name: 'Gaara Pustyni', title: 'Głos Shukaku', baseHp: 120, baseAtk: 19, locationId: 'loc_valley', isBoss: true, icon: '🏺'),
+  EnemyTemplate(id: 'b_itachi', name: 'Itachi Uchiha', title: 'Mistrz Mangekyō Sharingana', baseHp: 150, baseAtk: 25, locationId: 'loc_akatsuki', isBoss: true, icon: '👁️'),
 ];
 
 class ExamStage {
@@ -327,6 +337,7 @@ class ExamStage {
   final int hp;
   final int atk;
   final String lore;
+  final String icon;
 
   const ExamStage({
     required this.targetRankIndex,
@@ -337,15 +348,16 @@ class ExamStage {
     required this.hp,
     required this.atk,
     required this.lore,
+    required this.icon,
   });
 }
 
 const List<ExamStage> shinobiExams = [
-  ExamStage(targetRankIndex: 1, rankTitle: 'Genin', requiredLevel: 3, examinerName: 'Iruka Umino', examinerTitle: 'Instruktor Akademii Ninja', hp: 45, atk: 8, lore: '„Pokaż mi, że potrafisz skupić czakrę!”'),
-  ExamStage(targetRankIndex: 2, rankTitle: 'Chūnin', requiredLevel: 10, examinerName: 'Ibiki Morino', examinerTitle: 'Dowódca Wydziału Śledczego', hp: 95, atk: 14, lore: '„Sprawdzę Twoją determinację w obliczu bólu!”'),
-  ExamStage(targetRankIndex: 3, rankTitle: 'Tokubetsu Jōnin', requiredLevel: 20, examinerName: 'Anko Mitarashi', examinerTitle: 'Egzaminatorka Lasu Śmierci', hp: 145, atk: 19, lore: '„Pora na mordercze tempo!”'),
-  ExamStage(targetRankIndex: 4, rankTitle: 'Jōnin Bojowy', requiredLevel: 32, examinerName: 'Kakashi Hatake', examinerTitle: 'Kopiujący Ninja z Konohy', hp: 210, atk: 25, lore: '„Test dwóch dzwonków rozpoczyna się.”'),
-  ExamStage(targetRankIndex: 5, rankTitle: 'Legendarny Sannin', requiredLevel: 45, examinerName: 'Jiraiya', examinerTitle: 'Żabi Mędrzec', hp: 285, atk: 31, lore: '„Udowodnij woli ognia!”'),
+  ExamStage(targetRankIndex: 1, rankTitle: 'Genin', requiredLevel: 3, examinerName: 'Iruka Umino', examinerTitle: 'Instruktor Akademii Ninja', hp: 45, atk: 8, lore: '„Pokaż mi, że potrafisz skupić czakrę!”', icon: '👨🏻‍🏫'),
+  ExamStage(targetRankIndex: 2, rankTitle: 'Chūnin', requiredLevel: 10, examinerName: 'Ibiki Morino', examinerTitle: 'Dowódca Wydziału Śledczego', hp: 95, atk: 14, lore: '„Sprawdzę Twoją determinację w obliczu bólu!”', icon: '🕵️'),
+  ExamStage(targetRankIndex: 3, rankTitle: 'Tokubetsu Jōnin', requiredLevel: 20, examinerName: 'Anko Mitarashi', examinerTitle: 'Egzaminatorka Lasu Śmierci', hp: 145, atk: 19, lore: '„Pora na mordercze tempo!”', icon: '🐍'),
+  ExamStage(targetRankIndex: 4, rankTitle: 'Jōnin Bojowy', requiredLevel: 32, examinerName: 'Kakashi Hatake', examinerTitle: 'Kopiujący Ninja z Konohy', hp: 210, atk: 25, lore: '„Test dwóch dzwonków rozpoczyna się.”', icon: '⚡'),
+  ExamStage(targetRankIndex: 5, rankTitle: 'Legendarny Sannin', requiredLevel: 45, examinerName: 'Jiraiya', examinerTitle: 'Żabi Mędrzec', hp: 285, atk: 31, lore: '„Udowodnij woli ognia!”', icon: '🐸'),
 ];
 
 class ShinobiMission {
@@ -383,11 +395,11 @@ const List<ShinobiMission> allMissionsPool = [
   ShinobiMission(id: 'm_a1', rank: 'A', minRankIndex: 4, locationId: 'loc_akatsuki', targetEnemyId: 'e_akatsuki_agent', title: 'Agentura Cienia', desc: 'Zneutralizuj 6 Posłańców Zagłady w kryjówce.', requiredKills: 6, rewardRyo: 900, rewardExp: 400),
 ];
 
-const NinjaGear defaultStarterWeapon = NinjaGear(name: 'Podstawowy Kunai', rarity: ItemRarity.common, baseStat: 4, bonusEffect: 'Brak', bonusValue: 0, isSoulbound: true);
-const NinjaGear defaultStarterArmor = NinjaGear(name: 'Szata Treningowa Genina', rarity: ItemRarity.common, baseStat: 3, bonusEffect: 'Brak', bonusValue: 0, isSoulbound: true);
-const NinjaGear defaultStarterHelmet = NinjaGear(name: 'Ochraniacz Czołowy Protektor', rarity: ItemRarity.common, baseStat: 2, bonusEffect: 'Brak', bonusValue: 0, isSoulbound: true);
-const NinjaGear defaultStarterBoots = NinjaGear(name: 'Standardowe Sandały Shinobi', rarity: ItemRarity.common, baseStat: 2, bonusEffect: 'Brak', bonusValue: 0, isSoulbound: true);
-const NinjaGear defaultStarterTrinket = NinjaGear(name: 'Amulet Ochronny z Liścia', rarity: ItemRarity.common, baseStat: 2, bonusEffect: 'Brak', bonusValue: 0, isSoulbound: true);
+const NinjaGear defaultStarterWeapon = NinjaGear(name: 'Podstawowy Kunai', rarity: ItemRarity.common, baseStat: 4, bonusEffect: 'Brak', bonusValue: 0, isSoulbound: true, icon: '🗡️');
+const NinjaGear defaultStarterArmor = NinjaGear(name: 'Szata Treningowa Genina', rarity: ItemRarity.common, baseStat: 3, bonusEffect: 'Brak', bonusValue: 0, isSoulbound: true, icon: '🥋');
+const NinjaGear defaultStarterHelmet = NinjaGear(name: 'Ochraniacz Czołowy Protektor', rarity: ItemRarity.common, baseStat: 2, bonusEffect: 'Brak', bonusValue: 0, isSoulbound: true, icon: '🛡️');
+const NinjaGear defaultStarterBoots = NinjaGear(name: 'Standardowe Sandały Shinobi', rarity: ItemRarity.common, baseStat: 2, bonusEffect: 'Brak', bonusValue: 0, isSoulbound: true, icon: '🥾');
+const NinjaGear defaultStarterTrinket = NinjaGear(name: 'Amulet Ochronny z Liścia', rarity: ItemRarity.common, baseStat: 2, bonusEffect: 'Brak', bonusValue: 0, isSoulbound: true, icon: '📿');
 
 class ShinobiLooterApp extends StatelessWidget {
   const ShinobiLooterApp({super.key});
@@ -401,6 +413,11 @@ class ShinobiLooterApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF140D0B),
         dialogBackgroundColor: const Color(0xFF1E1412),
         cardColor: const Color(0xFF1F1613),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+          ),
+        ),
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFFE65100),
           secondary: Color(0xFFFF8F00),
@@ -493,6 +510,7 @@ class _StartMenuScreenState extends State<StartMenuScreen> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE65100),
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: _continueGame,
@@ -506,6 +524,7 @@ class _StartMenuScreenState extends State<StartMenuScreen> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: hasExistingSave ? const Color(0xFF3E2723) : const Color(0xFFE65100),
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     onPressed: () {
@@ -518,12 +537,12 @@ class _StartMenuScreenState extends State<StartMenuScreen> {
                             actions: [
                               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Anuluj')),
                               ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
                                 onPressed: () {
                                   Navigator.pop(ctx);
                                   _startNewGame();
                                 },
-                                child: const Text('Tak, nowa gra'),
+                                child: const Text('Tak, nowa gra', style: TextStyle(color: Colors.white)),
                               ),
                             ],
                           ),
@@ -921,7 +940,17 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF261214),
-        title: const Text('🈴 Wędrowny Mistrz Fūinjutsu', style: TextStyle(color: Color(0xFFFF8A80))),
+        title: const Row(
+          children: [
+            Text('🈴 ', style: TextStyle(fontSize: 22)),
+            Expanded(
+              child: Text(
+                'Wędrowny Mistrz Fūinjutsu',
+                style: TextStyle(color: Color(0xFFFF8A80), fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+          ],
+        ),
         content: SizedBox(
           width: double.maxFinite,
           child: SingleChildScrollView(
@@ -929,10 +958,29 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('„Mogę zapieczętować twój sprzęt przed utratą po powrocie za odpowiednią opłatą w Ryo.”'),
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B1A1E),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFFF8A80), width: 1.5),
+                    ),
+                    child: const Text('📜', style: TextStyle(fontSize: 36)),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  '„Mogę zapieczętować twój rynsztunek czakrą ochrony, aby nie przepadł w przypadku porażki w terenie.”',
+                  style: TextStyle(fontSize: 11, color: Colors.white70, fontStyle: FontStyle.italic),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 10),
                 if (unsealedSlots.isEmpty)
-                  const Text('Wszystkie założone przedmioty są już zapieczętowane!', style: TextStyle(color: Color(0xFF69F0AE), fontSize: 11))
+                  const Center(
+                    child: Text('Wszystkie założone przedmioty są już zapieczętowane!', style: TextStyle(color: Color(0xFF69F0AE), fontSize: 11)),
+                  )
                 else
                   ...unsealedSlots.entries.map((entry) {
                     final slot = entry.key;
@@ -942,10 +990,14 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
                     return ListTile(
                       dense: true,
-                      title: Text('$slotName: ${gear.displayName}', style: TextStyle(color: gear.color, fontSize: 11)),
+                      leading: Text(gear.icon, style: const TextStyle(fontSize: 20)),
+                      title: Text('$slotName: ${gear.displayName}', style: TextStyle(color: gear.color, fontSize: 11, fontWeight: FontWeight.bold)),
                       subtitle: Text('Koszt: $cost Ryo', style: const TextStyle(fontSize: 9, color: Color(0xFFFFD54F))),
                       trailing: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB71C1C)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFB71C1C),
+                          foregroundColor: Colors.white,
+                        ),
                         onPressed: ryo >= cost
                             ? () {
                                 setState(() {
@@ -963,7 +1015,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                 addLog('🈴 Zapieczętowano ${gear.name} (-$cost Ryo)!');
                               }
                             : null,
-                        child: const Text('Pieczęć', style: TextStyle(fontSize: 9)),
+                        child: const Text('Pieczęć', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
                     );
                   }),
@@ -981,7 +1033,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
   void _encounterWanderingSage() {
     final unlearnedJutsu = allJutsuPool.where((j) => !knownJutsu.any((k) => k.id == j.id)).toList();
     if (unlearnedJutsu.isEmpty) {
-      addLog('👴🏻 Spotkano Wędrownego Mędrca, ale znasz już jego techniki.');
+      addLog('👴🏻 Spotkano Wędrownego Mędrca, ale znasz już wszystkie jego techniki.');
       return;
     }
     final offered = unlearnedJutsu[_rng.nextInt(unlearnedJutsu.length)];
@@ -990,12 +1042,45 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1C1814),
-        title: const Text('👴🏻 Wędrowny Mędrzec', style: TextStyle(color: Color(0xFFFFD54F))),
-        content: Text('„Chcesz posiąść zwój techniki [${offered.name}] za ${offered.costRyo} Ryo?”'),
+        title: const Row(
+          children: [
+            Text('👴🏻 ', style: TextStyle(fontSize: 22)),
+            Expanded(
+              child: Text('Wędrowny Mędrzec', style: TextStyle(color: Color(0xFFFFD54F), fontWeight: FontWeight.bold, fontSize: 16)),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 6),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2E261B),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFFFD54F), width: 1.5),
+              ),
+              child: const Text('📜', style: TextStyle(fontSize: 36)),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '„Mogę zdradzić ci tajemnicę sekretnego zwoju [${offered.name}] w zamian za ${offered.costRyo} Ryo.”',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12, color: Colors.white70),
+            ),
+            const SizedBox(height: 6),
+            Text(offered.effectDescription, style: const TextStyle(fontSize: 10, color: Color(0xFFFFCC80))),
+          ],
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Odejdź', style: TextStyle(color: Colors.grey))),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE65100),
+              foregroundColor: Colors.white,
+            ),
             onPressed: ryo >= offered.costRyo
                 ? () {
                     setState(() {
@@ -1007,7 +1092,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     addLog('📜 Poznano nowe Jutsu: [${offered.name}]!');
                   }
                 : null,
-            child: const Text('Kup'),
+            child: const Text('Kup Zwój', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
           ),
         ],
       ),
@@ -1043,7 +1128,10 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       title: const Text('Pełne Leczenie', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                       subtitle: const Text('Odnawia HP i CP do 100%', style: TextStyle(fontSize: 10, color: Colors.white60)),
                       trailing: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00695C),
+                          foregroundColor: Colors.white,
+                        ),
                         onPressed: (hp < maxHp || chakra < maxChakra) && ryo >= 25
                             ? () {
                                 setState(() {
@@ -1056,7 +1144,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                 addLog('🩺 Opatrzono rany (-25 Ryo).');
                               }
                             : null,
-                        child: const Text('25 Ryo', style: TextStyle(fontSize: 10)),
+                        child: const Text('25 Ryo', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
                     ),
                     const Divider(color: Colors.white12),
@@ -1066,7 +1154,10 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       title: Text('Trening Witalności (#${vitalTrainingCount + 1})', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                       subtitle: const Text('+10 Max HP i +10 Max CP (rosnący koszt)', style: TextStyle(fontSize: 10, color: Colors.white60)),
                       trailing: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2E7D32)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2E7D32),
+                          foregroundColor: Colors.white,
+                        ),
                         onPressed: ryo >= vitalCost
                             ? () {
                                 setState(() {
@@ -1082,7 +1173,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                 addLog('✨ Rozwinięto witalność za $vitalCost Ryo.');
                               }
                             : null,
-                        child: Text('$vitalCost Ryo', style: TextStyle(fontSize: 10)),
+                        child: Text('$vitalCost Ryo', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
                     ),
                     const Divider(color: Colors.white12),
@@ -1195,7 +1286,13 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('$slotLabel: ${gear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: gear.color)),
+                                Row(
+                                  children: [
+                                    Text(gear.icon, style: const TextStyle(fontSize: 16)),
+                                    const SizedBox(width: 4),
+                                    Text('$slotLabel: ${gear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: gear.color)),
+                                  ],
+                                ),
                                 Text('Moc: +${gear.effectiveStat}', style: const TextStyle(fontSize: 10, color: Color(0xFF69F0AE))),
                               ],
                             ),
@@ -1208,7 +1305,11 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFE65100),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  ),
                                   onPressed: canUpgrade
                                       ? () {
                                           setState(() {
@@ -1236,7 +1337,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                           setSmithState(() {});
                                         }
                                       : null,
-                                  child: Text('Kuj na +${curLvl + 1}', style: const TextStyle(fontSize: 10)),
+                                  child: Text('Kuj na +${curLvl + 1}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
                                 ),
                               ),
                             ],
@@ -1293,7 +1394,13 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('🥋 Egzamin na ${nextExam.rankTitle}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: hasPendingExam ? const Color(0xFFFFD54F) : Colors.white70)),
+                                Row(
+                                  children: [
+                                    Text(nextExam.icon, style: const TextStyle(fontSize: 16)),
+                                    const SizedBox(width: 4),
+                                    Text('Egzamin na ${nextExam.rankTitle}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: hasPendingExam ? const Color(0xFFFFD54F) : Colors.white70)),
+                                  ],
+                                ),
                                 Text('Wymaga: Lvl ${nextExam.requiredLevel}', style: const TextStyle(fontSize: 9, color: Colors.grey)),
                               ],
                             ),
@@ -1303,19 +1410,20 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: hasPendingExam ? const Color(0xFFE65100) : const Color(0xFF37474F),
+                                foregroundColor: Colors.white,
                                 minimumSize: const Size(double.infinity, 30),
                               ),
                               onPressed: hasPendingExam
                                   ? () {
                                       Navigator.pop(ctx);
                                       _startBattleWithEnemy(
-                                        EnemyTemplate(id: 'exam', name: nextExam.examinerName, title: nextExam.examinerTitle, baseHp: nextExam.hp, baseAtk: nextExam.atk, locationId: '', isBoss: true),
+                                        EnemyTemplate(id: 'exam', name: nextExam.examinerName, title: nextExam.examinerTitle, baseHp: nextExam.hp, baseAtk: nextExam.atk, locationId: '', isBoss: true, icon: nextExam.icon),
                                         isExamFight: true,
                                         examTargetRank: nextExam.targetRankIndex,
                                       );
                                     }
                                   : null,
-                              child: Text(hasPendingExam ? 'Rozpocznij Egzamin!' : 'Osiągnij Lvl ${nextExam.requiredLevel}', style: const TextStyle(fontSize: 10)),
+                              child: Text(hasPendingExam ? 'Rozpocznij Egzamin!' : 'Osiągnij Lvl ${nextExam.requiredLevel}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
                             ),
                           ],
                         ),
@@ -1349,7 +1457,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                             const SizedBox(height: 6),
                             if (currentMissionKills >= allMissionsPool[activeMissionIndex!].requiredKills)
                               ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2E7D32), minimumSize: const Size(double.infinity, 28)),
+                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2E7D32), foregroundColor: Colors.white, minimumSize: const Size(double.infinity, 28)),
                                 onPressed: () {
                                   final m = allMissionsPool[activeMissionIndex!];
                                   setState(() {
@@ -1363,7 +1471,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                   Navigator.pop(ctx);
                                   addLog('🎖️ Sukces misji: ${m.title}! +${m.rewardRyo} Ryo, +${m.rewardExp} EXP');
                                 },
-                                child: const Text('Odbierz Nagrodę! 🎁', style: TextStyle(fontSize: 10)),
+                                child: const Text('Odbierz Nagrodę! 🎁', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
                               )
                             else
                               TextButton(
@@ -1395,6 +1503,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                             ),
                             ...locMissions.map((m) {
                               final bool isUnlocked = passedRankIndex >= m.minRankIndex;
+                              final enemy = standardEnemiesPool.firstWhere((e) => e.id == m.targetEnemyId, orElse: () => standardEnemiesPool[0]);
+
                               return Container(
                                 margin: const EdgeInsets.symmetric(vertical: 2),
                                 child: ListTile(
@@ -1405,11 +1515,23 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                     backgroundColor: isUnlocked ? const Color(0xFFE65100) : const Color(0xFF263238),
                                     child: Text(m.rank, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 9, color: isUnlocked ? Colors.white : Colors.white38)),
                                   ),
-                                  title: Text(m.title, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isUnlocked ? Colors.white : Colors.white38)),
+                                  title: Row(
+                                    children: [
+                                      Text(enemy.icon, style: const TextStyle(fontSize: 14)),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(m.title, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isUnlocked ? Colors.white : Colors.white38)),
+                                      ),
+                                    ],
+                                  ),
                                   subtitle: Text('Nagroda: ${m.rewardRyo} Ryo | +${m.rewardExp} EXP', style: const TextStyle(fontSize: 9, color: Colors.white60)),
                                   trailing: isUnlocked
                                       ? ElevatedButton(
-                                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), padding: const EdgeInsets.symmetric(horizontal: 8)),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(0xFFE65100),
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          ),
                                           onPressed: () {
                                             setState(() {
                                               activeMissionIndex = allMissionsPool.indexOf(m);
@@ -1419,7 +1541,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                             Navigator.pop(ctx);
                                             addLog('📜 Przyjęto zlecenie: ${m.title}!');
                                           },
-                                          child: const Text('Przyjmij', style: TextStyle(fontSize: 9)),
+                                          child: const Text('Przyjmij', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
                                         )
                                       : const Icon(Icons.lock, size: 16, color: Colors.grey),
                                 ),
@@ -1468,7 +1590,10 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     subtitle: Text('Koszt: ${jutsu.chakraCost} CP | Siła: x${jutsu.powerMultiplier}\n${jutsu.effectDescription}', style: const TextStyle(fontSize: 10, color: Colors.white60)),
                     trailing: isKnown
                         ? ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: isEquipped ? const Color(0xFF2E7D32) : const Color(0xFF37474F)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isEquipped ? const Color(0xFF2E7D32) : const Color(0xFF37474F),
+                              foregroundColor: Colors.white,
+                            ),
                             onPressed: () {
                               setState(() {
                                 if (isEquipped) {
@@ -1485,10 +1610,13 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                               _saveGameData();
                               setScrollsState(() {});
                             },
-                            child: Text(isEquipped ? 'Założone' : 'Załóż', style: const TextStyle(fontSize: 10)),
+                            child: Text(isEquipped ? 'Założone' : 'Załóż', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
                           )
                         : ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFE65100),
+                              foregroundColor: Colors.white,
+                            ),
                             onPressed: ryo >= jutsu.costRyo
                                 ? () {
                                     setState(() {
@@ -1500,7 +1628,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                     addLog('📜 Nauczono się techniki: ${jutsu.name}!');
                                   }
                                 : null,
-                            child: Text('Kup (${jutsu.costRyo})', style: const TextStyle(fontSize: 9)),
+                            child: Text('Kup (${jutsu.costRyo})', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white)),
                           ),
                   );
                 },
@@ -1563,12 +1691,16 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                 ),
                               ),
                               ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(horizontal: 8)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF00695C),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                ),
                                 onPressed: () {
                                   useConsumable(item);
                                   setBagState(() {});
                                 },
-                                child: const Text('Użyj', style: TextStyle(fontSize: 10)),
+                                child: const Text('Użyj', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
                               ),
                             ],
                           ),
@@ -1664,7 +1796,10 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7B1FA2)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF7B1FA2),
+                                  foregroundColor: Colors.white,
+                                ),
                                 onPressed: canEnter
                                     ? () {
                                         setState(() {
@@ -1674,11 +1809,11 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                         _saveGameData();
                                         Navigator.pop(ctx);
                                         _startBattleWithEnemy(
-                                          EnemyTemplate(id: boss.id, name: boss.name, title: boss.title, baseHp: boss.baseHp, baseAtk: boss.baseAtk, locationId: '', isBoss: true),
+                                          EnemyTemplate(id: boss.id, name: boss.name, title: boss.title, baseHp: boss.baseHp, baseAtk: boss.baseAtk, locationId: '', isBoss: true, icon: boss.icon),
                                         );
                                       }
                                     : null,
-                                child: const Text('Wejdź do Lochu', style: TextStyle(fontSize: 10)),
+                                child: const Text('Wejdź do Lochu', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
                               ),
                             ),
                           ],
@@ -1855,13 +1990,17 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                 title: Text('${item.name} (x${entry.value})', style: const TextStyle(fontSize: 11)),
                                 subtitle: Text(item.statBonusText, style: const TextStyle(fontSize: 9, color: Color(0xFFFFD54F))),
                                 trailing: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(horizontal: 8)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF00695C),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  ),
                                   onPressed: () {
                                     Navigator.pop(bagCtx);
                                     useBattleItem(item);
                                     setBattleState(() {});
                                   },
-                                  child: const Text('Użyj', style: TextStyle(fontSize: 9)),
+                                  child: const Text('Użyj', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white)),
                                 ),
                               );
                             }).toList(),
@@ -1880,7 +2019,13 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('$prefixTitle${template.name}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: prefixColor)),
+                      Row(
+                        children: [
+                          Text(template.icon, style: const TextStyle(fontSize: 22)),
+                          const SizedBox(width: 6),
+                          Text('$prefixTitle${template.name}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: prefixColor)),
+                        ],
+                      ),
                       Text('$enemyHp / $enemyMaxHp HP', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                     ],
                   ),
@@ -1914,9 +2059,13 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 2.0),
                           child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: jutsu.color.withAlpha(100), padding: const EdgeInsets.symmetric(vertical: 8)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: jutsu.color.withAlpha(100),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                            ),
                             onPressed: () => executeJutsu(jutsu),
-                            child: Text(jutsu.name, style: const TextStyle(fontSize: 10)),
+                            child: Text(jutsu.name, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
                           ),
                         ),
                       );
@@ -1927,15 +2076,23 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     children: [
                       Expanded(
                         child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(vertical: 10)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF00695C),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
                           onPressed: openCombatBagDialog,
-                          child: const Text('🎒 Plecak w walce', style: TextStyle(fontSize: 11)),
+                          child: const Text('🎒 Plecak w walce', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF37474F), padding: const EdgeInsets.symmetric(vertical: 10)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF37474F),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
                           onPressed: () {
                             if (template.isBoss || isExamFight) {
                               appendBattleLog('Nie można uciec z tej walki!');
@@ -1945,7 +2102,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                             Navigator.pop(ctx);
                             addLog('💨 Ucieczka z pola walki!');
                           },
-                          child: const Text('💨 Ucieczka', style: TextStyle(fontSize: 11)),
+                          child: const Text('💨 Ucieczka', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
                         ),
                       ),
                     ],
@@ -1968,8 +2125,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       case GearSlot.weapon: currentGear = currentWeapon; break;
       case GearSlot.armor: currentGear = currentArmor; break;
       case GearSlot.helmet: currentGear = currentHelmet; break;
-      case GearSlot.boots: currentGear = currentBoots; break;
-      case GearSlot.trinket: currentGear = currentTrinket; break;
+      case GearSlot.boots: currentBoots = currentBoots; break;
+      case GearSlot.trinket: currentTrinket = currentTrinket; break;
     }
 
     _showEquipDialog(newGear: drop, currentGear: currentGear, slot: slot);
@@ -2008,6 +2165,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       bonusValue: bonusAttr,
       setGroup: chosen.setGroup,
       isSoulbound: false,
+      icon: chosen.icon,
     );
   }
 
@@ -2032,7 +2190,15 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('NOWY: ${newGear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, color: newGear.color)),
+                  Row(
+                    children: [
+                      Text(newGear.icon, style: const TextStyle(fontSize: 18)),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text('NOWY: ${newGear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, color: newGear.color)),
+                      ),
+                    ],
+                  ),
                   Row(
                     children: [
                       Text('Moc: +${newGear.effectiveStat} ', style: const TextStyle(fontSize: 11)),
@@ -2053,7 +2219,15 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('POSIADANY: ${currentGear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, color: currentGear.color)),
+                  Row(
+                    children: [
+                      Text(currentGear.icon, style: const TextStyle(fontSize: 18)),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text('POSIADANY: ${currentGear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, color: currentGear.color)),
+                      ),
+                    ],
+                  ),
                   Text('Moc: +${currentGear.effectiveStat}', style: const TextStyle(fontSize: 11)),
                 ],
               ),
@@ -2069,7 +2243,10 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
             child: const Text('Odrzuć', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE65100),
+              foregroundColor: Colors.white,
+            ),
             onPressed: () {
               setState(() {
                 switch (slot) {
@@ -2084,7 +2261,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               Navigator.pop(ctx);
               addLog('✨ Założono: ${newGear.displayName}!');
             },
-            child: const Text('Załóż'),
+            child: const Text('Załóż', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
           ),
         ],
       ),
@@ -2096,7 +2273,15 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF191716),
-        title: Text('$slotName: ${gear.displayName}', style: TextStyle(color: gear.color, fontWeight: FontWeight.bold)),
+        title: Row(
+          children: [
+            Text(gear.icon, style: const TextStyle(fontSize: 20)),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text('$slotName: ${gear.displayName}', style: TextStyle(color: gear.color, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2143,12 +2328,15 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                         title: Text(loc.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                         subtitle: Text('Wymagany poziom: ${loc.minLevel}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
                         trailing: ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFE65100),
+                            foregroundColor: Colors.white,
+                          ),
                           onPressed: () {
                             Navigator.pop(ctx);
                             leaveVillage(loc);
                           },
-                          child: const Text('Wyrusz', style: TextStyle(fontSize: 10)),
+                          child: const Text('Wyrusz', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
                         ),
                       ),
                     );
@@ -2277,7 +2465,10 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     SizedBox(
                       height: 52,
                       child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE65100),
+                          foregroundColor: Colors.white,
+                        ),
                         onPressed: _openLocationSelectionModal,
                         icon: const Text('🌲', style: TextStyle(fontSize: 18)),
                         label: const Text('Wyrusz w Las (Wybierz Lokację)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
@@ -2288,45 +2479,66 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       children: [
                         Expanded(
                           child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF5D4037), padding: const EdgeInsets.symmetric(vertical: 10)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF5D4037),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                            ),
                             onPressed: _openVillageMissionsDialog,
-                            child: const Text('📜 Biuro Misji', style: TextStyle(fontSize: 11, color: Colors.white)),
+                            child: const Text('📜 Biuro Misji', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
                           ),
                         ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(vertical: 10)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF00695C),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                            ),
                             onPressed: _openBagDialog,
-                            child: Text('🎒 Plecak ($totalItemsInBag)', style: const TextStyle(fontSize: 11, color: Colors.white)),
+                            child: Text('🎒 Plecak ($totalItemsInBag)', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
                           ),
                         ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), padding: const EdgeInsets.symmetric(vertical: 10)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1565C0),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                            ),
                             onPressed: _openScrollsDialog,
-                            child: Text('📜 Zwoje (${equippedJutsu.length}/3)', style: const TextStyle(fontSize: 11, color: Colors.white)),
+                            child: Text('📜 Zwoje (${equippedJutsu.length}/3)', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7B1FA2)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF7B1FA2),
+                        foregroundColor: Colors.white,
+                      ),
                       onPressed: _openDungeonsDialog,
                       icon: const Text('🏛️'),
-                      label: const Text('Legendarne Lochy (Bossowie)', style: TextStyle(color: Colors.white)),
+                      label: const Text('Legendarne Lochy (Bossowie)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                     ),
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE65100),
+                        foregroundColor: Colors.white,
+                      ),
                       onPressed: _openBlacksmithDialog,
-                      child: const Text('Kowal', style: TextStyle(color: Colors.white)),
+                      child: const Text('Kowal', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                     ),
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1B5E20),
+                        foregroundColor: Colors.white,
+                      ),
                       onPressed: _openMedicDialog,
-                      child: const Text('Szpital (Medyk)', style: TextStyle(color: Colors.white)),
+                      child: const Text('Szpital (Medyk)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                     ),
                   ],
                 ),
@@ -2363,16 +2575,24 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(vertical: 12)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00695C),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
                         onPressed: _openBagDialog,
-                        child: const Text('🎒 Plecak', style: TextStyle(fontSize: 11, color: Colors.white)),
+                        child: const Text('🎒 Plecak', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       flex: 2,
                       child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), padding: const EdgeInsets.symmetric(vertical: 12)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE65100),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
                         onPressed: proceedExploration,
                         child: const Text('Idź naprzód 🌲', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
@@ -2380,9 +2600,13 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20), padding: const EdgeInsets.symmetric(vertical: 12)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1B5E20),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
                         onPressed: returnToVillage,
-                        child: const Text('Powrót', style: TextStyle(fontSize: 11, color: Colors.white)),
+                        child: const Text('Powrót', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
                     ),
                   ],
@@ -2429,7 +2653,15 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: Text(slot, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: item.color)),
+                      child: Row(
+                        children: [
+                          Text(item.icon, style: const TextStyle(fontSize: 9)),
+                          const SizedBox(width: 2),
+                          Expanded(
+                            child: Text(slot, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: item.color)),
+                          ),
+                        ],
+                      ),
                     ),
                     if (item.isSoulbound) const Text('📜', style: TextStyle(fontSize: 7)),
                   ],
