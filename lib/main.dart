@@ -141,11 +141,11 @@ class LegendaryGearTemplate {
 }
 
 const List<LegendaryGearTemplate> legendaryArtifactsPool = [
-  LegendaryGearTemplate(name: 'Miecz Totsuka (Sakegari)', slot: GearSlot.weapon, baseStat: 36, bonusEffect: 'Pieczęć Wiecznego Snu', bonusValue: 8, lore: 'Widmowe ostrze pieczętujące w tykwie.'),
-  LegendaryGearTemplate(name: 'Samehada (Żarłacz Kisame)', slot: GearSlot.weapon, baseStat: 34, bonusEffect: 'Pożeranie Czakry', bonusValue: 8, lore: 'Żywy miecz wysysający energię wroga.'),
-  LegendaryGearTemplate(name: 'Pancerz Ostatecznego Susanoo', slot: GearSlot.armor, baseStat: 38, bonusEffect: 'Bóstwo Zniszczenia', bonusValue: 10, lore: 'Skrzydlata zbroja niszcząca pasma górskie.'),
-  LegendaryGearTemplate(name: 'Korona Rogatej Bogini Kaguya', slot: GearSlot.helmet, baseStat: 32, bonusEffect: 'Wizja Byakugana', bonusValue: 8, lore: 'Boski relikt Świętego Drzewa.'),
-  LegendaryGearTemplate(name: 'Naszyjnik Pierwszego Hokage', slot: GearSlot.trinket, baseStat: 25, bonusEffect: 'Ocalenie Duszy Hashiramy', bonusValue: 10, lore: 'Kryształ czakry chroniący przed natychmiastowym zgonem.'),
+  LegendaryGearTemplate(name: 'Miecz Totsuka (Sakegari)', slot: GearSlot.weapon, baseStat: 36, bonusEffect: 'Pieczęć Wiecznego Snu', bonusValue: 3, lore: 'Widmowe ostrze pieczętujące w tykwie.'),
+  LegendaryGearTemplate(name: 'Samehada (Żarłacz Kisame)', slot: GearSlot.weapon, baseStat: 34, bonusEffect: 'Pożeranie Czakry', bonusValue: 3, lore: 'Żywy miecz wysysający energię wroga.'),
+  LegendaryGearTemplate(name: 'Pancerz Ostatecznego Susanoo', slot: GearSlot.armor, baseStat: 38, bonusEffect: 'Bóstwo Zniszczenia', bonusValue: 3, lore: 'Skrzydlata zbroja niszcząca pasma górskie.'),
+  LegendaryGearTemplate(name: 'Korona Rogatej Bogini Kaguya', slot: GearSlot.helmet, baseStat: 32, bonusEffect: 'Wizja Byakugana', bonusValue: 3, lore: 'Boski relikt Świętego Drzewa.'),
+  LegendaryGearTemplate(name: 'Naszyjnik Pierwszego Hokage', slot: GearSlot.trinket, baseStat: 25, bonusEffect: 'Ocalenie Duszy Hashiramy', bonusValue: 3, lore: 'Kryształ czakry chroniący przed natychmiastowym zgonem.'),
 ];
 
 class NinjaGear {
@@ -191,7 +191,7 @@ class NinjaGear {
     );
   }
 
-  int get effectiveStat => baseStat + (upgradeLevel * (2 + rarity.index));
+  int get effectiveStat => baseStat + (upgradeLevel * (2 + rarity.index)) + bonusValue;
   String get displayName => upgradeLevel > 0 ? '$name +$upgradeLevel' : name;
 
   Map<String, dynamic> toJson() => {
@@ -336,13 +336,71 @@ const List<EnemyTemplate> standardEnemiesPool = [
   EnemyTemplate(name: 'Klon Białego Zetsu', title: 'Infiltrator Mokuton', baseHp: 40, baseAtk: 10),
   EnemyTemplate(name: 'Leśny Odyniec Kraju Ognia', title: 'Szarżująca Bestia', baseHp: 28, baseAtk: 7, isBeast: true),
   EnemyTemplate(name: 'Gigantyczny Pająk z Mgły', title: 'Drapieżnik Pajęczyn', baseHp: 24, baseAtk: 8, isBeast: true),
-  EnemyTemplate(name: 'Niedźwiedź z Lasu Śmierci', title: 'Monstrum z Puszczy', baseHp: 38, baseAtk: 9, isBeast: true),
 ];
 
 const List<EnemyTemplate> bossesPool = [
   EnemyTemplate(name: 'Zabuza Momochi', title: 'Demon Ukrytej Mgły', baseHp: 95, baseAtk: 16, isBoss: true),
   EnemyTemplate(name: 'Gaara Pustyni', title: 'Głos Shukaku', baseHp: 120, baseAtk: 19, isBoss: true),
   EnemyTemplate(name: 'Itachi Uchiha', title: 'Mistrz Mangekyō Sharingana', baseHp: 150, baseAtk: 25, isBoss: true),
+];
+
+class ExamStage {
+  final int targetRankIndex;
+  final String rankTitle;
+  final int requiredLevel;
+  final String examinerName;
+  final String examinerTitle;
+  final int hp;
+  final int atk;
+  final String lore;
+
+  const ExamStage({
+    required this.targetRankIndex,
+    required this.rankTitle,
+    required this.requiredLevel,
+    required this.examinerName,
+    required this.examinerTitle,
+    required this.hp,
+    required this.atk,
+    required this.lore,
+  });
+}
+
+const List<ExamStage> shinobiExams = [
+  ExamStage(targetRankIndex: 1, rankTitle: 'Genin', requiredLevel: 3, examinerName: 'Iruka Umino', examinerTitle: 'Instruktor Akademii Ninja', hp: 45, atk: 8, lore: '„Pokaż mi, że potrafisz skupić czakrę!”'),
+  ExamStage(targetRankIndex: 2, rankTitle: 'Chūnin', requiredLevel: 10, examinerName: 'Ibiki Morino', examinerTitle: 'Dowódca Wydziału Śledczego', hp: 95, atk: 14, lore: '„Sprawdzę Twoją determinację w obliczu bólu!”'),
+  ExamStage(targetRankIndex: 3, rankTitle: 'Tokubetsu Jōnin', requiredLevel: 20, examinerName: 'Anko Mitarashi', examinerTitle: 'Egzaminatorka Lasu Śmierci', hp: 145, atk: 19, lore: '„Pora na mordercze tempo!”'),
+  ExamStage(targetRankIndex: 4, rankTitle: 'Jōnin Bojowy', requiredLevel: 32, examinerName: 'Kakashi Hatake', examinerTitle: 'Kopiujący Ninja z Konohy', hp: 210, atk: 25, lore: '„Test dwóch dzwonków rozpoczyna się.”'),
+  ExamStage(targetRankIndex: 5, rankTitle: 'Legendarny Sannin', requiredLevel: 45, examinerName: 'Jiraiya', examinerTitle: 'Żabi Mędrzec', hp: 285, atk: 31, lore: '„Udowodnij woli ognia!”'),
+];
+
+class ShinobiMission {
+  final String id;
+  final String rank;
+  final int minRankIndex;
+  final String title;
+  final String desc;
+  final int requiredKills;
+  final int rewardRyo;
+  final int rewardExp;
+
+  const ShinobiMission({
+    required this.id,
+    required this.rank,
+    required this.minRankIndex,
+    required this.title,
+    required this.desc,
+    required this.requiredKills,
+    required this.rewardRyo,
+    required this.rewardExp,
+  });
+}
+
+const List<ShinobiMission> allMissionsPool = [
+  ShinobiMission(id: 'm_d1', rank: 'D', minRankIndex: 0, title: 'Oczyszczenie Obrzeży', desc: 'Wyeliminuj 3 zagrożenia w pobliżu bramy.', requiredKills: 3, rewardRyo: 80, rewardExp: 35),
+  ShinobiMission(id: 'm_c1', rank: 'C', minRankIndex: 2, title: 'Eskorta w Kraju Fali', desc: 'Pokonaj 6 bandytów nękających szlak handlowy.', requiredKills: 6, rewardRyo: 220, rewardExp: 90),
+  ShinobiMission(id: 'm_b1', rank: 'B', minRankIndex: 3, title: 'Zwiad Szpiegów', desc: 'Zneutralizuj 8 wrogich agentów.', requiredKills: 8, rewardRyo: 450, rewardExp: 180),
+  ShinobiMission(id: 'm_a1', rank: 'A', minRankIndex: 4, title: 'Pościg za Rogue-Nin', desc: 'Pokonaj 10 niebezpiecznych zbiegów.', requiredKills: 10, rewardRyo: 800, rewardExp: 320),
 ];
 
 const NinjaGear defaultStarterWeapon = NinjaGear(name: 'Podstawowy Kunai', rarity: ItemRarity.common, baseStat: 4, bonusEffect: 'Brak', bonusValue: 0, isSoulbound: true);
@@ -483,6 +541,9 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       vitalTrainingCount = prefs.getInt('vitalTrainingCount') ?? 0;
       dungeonCooldownTimestamp = prefs.getInt('dungeonCooldownTimestamp') ?? 0;
 
+      final completedList = prefs.getStringList('completedMissionsHistory');
+      if (completedList != null) completedMissionsHistory = completedList.toSet();
+
       final bagJson = prefs.getString('ninjaBag');
       if (bagJson != null) bag = Map<String, int>.from(jsonDecode(bagJson));
 
@@ -533,6 +594,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     await prefs.setInt('passedRankIndex', passedRankIndex);
     await prefs.setBool('inVillage', inVillage);
     await prefs.setString('currentSelectedLocationId', currentSelectedLocationId);
+    await prefs.setStringList('completedMissionsHistory', completedMissionsHistory.toList());
 
     if (activeMissionIndex != null) {
       await prefs.setInt('activeMissionIndex', activeMissionIndex!);
@@ -607,11 +669,17 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
   bool useConsumable(Consumable item) {
     bool fromUnsealed = (bag[item.id] ?? 0) > 0;
-    if (!fromUnsealed) return false;
+    bool fromSealed = (sealedBag[item.id] ?? 0) > 0;
+    if (!fromUnsealed && !fromSealed) return false;
 
     setState(() {
-      bag[item.id] = bag[item.id]! - 1;
-      if (bag[item.id] == 0) bag.remove(item.id);
+      if (fromUnsealed) {
+        bag[item.id] = bag[item.id]! - 1;
+        if (bag[item.id] == 0) bag.remove(item.id);
+      } else {
+        sealedBag[item.id] = sealedBag[item.id]! - 1;
+        if (sealedBag[item.id] == 0) sealedBag.remove(item.id);
+      }
 
       switch (item.type) {
         case ConsumableType.healHp:
@@ -648,23 +716,101 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     final roll = _rng.nextInt(100);
 
     if (roll < 22) {
-      addLog('🌿 ${loc.name}: Spokojna okolica. Nikogo tu nie spotkałeś.');
+      const emptyMessages = [
+        '🌿 Spokojna okolica. Nikogo tu nie spotkałeś.',
+        '🍃 Wędrówka mija bez echa, las jest niezwykle cichy.',
+        '🌳 Cisza i spokój. Wykorzystujesz chwilę na złapanie oddechu.',
+        '🌲 Droga jest pusta, słychać jedynie szum wiatru w koronach drzew.'
+      ];
+      addLog(emptyMessages[_rng.nextInt(emptyMessages.length)]);
     } else if (roll < 60) {
       final enemy = standardEnemiesPool[_rng.nextInt(standardEnemiesPool.length)];
-      addLog('🌲 ${loc.name}: Spotkano wroga -> ${enemy.name}!');
-      _startBattleWithEnemy(enemy);
+      final pRoll = _rng.nextInt(100);
+      EnemyPrefix p = pRoll < 30 ? EnemyPrefix.weak : (pRoll < 80 ? EnemyPrefix.normal : EnemyPrefix.strong);
+      _startBattleWithEnemy(enemy, forcePrefix: p);
     } else if (roll < 76) {
       final boss = bossesPool[_rng.nextInt(bossesPool.length)];
-      addLog('⚠️ ${loc.name}: Pojawił się boss terenowy -> ${boss.name}!');
+      addLog('⚠️ ${loc.name}: Pojawił się potężny boss -> ${boss.name}!');
       _startBattleWithEnemy(boss);
-    } else if (roll < 88) {
+    } else if (roll < 84) {
       _findLoot();
-    } else if (roll < 95) {
+    } else if (roll < 91) {
+      _encounterSealMaster();
+    } else if (roll < 96) {
       _encounterWanderingSage();
     } else {
       addCraftingMaterial(matDungeonKey, 1);
       addLog('🗝️ Sukces zwiadu! Znaleziono rzadki Klucz do Lochów!');
     }
+  }
+
+  void _encounterSealMaster() {
+    final unsealedSlots = <GearSlot, NinjaGear>{};
+    if (!currentWeapon.isSoulbound) unsealedSlots[GearSlot.weapon] = currentWeapon;
+    if (!currentArmor.isSoulbound) unsealedSlots[GearSlot.armor] = currentArmor;
+    if (!currentHelmet.isSoulbound) unsealedSlots[GearSlot.helmet] = currentHelmet;
+    if (!currentBoots.isSoulbound) unsealedSlots[GearSlot.boots] = currentBoots;
+    if (!currentTrinket.isSoulbound) unsealedSlots[GearSlot.trinket] = currentTrinket;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF261214),
+        title: const Text('🈴 Wędrowny Mistrz Fūinjutsu', style: TextStyle(color: Color(0xFFFF8A80))),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('„Mogę zapieczętować twój sprzęt przed utratą po powrocie za odpowiednią opłatą w Ryo.”'),
+                const SizedBox(height: 10),
+                if (unsealedSlots.isEmpty)
+                  const Text('Wszystkie założone przedmioty są już zapieczętowane!', style: TextStyle(color: Color(0xFF69F0AE), fontSize: 11))
+                else
+                  ...unsealedSlots.entries.map((entry) {
+                    final slot = entry.key;
+                    final gear = entry.value;
+                    int cost = gear.rarity.index == 0 ? 150 : 400;
+                    String slotName = slot == GearSlot.weapon ? 'Broń' : (slot == GearSlot.armor ? 'Pancerz' : (slot == GearSlot.helmet ? 'Głowa' : (slot == GearSlot.boots ? 'Buty' : 'Talizman')));
+
+                    return ListTile(
+                      dense: true,
+                      title: Text('$slotName: ${gear.displayName}', style: TextStyle(color: gear.color, fontSize: 11)),
+                      subtitle: Text('Koszt: $cost Ryo', style: const TextStyle(fontSize: 9, color: Color(0xFFFFD54F))),
+                      trailing: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB71C1C)),
+                        onPressed: ryo >= cost
+                            ? () {
+                                setState(() {
+                                  ryo -= cost;
+                                  switch (slot) {
+                                    case GearSlot.weapon: currentWeapon = currentWeapon.copyWith(isSoulbound: true); break;
+                                    case GearSlot.armor: currentArmor = currentArmor.copyWith(isSoulbound: true); break;
+                                    case GearSlot.helmet: currentHelmet = currentHelmet.copyWith(isSoulbound: true); break;
+                                    case GearSlot.boots: currentBoots = currentBoots.copyWith(isSoulbound: true); break;
+                                    case GearSlot.trinket: currentTrinket = currentTrinket.copyWith(isSoulbound: true); break;
+                                  }
+                                });
+                                _saveGameData();
+                                Navigator.pop(ctx);
+                                addLog('🈴 Zapieczętowano ${gear.name} (-$cost Ryo)!');
+                              }
+                            : null,
+                        child: const Text('Pieczęć', style: TextStyle(fontSize: 9)),
+                      ),
+                    );
+                  }),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Odejdź', style: TextStyle(color: Colors.grey))),
+        ],
+      ),
+    );
   }
 
   void _encounterWanderingSage() {
@@ -946,6 +1092,182 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     );
   }
 
+  void _openVillageMissionsDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setMissionState) {
+          final nextExam = shinobiExams.firstWhere(
+            (e) => e.targetRankIndex == passedRankIndex + 1,
+            orElse: () => shinobiExams.last,
+          );
+          final bool hasPendingExam = passedRankIndex < 5 && level >= nextExam.requiredLevel;
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF1A1816),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFFFB74D), width: 1.2)),
+            title: const Text('📜 Biuro Misji i Egzaminów', style: TextStyle(color: Color(0xFFFFB74D), fontWeight: FontWeight.bold)),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (passedRankIndex < 5) ...[
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: hasPendingExam ? const Color(0xFF2E1C0A) : const Color(0xFF141211),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: hasPendingExam ? const Color(0xFFFFD54F) : Colors.white12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('🥋 Egzamin na ${nextExam.rankTitle}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: hasPendingExam ? const Color(0xFFFFD54F) : Colors.white70)),
+                                Text('Wymaga: Lvl ${nextExam.requiredLevel}', style: const TextStyle(fontSize: 9, color: Colors.grey)),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text('Egzaminator: ${nextExam.examinerName} (${nextExam.examinerTitle})', style: const TextStyle(fontSize: 10, color: Colors.white70)),
+                            const SizedBox(height: 6),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: hasPendingExam ? const Color(0xFFE65100) : const Color(0xFF37474F),
+                                minimumSize: const Size(double.infinity, 30),
+                              ),
+                              onPressed: hasPendingExam
+                                  ? () {
+                                      Navigator.pop(ctx);
+                                      _startBattleWithEnemy(
+                                        EnemyTemplate(
+                                          name: nextExam.examinerName,
+                                          title: nextExam.examinerTitle,
+                                          baseHp: nextExam.hp,
+                                          baseAtk: nextExam.atk,
+                                          isBoss: true,
+                                        ),
+                                        isExamFight: true,
+                                        examTargetRank: nextExam.targetRankIndex,
+                                      );
+                                    }
+                                  : null,
+                              child: Text(hasPendingExam ? 'Rozpocznij Egzamin!' : 'Osiągnij Lvl ${nextExam.requiredLevel}', style: const TextStyle(fontSize: 10)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+
+                    const Text('Dostępne Zlecenia Hokage:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFFFFAB91))),
+                    const SizedBox(height: 6),
+
+                    if (activeMissionIndex != null)
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: const Color(0xFF141211), borderRadius: BorderRadius.circular(6), border: Border.all(color: const Color(0xFF69F0AE).withAlpha(140))),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Aktywna Misja: Ranga ${allMissionsPool[activeMissionIndex!].rank}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFFFFD54F))),
+                            Text(allMissionsPool[activeMissionIndex!].title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 4),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(3),
+                              child: LinearProgressIndicator(
+                                value: currentMissionKills / allMissionsPool[activeMissionIndex!].requiredKills,
+                                color: const Color(0xFF69F0AE),
+                                backgroundColor: Colors.white12,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text('Postęp: $currentMissionKills / ${allMissionsPool[activeMissionIndex!].requiredKills}', style: const TextStyle(fontSize: 10)),
+                            const SizedBox(height: 6),
+                            if (currentMissionKills >= allMissionsPool[activeMissionIndex!].requiredKills)
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2E7D32), minimumSize: const Size(double.infinity, 28)),
+                                onPressed: () {
+                                  final m = allMissionsPool[activeMissionIndex!];
+                                  setState(() {
+                                    ryo += m.rewardRyo;
+                                    completedMissionsHistory.add(m.id);
+                                    activeMissionIndex = null;
+                                    currentMissionKills = 0;
+                                  });
+                                  addExperience(m.rewardExp);
+                                  _saveGameData();
+                                  Navigator.pop(ctx);
+                                  addLog('🎖️ Sukces misji: ${m.title}! +${m.rewardRyo} Ryo, +${m.rewardExp} EXP');
+                                },
+                                child: const Text('Odbierz Nagrodę! 🎁', style: TextStyle(fontSize: 10)),
+                              )
+                            else
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    activeMissionIndex = null;
+                                    currentMissionKills = 0;
+                                  });
+                                  _saveGameData();
+                                  Navigator.pop(ctx);
+                                  addLog('❌ Porzucono zlecenie.');
+                                },
+                                child: const Text('Porzuć misję', style: TextStyle(color: Color(0xFFFF5252), fontSize: 10)),
+                              ),
+                          ],
+                        ),
+                      )
+                    else
+                      ...allMissionsPool.map((m) {
+                        final bool isUnlocked = passedRankIndex >= m.minRankIndex;
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 3),
+                          child: ListTile(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            leading: CircleAvatar(
+                              radius: 14,
+                              backgroundColor: isUnlocked ? const Color(0xFFE65100) : const Color(0xFF263238),
+                              child: Text(m.rank, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: isUnlocked ? Colors.white : Colors.white38)),
+                            ),
+                            title: Text(m.title, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isUnlocked ? Colors.white : Colors.white38)),
+                            subtitle: Text('Nagroda: ${m.rewardRyo} Ryo | +${m.rewardExp} EXP', style: const TextStyle(fontSize: 9, color: Colors.white60)),
+                            trailing: isUnlocked
+                                ? ElevatedButton(
+                                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), padding: const EdgeInsets.symmetric(horizontal: 8)),
+                                    onPressed: () {
+                                      setState(() {
+                                        activeMissionIndex = allMissionsPool.indexOf(m);
+                                        currentMissionKills = 0;
+                                      });
+                                      _saveGameData();
+                                      Navigator.pop(ctx);
+                                      addLog('📜 Przyjęto zlecenie: ${m.title}!');
+                                    },
+                                    child: const Text('Przyjmij', style: TextStyle(fontSize: 9)),
+                                  )
+                                : const Icon(Icons.lock, size: 16, color: Colors.grey),
+                          ),
+                        );
+                      }),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zamknij', style: TextStyle(color: Colors.grey))),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   void _openScrollsDialog() {
     showDialog(
       context: context,
@@ -1200,10 +1522,40 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     );
   }
 
-  void _startBattleWithEnemy(EnemyTemplate template, {bool isExamFight = false, int? examTargetRank}) {
-    int enemyMaxHp = template.baseHp;
+  void _startBattleWithEnemy(EnemyTemplate template, {EnemyPrefix forcePrefix = EnemyPrefix.normal, bool isExamFight = false, int? examTargetRank}) {
+    double hpMult = 1.0;
+    double atkMult = 1.0;
+    String prefixTitle = '';
+    Color prefixColor = const Color(0xFFFFA726);
+
+    if (!template.isBoss && !isExamFight) {
+      switch (forcePrefix) {
+        case EnemyPrefix.weak:
+          hpMult = 0.75;
+          atkMult = 0.8;
+          prefixTitle = 'Słaby ';
+          prefixColor = const Color(0xFFCFD8DC);
+          break;
+        case EnemyPrefix.normal:
+          hpMult = 1.0;
+          atkMult = 1.0;
+          prefixTitle = '';
+          prefixColor = const Color(0xFFFFA726);
+          break;
+        case EnemyPrefix.strong:
+          hpMult = 1.35;
+          atkMult = 1.25;
+          prefixTitle = 'Silny ⚠️ ';
+          prefixColor = const Color(0xFFFF5252);
+          break;
+      }
+    }
+
+    final int enemyMaxHp = (template.baseHp * hpMult).round();
+    final int enemyBaseAtk = (template.baseAtk * atkMult).round();
     int enemyHp = enemyMaxHp;
-    String initialMsg = template.isBoss ? '⚠️ BOSS: Pojawia się ${template.name}!' : 'Do walki staje: ${template.name}!';
+
+    String initialMsg = isExamFight ? '🥋 EGZAMIN: Egzaminator ${template.name} atakuje!' : (template.isBoss ? '⚠️ BOSS: Pojawia się ${template.name}!' : 'Z cienia atakuje $prefixTitle${template.name}!');
     List<String> battleLogHistory = [initialMsg];
     int burnTurns = 0;
     int burnDmg = 0;
@@ -1232,7 +1584,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                 return;
               }
 
-              final rawDmg = template.baseAtk + _rng.nextInt(4);
+              final rawDmg = enemyBaseAtk + _rng.nextInt(4);
               final dmg = max(2, rawDmg - (totalDefense ~/ 2));
 
               setState(() {
@@ -1243,7 +1595,12 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
               if (hp <= 0) {
                 Navigator.pop(ctx);
-                returnToVillage(fallenInBattle: true);
+                if (isExamFight) {
+                  setState(() => hp = 1);
+                  addLog('❌ Egzamin oblany!');
+                } else {
+                  returnToVillage(fallenInBattle: true);
+                }
               }
             }
 
@@ -1264,19 +1621,74 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
               if (enemyHp <= 0) {
                 Navigator.pop(ctx);
-                final rewardRyo = template.isBoss ? 80 : 15; // Zbalansowane Ryo z walk
+
+                if (isExamFight) {
+                  setState(() => passedRankIndex = examTargetRank!);
+                  addExperience(250);
+                  addLog('🏆 ZDANO EGZAMIN na rangę: $ninjaRank!');
+                  return;
+                }
+
+                final rewardRyo = template.isBoss ? 80 : 15;
                 final expGained = template.isBoss ? 35 : 10;
 
                 setState(() {
                   ryo += rewardRyo;
+                  if (activeMissionIndex != null) currentMissionKills++;
                 });
                 addExperience(expGained);
-                addLog('🏆 Zwycięstwo nad ${template.name}! +$rewardRyo Ryo, +$expGained EXP.');
+                addLog('🏆 Zwycięstwo nad ${prefixTitle}${template.name}! +$rewardRyo Ryo, +$expGained EXP.');
                 _findLoot(guaranteedBossDrop: template.isBoss);
               } else {
                 enemyTurn();
                 setBattleState(() {});
               }
+            }
+
+            void useBattleItem(Consumable item) {
+              if (useConsumable(item)) {
+                appendBattleLog('Użyto ${item.name}!');
+                enemyTurn();
+                setBattleState(() {});
+              } else {
+                appendBattleLog('Brak przedmiotów ${item.name}!');
+                setBattleState(() {});
+              }
+            }
+
+            void openCombatBagDialog() {
+              showDialog(
+                context: context,
+                builder: (bagCtx) => AlertDialog(
+                  backgroundColor: const Color(0xFF191716),
+                  title: const Text('🎒 Użyj zapasu w walce', style: TextStyle(color: Color(0xFFFFB74D), fontSize: 14)),
+                  content: SizedBox(
+                    width: double.maxFinite,
+                    child: bag.isEmpty
+                        ? const Text('Brak przedmiotów w plecaku!', style: TextStyle(fontSize: 11, color: Colors.white54))
+                        : ListView(
+                            shrinkWrap: true,
+                            children: bag.entries.map((entry) {
+                              final item = allConsumables.firstWhere((c) => c.id == entry.key);
+                              return ListTile(
+                                dense: true,
+                                leading: Text(item.icon),
+                                title: Text('${item.name} (x${entry.value})', style: const TextStyle(fontSize: 11)),
+                                trailing: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(horizontal: 8)),
+                                  onPressed: () {
+                                    Navigator.pop(bagCtx);
+                                    useBattleItem(item);
+                                    setBattleState(() {});
+                                  },
+                                  child: const Text('Użyj', style: TextStyle(fontSize: 9)),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                  ),
+                ),
+              );
             }
 
             return Container(
@@ -1288,14 +1700,13 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(template.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFFFF5252))),
+                      Text('$prefixTitle${template.name}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: prefixColor)),
                       Text('$enemyHp / $enemyMaxHp HP', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                     ],
                   ),
                   const SizedBox(height: 4),
                   LinearProgressIndicator(value: enemyHp / enemyMaxHp, color: const Color(0xFFEF5350), backgroundColor: Colors.white12, minHeight: 6),
                   const SizedBox(height: 8),
-                  // Własne HP i CP widoczne w walce
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -1305,7 +1716,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   ),
                   const SizedBox(height: 6),
                   Container(
-                    height: 100,
+                    height: 90,
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(color: const Color(0xFF0F0E0D), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.white12)),
                     child: ListView.builder(
@@ -1317,6 +1728,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     ),
                   ),
                   const Spacer(),
+                  // Jutsu ataki
                   Row(
                     children: equippedJutsu.map((jutsu) {
                       return Expanded(
@@ -1330,6 +1742,35 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                         ),
                       );
                     }).toList(),
+                  ),
+                  const SizedBox(height: 6),
+                  // Ergonomiczne przyciski kciukowe na dole (Plecak / Ucieczka)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(vertical: 10)),
+                          onPressed: openCombatBagDialog,
+                          child: const Text('🎒 Plecak w walce', style: TextStyle(fontSize: 11)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF37474F), padding: const EdgeInsets.symmetric(vertical: 10)),
+                          onPressed: () {
+                            if (template.isBoss || isExamFight) {
+                              appendBattleLog('Nie można uciec z tej walki!');
+                              setBattleState(() {});
+                              return;
+                            }
+                            Navigator.pop(ctx);
+                            addLog('💨 Ucieczka z pola walki!');
+                          },
+                          child: const Text('💨 Ucieczka', style: TextStyle(fontSize: 11)),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -1362,19 +1803,31 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       rarity = ItemRarity.rare;
     } else {
       final roll = _rng.nextInt(100);
-      if (roll > 85) rarity = ItemRarity.rare; // Zbalansowany niższy drop rate rzadkich itemów
+      if (roll > 95) {
+        rarity = ItemRarity.legendary;
+      } else if (roll > 82) {
+        rarity = ItemRarity.epic;
+      } else if (roll > 60) {
+        rarity = ItemRarity.rare;
+      }
     }
 
     final arch = standardArchetypesPool.where((a) => a.slot == slot).toList();
     final chosen = arch[_rng.nextInt(arch.length)];
-    String prefix = rarity == ItemRarity.rare ? 'Mistrzowski ' : '';
+    
+    String prefix = '';
+    if (rarity == ItemRarity.rare) prefix = 'Mistrzowski ';
+    if (rarity == ItemRarity.epic) prefix = 'Pradawny ';
+    if (rarity == ItemRarity.legendary) prefix = 'Legendarny ';
+
+    int bonusAttr = rarity.index;
 
     return NinjaGear(
       name: '$prefix${chosen.baseName}',
       rarity: rarity,
       baseStat: chosen.baseStat + (rarity.index * 3) + _rng.nextInt(2),
-      bonusEffect: rarity != ItemRarity.common ? 'Precyzja' : 'Brak',
-      bonusValue: rarity != ItemRarity.common ? 3 : 0,
+      bonusEffect: bonusAttr > 0 ? 'MocŻywiołu' : 'Brak',
+      bonusValue: bonusAttr,
       setGroup: chosen.setGroup,
       isSoulbound: false,
     );
@@ -1383,6 +1836,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
   void _showEquipDialog({required NinjaGear newGear, required NinjaGear currentGear, required GearSlot slot}) {
     String slotName = slot == GearSlot.weapon ? 'Broń' : (slot == GearSlot.armor ? 'Pancerz' : (slot == GearSlot.helmet ? 'Głowa' : (slot == GearSlot.boots ? 'Buty' : 'Talizman')));
     int diff = newGear.effectiveStat - currentGear.effectiveStat;
+    String diffText = diff > 0 ? '+$diff' : '$diff';
+    Color diffColor = diff > 0 ? const Color(0xFF69F0AE) : (diff < 0 ? const Color(0xFFFF5252) : Colors.grey);
 
     showDialog(
       context: context,
@@ -1400,7 +1855,14 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('NOWY: ${newGear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, color: newGear.color)),
-                  Text('Moc: +${newGear.effectiveStat} (${diff >= 0 ? "+$diff" : "$diff"})', style: const TextStyle(fontSize: 11)),
+                  Row(
+                    children: [
+                      Text('Moc: +${newGear.effectiveStat} ', style: const TextStyle(fontSize: 11)),
+                      Text('($diffText)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: diffColor)),
+                    ],
+                  ),
+                  if (newGear.bonusValue > 0)
+                    Text('Atuty: +${newGear.bonusValue} dodatkowych statystyk', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
                 ],
               ),
             ),
@@ -1462,6 +1924,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
             Text('Rzadkość: ${gear.rarityLabel}', style: TextStyle(color: gear.color, fontSize: 12)),
             const SizedBox(height: 4),
             Text('Moc: +${gear.effectiveStat}', style: const TextStyle(fontSize: 12)),
+            if (gear.bonusValue > 0)
+              Text('Dodatkowe atuty: +${gear.bonusValue}', style: const TextStyle(fontSize: 11, color: Color(0xFFFFD54F))),
             const SizedBox(height: 6),
             Text(gear.isSoulbound ? '📜 Przedmiot zapieczętowany (bezpieczny)' : '⚠️ Przedmiot niezabezpieczony', style: TextStyle(fontSize: 10, color: gear.isSoulbound ? const Color(0xFF69F0AE) : const Color(0xFFFF5252))),
           ],
@@ -1545,7 +2009,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _badge('Ranga', 'Lvl $level', rankColor),
+                      _badge('Ranga', 'Lvl $level ($ninjaRank)', rankColor),
+                      _badge('EXP', '$ninjaExp / $expForNextLevel', const Color(0xFF80D8FF)),
                       _badge('HP', '$hp/$maxHp', const Color(0xFF69F0AE)),
                       _badge('CP', '$chakra/$maxChakra', const Color(0xFF40C4FF)),
                       _badge('Ryo', '$ryo', const Color(0xFFFFD54F)),
@@ -1596,7 +2061,15 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       children: [
                         Expanded(
                           child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C)),
+                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF5D4037), padding: const EdgeInsets.symmetric(vertical: 10)),
+                            onPressed: _openVillageMissionsDialog,
+                            child: const Text('📜 Biuro Misji', style: TextStyle(fontSize: 11)),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(vertical: 10)),
                             onPressed: _openBagDialog,
                             child: Text('🎒 Plecak ($totalItemsInBag)', style: const TextStyle(fontSize: 11)),
                           ),
@@ -1604,7 +2077,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                         const SizedBox(width: 6),
                         Expanded(
                           child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0)),
+                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), padding: const EdgeInsets.symmetric(vertical: 10)),
                             onPressed: _openScrollsDialog,
                             child: Text('📜 Zwoje (${equippedJutsu.length}/3)', style: const TextStyle(fontSize: 11)),
                           ),
@@ -1657,24 +2130,34 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                 ),
               ),
               const Spacer(),
+              // Ergonomiczne przyciski kciukowe na dole podczas eksploracji
               Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
+                padding: const EdgeInsets.all(12),
+                child: Row(
                   children: [
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
+                    Expanded(
                       child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100)),
-                        onPressed: proceedExploration,
-                        child: const Text('Zbadaj teren / Idź naprzód 🌲', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(vertical: 12)),
+                        onPressed: _openBagDialog,
+                        child: const Text('🎒 Plecak', style: TextStyle(fontSize: 11)),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20)),
-                      onPressed: returnToVillage,
-                      child: const Text('Powrót do Wioski'),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), padding: const EdgeInsets.symmetric(vertical: 12)),
+                        onPressed: proceedExploration,
+                        child: const Text('Idź naprzód 🌲', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20), padding: const EdgeInsets.symmetric(vertical: 12)),
+                        onPressed: returnToVillage,
+                        child: const Text('Powrót', style: TextStyle(fontSize: 11)),
+                      ),
                     ),
                   ],
                 ),
