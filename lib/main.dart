@@ -639,7 +639,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     }
   }
 
-    void _encounterWanderingMerchant() {
+      void _encounterWanderingMerchant() {
     addLog('💰 Spotkano Wędrownego Kupca na szlaku!');
     showDialog(
       context: context,
@@ -661,7 +661,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('„Witaj wędrowcze! Skupuję rzadki sprzęt, którego już nie używasz. Płacę znacznie lepiej niż systemowe złomowanie (aż 70% wartości rynkowej)!”', style: TextStyle(fontSize: 11, color: Colors.white70, fontStyle: FontStyle.italic)),
+                    const Text('„Witaj wędrowcze! Skupuję rzadki sprzęt z Twojego plecaka po okazyjnej cenie (70% wartości rynkowej).”', style: TextStyle(fontSize: 11, color: Colors.white70, fontStyle: FontStyle.italic)),
                     const SizedBox(height: 14),
                     if (equipmentStash.isEmpty)
                       const Padding(
@@ -702,7 +702,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                 ),
                                 onPressed: () {
                                   setState(() {
-                                    ryo += premiumPrice;
+                                    ryo += premiumPrice; // Prawidłowe dodawanie Ryo za sprzedaż
                                     equipmentStash.remove(gear);
                                   });
                                   _saveGameData();
@@ -720,43 +720,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               ),
             ),
             actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Odejdź', style: TextStyle(color: Colors.grey)))],
-          );
-        },
-      ),
-    );
-  }
-
-                    const Divider(color: Colors.white12),
-                    const Text('Materiały i Klucze:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFFD54F))),
-                    const SizedBox(height: 6),
-                    ListTile(
-                      dense: true,
-                      leading: const Text('🗝️', style: TextStyle(fontSize: 20)),
-                      title: const Text('Klucz do Lochów', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                      subtitle: const Text('Cena: 600 Ryo', style: TextStyle(fontSize: 10, color: Colors.white60)),
-                      trailing: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7B1FA2), padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4)),
-                        onPressed: () {
-                          if (ryo < 600) {
-                            showActionBlockedMessage('💰 Za mało Ryo!');
-                            return;
-                          }
-                          setState(() {
-                            ryo -= 600;
-                            craftingBag[matDungeonKey] = (craftingBag[matDungeonKey] ?? 0) + 1;
-                          });
-                          _saveGameData();
-                          setMerchantState(() {});
-                          addLog('🛒 Kupiono Klucz do Lochów od kupca.');
-                        },
-                        child: const Text('Kup', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zakończ handel', style: TextStyle(color: Colors.grey)))],
           );
         },
       ),
