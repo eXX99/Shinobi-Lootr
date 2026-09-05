@@ -1263,12 +1263,37 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
   void _showEquipDialog({required NinjaGear newGear, required NinjaGear currentGear, required GearSlot slot}) {
     String slotName;
+    String statType;
     switch (slot) {
-      case GearSlot.weapon: slotName = 'Broń'; break;
-      case GearSlot.armor: slotName = 'Pancerz'; break;
-      case GearSlot.helmet: slotName = 'Głowa'; break;
-      case GearSlot.boots: slotName = 'Buty'; break;
-      case GearSlot.trinket: slotName = 'Talizman'; break;
+      case GearSlot.weapon: slotName = 'Broń'; statType = 'Atak'; break;
+      case GearSlot.armor: slotName = 'Pancerz'; statType = 'Obrona'; break;
+      case GearSlot.helmet: slotName = 'Głowa'; statType = 'Obrona'; break;
+      case GearSlot.boots: slotName = 'Buty'; statType = 'Obrona'; break;
+      case GearSlot.trinket: slotName = 'Talizman'; statType = 'Moc'; break;
+    }
+
+    final int diff = newGear.effectiveStat - currentGear.effectiveStat;
+    final String diffSign = diff > 0 ? '+$diff' : '$diff';
+    final Color diffColor = diff > 0 ? const Color(0xFF69F0AE) : (diff < 0 ? const Color(0xFFFF5252) : Colors.grey);
+
+    void equipNew() {
+      setState(() {
+        switch (slot) {
+          case GearSlot.weapon: currentWeapon = newGear; break;
+          case GearSlot.armor: currentArmor = newGear; break;
+          case GearSlot.helmet: currentHelmet = newGear; break;
+          case GearSlot.boots: currentBoots = newGear; break;
+          case GearSlot.trinket: currentTrinket = newGear; break;
+        }
+      });
+      _saveGameData();
+      Navigator.pop(context);
+      addLog('✨ Założono: ${newGear.displayName}!');
+    }
+
+    void keepOld() {
+      Navigator.pop(context);
+      addLog('Odrzucono: ${newGear.displayName}.');
     }
 
     showDialog(
@@ -1277,62 +1302,84 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF191716),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFFF8A65), width: 1.2)),
-        title: Text('Odnaleziono: $slotName!', style: const TextStyle(color: Color(0xFFFFB74D), fontSize: 16, fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: const Color(0xFF141211), borderRadius: BorderRadius.circular(8), border: Border.all(color: newGear.color)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('NOWY: ${newGear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, color: newGear.color, fontSize: 12)),
-                  Text('Moc: +${newGear.effectiveStat}', style: const TextStyle(fontSize: 11, color: Colors.white)),
-                ],
+        title: Text('Odnaleziono: $slotName!', style: const TextStyle(color: Color(0xFFFFB74D), fontSize: 18, fontWeight: FontWeight.bold)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: equipNew,
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF141211),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: newGear.color.withAlpha(200), width: 1.5),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('NOWY PRZEDMIOT', style: TextStyle(fontSize: 10, color: newGear.color, fontWeight: FontWeight.bold)),
+                            Text(newGear.rarityLabel, style: TextStyle(fontSize: 9, color: newGear.color)),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(newGear.displayName, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: newGear.color)),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text('$statType: +${newGear.effectiveStat} ', style: const TextStyle(fontSize: 12, color: Colors.white)),
+                            Text('($diffSign)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: diffColor)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: const Color(0xFF141211), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.white24)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('POSIADANY: ${currentGear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, color: currentGear.color, fontSize: 12)),
-                  Text('Moc: +${currentGear.effectiveStat}', style: const TextStyle(fontSize: 11, color: Colors.white70)),
-                ],
+              const SizedBox(height: 12),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: keepOld,
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF141211),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: currentGear.color.withAlpha(120), width: 1.0),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('AKTUALNIE ZAŁOŻONY', style: TextStyle(fontSize: 10, color: Colors.white54, fontWeight: FontWeight.bold)),
+                            Text(currentGear.rarityLabel, style: TextStyle(fontSize: 9, color: currentGear.color)),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(currentGear.displayName, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: currentGear.color)),
+                        const SizedBox(height: 4),
+                        Text('$statType: +${currentGear.effectiveStat}', style: const TextStyle(fontSize: 12, color: Colors.white70)),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              addLog('Odrzucono: ${newGear.displayName}.');
-            },
-            child: const Text('Odrzuć', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100)),
-            onPressed: () {
-              setState(() {
-                switch (slot) {
-                  case GearSlot.weapon: currentWeapon = newGear; break;
-                  case GearSlot.armor: currentArmor = newGear; break;
-                  case GearSlot.helmet: currentHelmet = newGear; break;
-                  case GearSlot.boots: currentBoots = newGear; break;
-                  case GearSlot.trinket: currentTrinket = newGear; break;
-                }
-              });
-              _saveGameData();
-              Navigator.pop(ctx);
-              addLog('✨ Założono nowy element: ${newGear.displayName}!');
-            },
-            child: const Text('Załóż'),
-          ),
-        ],
       ),
     );
   }
