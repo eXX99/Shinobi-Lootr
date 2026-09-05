@@ -11,6 +11,79 @@ enum GearSlot { weapon, armor, helmet, boots, trinket }
 enum JutsuEffect { none, burn, freeze, stun, lifesteal, shock }
 enum EnemyPrefix { weak, normal, strong }
 
+/// Indywidualne grafiki wszystkich przedmiotów wyposażenia.
+const Map<String, String> gearAssetPaths = {
+  'Standardowy Kunai': 'assets/items/weapon/kunai_standardowy.png',
+  'Składany Shuriken Fūma': 'assets/items/weapon/shuriken_fuma.png',
+  'Igły Senbon z Ame': 'assets/items/weapon/senbon_ame.png',
+  'Krótki Miecz Tanto ANBU': 'assets/items/weapon/tanto_anbu.png',
+  'Kastety ze stali czakry': 'assets/items/weapon/kastety_czakry.png',
+  'Dmuchawka z Amegakure': 'assets/items/weapon/dmuchawka_amegakure.png',
+  'Włócznia Skalnego Posterunku': 'assets/items/weapon/wlocznia_iwa.png',
+  'Bliźniacze Tasaki Kiri': 'assets/items/weapon/tasaki_kiri.png',
+  'Łuk Pajęczej Nici': 'assets/items/weapon/luk_pajeczej_nici.png',
+  'Ostrza Czakry Asumy': 'assets/items/weapon/ostrza_czakry_asumy.png',
+  'Żelazny Wachlarz Piasku': 'assets/items/weapon/wachlarz_pustyni.png',
+  'Kościane Ostrze Yanagi': 'assets/items/weapon/ostrze_yanagi.png',
+  'Żelazne Szpony Taijutsu': 'assets/items/weapon/szpony_taijutsu.png',
+  'Krótki Miecz Chidorigatana': 'assets/items/weapon/chidorigatana.png',
+  'Szata Treningowa Genina': 'assets/items/armor/szata_genina.png',
+  'Ochraniacz Klatki Liścia': 'assets/items/armor/kamizelka_liscia.png',
+  'Skórzana Zbroja Pustyni': 'assets/items/armor/zbroja_pustyni.png',
+  'Mundur Bojowy Iwagakure': 'assets/items/armor/mundur_iwa.png',
+  'Kamizelka Jonina Konohy': 'assets/items/armor/kamizelka_jonina.png',
+  'Elitarny Napierśnik ANBU': 'assets/items/armor/napiernik_anbu.png',
+  'Pancerz Bojowy Kumogakure': 'assets/items/armor/pancerz_kumo.png',
+  'Szata Pustelnika Myōboku': 'assets/items/armor/szata_myoboku.png',
+  'Zbroja Samuraja Żelaza': 'assets/items/armor/zbroja_samuraja.png',
+  'Ochraniacz Czołowy Protektor': 'assets/items/helmet/protektor_czolowy.png',
+  'Maska Oddechowa Amegakure': 'assets/items/helmet/maska_amegakure.png',
+  'Porcelanowa Maska Lisa ANBU': 'assets/items/helmet/maska_lisa_anbu.png',
+  'Bandaże Cichego Zabójcy': 'assets/items/helmet/bandaze_zabojcy.png',
+  'Tradycyjny Kapelusz Kage': 'assets/items/helmet/kapelusz_kage.png',
+  'Standardowe Sandały Shinobi': 'assets/items/boots/sandaly_shinobi.png',
+  'Wyciszone Mokasyny ANBU': 'assets/items/boots/mokasyny_anbu.png',
+  'Ciężarki Treningowe na Kostki': 'assets/items/boots/ciezarki_kostki.png',
+  'Drewniane Geta Żabiego Mędrca': 'assets/items/boots/geta_zabiego_medrca.png',
+  'Amulet Ochronny z Liścia': 'assets/items/trinket/amulet_liscia.png',
+  'Dzwonki Przetrwania Jonina': 'assets/items/trinket/dzwonki_jonina.png',
+  'Koraliki Modlitewne Mnicha': 'assets/items/trinket/koraliki_mnicha.png',
+  'Pieczęć Skupienia Czakry': 'assets/items/trinket/pieczec_czakry.png',
+  'Miecz Totsuka (Sakegari)': 'assets/items/weapon/totsuka.png',
+  'Miecz Kusanagi Orochimaru': 'assets/items/weapon/kusanagi_orochimaru.png',
+  'Samehada (Żarłacz Kisame)': 'assets/items/weapon/samehada.png',
+  'Wojenny Wachlarz Gunbai Madary': 'assets/items/weapon/gunbai_madara.png',
+  'Miecz Nunoboko Hagoromo': 'assets/items/weapon/nunoboko.png',
+  'Klatka Żebrowa Susanoo': 'assets/items/armor/susanoo_klatka.png',
+  'Pancerz Ostatecznego Susanoo': 'assets/items/armor/susanoo_pancerz.png',
+  'Szata Mędrca Sześciu Ścieżek': 'assets/items/armor/szata_rikudo.png',
+  'Maska Jednoocznego Wiru (Obito)': 'assets/items/helmet/maska_obito.png',
+  'Korona Rogatej Bogini Kaguya': 'assets/items/helmet/korona_kaguya.png',
+  'Obuwie Żółtego Błysku (Hiraishin)': 'assets/items/boots/obuwie_hiraishin.png',
+  'Lewitujące Płyty Rikudō': 'assets/items/boots/plyty_rikudo.png',
+  'Naszyjnik Pierwszego Hokage': 'assets/items/trinket/naszyjnik_hashirama.png',
+  'Pierścień Akatsuki (Zero)': 'assets/items/trinket/pierscien_akatsuki_zero.png',
+  'Złota Moneta Tsunade': 'assets/items/trinket/moneta_tsunade.png',
+  // Starter broni ma inną nazwę niż archetyp Standardowy Kunai.
+  'Podstawowy Kunai': 'assets/items/weapon/kunai_standardowy.png',
+};
+
+String gearAssetPathForName(String name) {
+  final directPath = gearAssetPaths[name];
+  if (directPath != null) return directPath;
+
+  const rarityPrefixes = ['Zwykły ', 'Mistrzowski ', 'Pradawny '];
+  for (final prefix in rarityPrefixes) {
+    if (name.startsWith(prefix)) {
+      final baseName = name.substring(prefix.length);
+      final basePath = gearAssetPaths[baseName];
+      if (basePath != null) return basePath;
+    }
+  }
+
+  return 'assets/items/placeholder.png';
+}
+
 const String matIronOre = 'mat_iron_ore';
 const String matSteel = 'mat_steel';
 const String matCrystal = 'mat_crystal';
@@ -177,6 +250,7 @@ class NinjaGear {
 
   int get effectiveStat => baseStat + (upgradeLevel * (2 + rarity.index));
   String get displayName => upgradeLevel > 0 ? '$name +$upgradeLevel' : name;
+  String get assetPath => gearAssetPathForName(name);
 
   Map<String, dynamic> toJson() => {
         'name': name,
@@ -918,6 +992,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                         return ListTile(
                           dense: true,
                           contentPadding: EdgeInsets.zero,
+                          leading: _gearImage(gear, size: 42),
                           title: Text('$slotName: ${gear.displayName}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: gear.color)),
                           subtitle: Text('Koszt: $cost Ryo', style: const TextStyle(fontSize: 9, color: Color(0xFFFFD54F))),
                           trailing: ElevatedButton(
@@ -2066,35 +2141,44 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: newGear.color.withAlpha(200), width: 1.5),
                     ),
-                    child: Column(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('NOWY PRZEDMIOT', style: TextStyle(fontSize: 10, color: newGear.color, fontWeight: FontWeight.bold)),
-                            Text(newGear.rarityLabel, style: TextStyle(fontSize: 9, color: newGear.color)),
-                          ],
+                        _gearImage(newGear, size: 68),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('NOWY PRZEDMIOT', style: TextStyle(fontSize: 10, color: newGear.color, fontWeight: FontWeight.bold)),
+                                  Text(newGear.rarityLabel, style: TextStyle(fontSize: 9, color: newGear.color)),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(newGear.displayName, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: newGear.color)),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Text('$statType: +${newGear.effectiveStat} ', style: const TextStyle(fontSize: 12, color: Colors.white)),
+                                  Text('($diffSign)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: diffColor)),
+                                ],
+                              ),
+                              if (newGear.bonusEffect != 'Brak') ...[
+                                const SizedBox(height: 3),
+                                Text('✦ Właściwość: ${newGear.bonusEffect} (+${newGear.bonusValue})', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F), fontWeight: FontWeight.w600)),
+                              ],
+                              if (newGear.setGroup != 'none') ...[
+                                const SizedBox(height: 2),
+                                Text('⚡ Zestaw: ${newGear.setGroup.toUpperCase()}', style: const TextStyle(fontSize: 9, color: Color(0xFF80DEEA))),
+                              ],
+                              const SizedBox(height: 6),
+                              const Text('⚠️ Przepada po powrocie', style: TextStyle(fontSize: 9, color: Color(0xFFFF5252))),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(newGear.displayName, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: newGear.color)),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text('$statType: +${newGear.effectiveStat} ', style: const TextStyle(fontSize: 12, color: Colors.white)),
-                            Text('($diffSign)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: diffColor)),
-                          ],
-                        ),
-                        if (newGear.bonusEffect != 'Brak') ...[
-                          const SizedBox(height: 3),
-                          Text('✦ Właściwość: ${newGear.bonusEffect} (+${newGear.bonusValue})', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F), fontWeight: FontWeight.w600)),
-                        ],
-                        if (newGear.setGroup != 'none') ...[
-                          const SizedBox(height: 2),
-                          Text('⚡ Zestaw: ${newGear.setGroup.toUpperCase()}', style: const TextStyle(fontSize: 9, color: Color(0xFF80DEEA))),
-                        ],
-                        const SizedBox(height: 6),
-                        const Text('⚠️ Przepada po powrocie', style: TextStyle(fontSize: 9, color: Color(0xFFFF5252))),
                       ],
                     ),
                   ),
@@ -2121,32 +2205,41 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                         width: currentGear.isSoulbound ? 1.5 : 1.0,
                       ),
                     ),
-                    child: Column(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('AKTUALNIE ZAŁOŻONY', style: TextStyle(fontSize: 10, color: Colors.white54, fontWeight: FontWeight.bold)),
-                            Text(currentGear.rarityLabel, style: TextStyle(fontSize: 9, color: currentGear.color)),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(currentGear.displayName, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: currentGear.color)),
-                        const SizedBox(height: 4),
-                        Text('$statType: +${currentGear.effectiveStat}', style: const TextStyle(fontSize: 12, color: Colors.white70)),
-                        if (currentGear.bonusEffect != 'Brak') ...[
-                          const SizedBox(height: 3),
-                          Text('✦ Właściwość: ${currentGear.bonusEffect} (+${currentGear.bonusValue})', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F), fontWeight: FontWeight.w600)),
-                        ],
-                        if (currentGear.setGroup != 'none') ...[
-                          const SizedBox(height: 2),
-                          Text('⚡ Zestaw: ${currentGear.setGroup.toUpperCase()}', style: const TextStyle(fontSize: 9, color: Color(0xFF80DEEA))),
-                        ],
-                        const SizedBox(height: 6),
-                        Text(
-                          currentGear.isSoulbound ? '📜 Zapieczętowany (Bezpieczny)' : '⚠️ Niezabezpieczony',
-                          style: TextStyle(fontSize: 9, color: currentGear.isSoulbound ? const Color(0xFF69F0AE) : const Color(0xFFFF5252)),
+                        _gearImage(currentGear, size: 68),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('AKTUALNIE ZAŁOŻONY', style: TextStyle(fontSize: 10, color: Colors.white54, fontWeight: FontWeight.bold)),
+                                  Text(currentGear.rarityLabel, style: TextStyle(fontSize: 9, color: currentGear.color)),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(currentGear.displayName, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: currentGear.color)),
+                              const SizedBox(height: 4),
+                              Text('$statType: +${currentGear.effectiveStat}', style: const TextStyle(fontSize: 12, color: Colors.white70)),
+                              if (currentGear.bonusEffect != 'Brak') ...[
+                                const SizedBox(height: 3),
+                                Text('✦ Właściwość: ${currentGear.bonusEffect} (+${currentGear.bonusValue})', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F), fontWeight: FontWeight.w600)),
+                              ],
+                              if (currentGear.setGroup != 'none') ...[
+                                const SizedBox(height: 2),
+                                Text('⚡ Zestaw: ${currentGear.setGroup.toUpperCase()}', style: const TextStyle(fontSize: 9, color: Color(0xFF80DEEA))),
+                              ],
+                              const SizedBox(height: 6),
+                              Text(
+                                currentGear.isSoulbound ? '📜 Zapieczętowany (Bezpieczny)' : '⚠️ Niezabezpieczony',
+                                style: TextStyle(fontSize: 9, color: currentGear.isSoulbound ? const Color(0xFF69F0AE) : const Color(0xFFFF5252)),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -2180,6 +2273,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Center(child: _gearImage(gear, size: 104)),
+            const SizedBox(height: 10),
             Text('Rzadkość: ${gear.rarityLabel}', style: TextStyle(color: gear.color, fontSize: 12, fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             Text('$statType: +${gear.effectiveStat} (Bazowo: ${gear.baseStat} + ${gear.effectiveStat - gear.baseStat} z kucia)', style: const TextStyle(fontSize: 12, color: Colors.white70)),
@@ -2956,6 +3051,48 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     );
   }
 
+  Widget _gearImage(NinjaGear gear, {double size = 54}) {
+    return Container(
+      width: size,
+      height: size,
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: Colors.black38,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: gear.color.withAlpha(180),
+          width: gear.rarity == ItemRarity.legendary ? 1.8 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: gear.color.withAlpha(gear.rarity == ItemRarity.legendary ? 70 : 35),
+            blurRadius: gear.rarity == ItemRarity.legendary ? 12 : 7,
+            spreadRadius: gear.rarity == ItemRarity.legendary ? 1 : 0,
+          ),
+        ],
+      ),
+      child: Image.asset(
+        gear.assetPath,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => Icon(
+          _fallbackGearIcon(gear),
+          color: gear.color.withAlpha(220),
+          size: size * 0.52,
+        ),
+      ),
+    );
+  }
+
+  IconData _fallbackGearIcon(NinjaGear gear) {
+    final path = gear.assetPath;
+    if (path.contains('/weapon/')) return Icons.gavel;
+    if (path.contains('/armor/')) return Icons.shield;
+    if (path.contains('/helmet/')) return Icons.security;
+    if (path.contains('/boots/')) return Icons.directions_walk;
+    if (path.contains('/trinket/')) return Icons.auto_awesome;
+    return Icons.inventory_2;
+  }
+
   Widget _itemCard(String slot, NinjaGear item, String statText) {
     return Expanded(
       child: Material(
@@ -2980,10 +3117,16 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                 ),
               ],
             ),
-            child: Column(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                _gearImage(item, size: 46),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
@@ -2997,15 +3140,18 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     if (item.isSoulbound) const Text(' 📜', style: TextStyle(fontSize: 10)),
                   ],
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(statText, style: const TextStyle(fontSize: 9, color: Colors.white70)),
-                    Text(
-                      item.isSoulbound ? 'Zapieczętowany' : '⚠️ Przepada',
-                      style: TextStyle(fontSize: 8, color: item.isSoulbound ? const Color(0xFF69F0AE) : const Color(0xFFFF5252)),
-                    ),
-                  ],
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(statText, style: const TextStyle(fontSize: 9, color: Colors.white70)),
+                          Text(
+                            item.isSoulbound ? 'Zapieczętowany' : '⚠️ Przepada',
+                            style: TextStyle(fontSize: 8, color: item.isSoulbound ? const Color(0xFF69F0AE) : const Color(0xFFFF5252)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
