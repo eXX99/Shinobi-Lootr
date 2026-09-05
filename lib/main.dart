@@ -2250,789 +2250,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     );
   }
 
-  void _showStatsDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF191311),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFFFB74D), width: 1.2)),
-        title: Row(
-          children: [
-            const Text('🥋 ', style: TextStyle(fontSize: 22)),
-            Expanded(child: Text('Statystyki ($ninjaRank)', style: TextStyle(color: rankColor, fontSize: 15, fontWeight: FontWeight.bold))),
-          ],
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _statPopupRow('Poziom Ninja', '$level (EXP: $ninjaExp / $expForNextLevel)', const Color(0xFF80D8FF)),
-              _statPopupRow('Punkty Życia (HP)', '$hp / $maxHp (Baza: $baseMaxHp, Rynsztunek: +${sumAffix(AffixType.bonusHp)})', const Color(0xFF69F0AE)),
-              _statPopupRow('Czakra (CP)', '$chakra / $maxChakra (Baza: $baseMaxChakra, Rynsztunek: +${sumAffix(AffixType.bonusChakra)})', const Color(0xFF40C4FF)),
-              const Divider(color: Colors.white12),
-              _statPopupRow('Łączny Atak', '$totalAttack (Rynsztunek + Poziom)', const Color(0xFFFF8A65)),
-              _statPopupRow('Łączna Obrona', '$totalDefense', const Color(0xFFB0BEC5)),
-              _statPopupRow('Szansa na Krytyk', '$totalCritRate%', const Color(0xFFFF5252)),
-              _statPopupRow('Unik (Kawarimi)', '$totalDodgeRate%', const Color(0xFFFFD54F)),
-              _statPopupRow('Przebicie Pancerza', '$totalArmorPierce%', const Color(0xFFBA68C8)),
-              _statPopupRow('Kradzież Życia (Lifesteal)', '$totalLifeSteal%', const Color(0xFFE91E63)),
-              _statPopupRow('Regeneracja HP/turę', '+$totalHpRegen HP', const Color(0xFF81C784)),
-              _statPopupRow('Regeneracja CP/turę', '+$totalChakraRegen CP', const Color(0xFF4FC3F7)),
-            ],
-          ),
-        ),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zamknij', style: TextStyle(color: Colors.grey)))],
-      ),
-    );
-  }
-
-  Widget _statPopupRow(String label, String value, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 12, color: Colors.white70)),
-          Text(value, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color)),
-        ],
-      ),
-    );
-  }
-
-  void _startBattleWithEnemy(EnemyTemplate template, {EnemyPrefix forcePrefix = EnemyPrefix.normal, bool isExamFight = false, int? examTargetRank, String? dungeonBossSetGroup}) {
-    double hpMult = 1.0;
-    double atkMult = 1.0;
-    String prefixTitle = '';
-    Color prefixColor = const Color(0xFFFFA726);
-
-    int enemyCrit = template.critRate;
-    int enemyDodge = template.dodgeRate;
-    int enemyPierce = template.armorPierce;
-    int enemyBlock = template.flatBlock;
-
-    if (!template.isBoss && !isExamFight) {
-      switch (forcePrefix) {
-        case EnemyPrefix.weak:
-          hpMult = 0.75;
-          atkMult = 0.8;
-          prefixTitle = 'Słaby ';
-          prefixColor = const Color(0xFFCFD8DC);
-          break;
-        case EnemyPrefix.normal:
-          hpMult = 1.0;
-          atkMult = 1.0;
-          prefixTitle = '';
-          prefixColor = const Color(0xFFFFA726);
-          break;
-        case EnemyPrefix.strong:
-          hpMult = 1.35;
-          atkMult = 1.25;
-          prefixTitle = 'Silny ⚠️ ';
-          prefixColor = const Color(0xFFFF5252);
-          enemyCrit += 8;
-          enemyDodge += 5;
-          enemyPierce += 10;
-          enemyBlock += 3;
-          break;
-      }
-    }
-
-    int scaledHp = template.baseHp;
-    int scaledAtk = template.baseAtk;
-
-    if (isExamFight) {
-      int minExamHp = (totalAttack * 4).round();
-      scaledHp = max(template.baseHp + (level * 28), minExamHp);
-      scaledAtk = max(template.baseAtk + (level * 2), (totalDefense * 0.7).round() + 6);
-    } else if (template.isBoss) {
-      scaledHp = (template.baseHp * (1.0 + (level * 0.09))).round();
-      scaledAtk = (template.baseAtk * (1.0 + (level * 0.05))).round();
-    } else {
-      scaledHp = (template.baseHp * (1.0 + (level * 0.06))).round();
-      scaledAtk = (template.baseAtk * (1.0 + (level * 0.04))).round();
-    }
-
-    final int enemyMaxHp = (scaledHp * hpMult).round();
-    final int enemyBaseAtk = (scaledAtk * atkMult).round();
-    int enemyHp = enemyMaxHp;
-
-    String initialMsg = isExamFight ? '🥋 EGZAMIN: Egzaminator ${template.name} atakuje!' : (template.isBoss ? '⚠️ BOSS: Pojawia się ${template.name}!' : 'Z cienia atakuje $prefixTitle${template.name}!');
-    List<String> battleLogHistory = [initialMsg];
-    int frozenTurns = 0;
-
-    showModalBottomSheet(
-      context: context,
-      isDismissible: false,
-      enableDrag: false,
-      backgroundColor: const Color(0xFF141211),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setBattleState) {
-            void appendBattleLog(String line) {
-              battleLogHistory.insert(0, line);
-              if (battleLogHistory.length > 8) battleLogHistory.removeLast();
-            }
-
-            void applyTurnRegen() {
-              if (totalHpRegen > 0) {
-                setState(() => hp = min(maxHp, hp + totalHpRegen));
-                appendBattleLog('💚 Regeneracja: +$totalHpRegen HP.');
-              }
-              if (totalChakraRegen > 0) {
-                setState(() => chakra = min(maxChakra, chakra + totalChakraRegen));
-                appendBattleLog('🌀 Regeneracja: +$totalChakraRegen CP.');
-              }
-            }
-
-            void enemyTurn() {
-              if (enemyHp <= 0) return;
-              if (frozenTurns > 0) {
-                frozenTurns--;
-                appendBattleLog('❄️ ${template.name} jest unieruchomiony!');
-                applyTurnRegen();
-                setBattleState(() {});
-                return;
-              }
-
-              if (_rng.nextInt(100) < totalDodgeRate) {
-                appendBattleLog('🪵 Kawarimi! Uniknąłeś ataku dzięki podmianie z kłodą!');
-                applyTurnRegen();
-                setBattleState(() {});
-                return;
-              }
-
-              bool isEnemyCrit = _rng.nextInt(100) < enemyCrit;
-              double eCritMult = isEnemyCrit ? 1.5 : 1.0;
-
-              int effectivePlayerDef = (totalDefense * (100 - enemyPierce) / 100).round();
-              final rawDmg = ((enemyBaseAtk + _rng.nextInt(4)) * eCritMult).round();
-              final dmg = max(2, rawDmg - (effectivePlayerDef ~/ 2));
-
-              setState(() {
-                hp = max(0, hp - dmg);
-              });
-
-              if (isEnemyCrit) {
-                appendBattleLog('💥 KRYTYK WROGA! ${template.name} zadaje $dmg obrażeń!');
-              } else {
-                appendBattleLog('${template.name} zadaje Ci $dmg obrażeń.');
-              }
-
-              applyTurnRegen();
-              _saveGameData();
-
-              if (hp <= 0) {
-                Navigator.pop(ctx);
-                if (isExamFight) {
-                  setState(() => hp = 1);
-                  addLog('❌ Egzamin oblany!');
-                } else {
-                  returnToVillage(fallenInBattle: true);
-                }
-              }
-            }
-
-            void executeJutsu(Jutsu jutsu) {
-              if (chakra < jutsu.chakraCost) {
-                appendBattleLog('Brak czakry na ${jutsu.name}!');
-                setBattleState(() {});
-                return;
-              }
-
-              setState(() {
-                chakra -= jutsu.chakraCost;
-              });
-
-              if (_rng.nextInt(100) < enemyDodge) {
-                appendBattleLog('🪵 Wróg wykonał Kawarimi i uniknął ciosu!');
-                enemyTurn();
-                setBattleState(() {});
-                return;
-              }
-
-              bool isPlayerCrit = _rng.nextInt(100) < totalCritRate;
-              double pCritMult = isPlayerCrit ? 1.5 : 1.0;
-
-              final dealt = ((((totalAttack * jutsu.powerMultiplier) + _rng.nextInt(4)) * pCritMult).round() - enemyBlock);
-              final finalDealt = max(2, dealt);
-
-              enemyHp = max(0, enemyHp - finalDealt);
-
-              if (totalLifeSteal > 0) {
-                int healed = max(1, (finalDealt * totalLifeSteal / 100).round());
-                setState(() => hp = min(maxHp, hp + healed));
-                appendBattleLog('🩸 Lifesteal: Odzyskano $healed HP!');
-              }
-
-              if (isPlayerCrit) {
-                appendBattleLog('💥 KRYTYK! Użyto ${jutsu.name}! Zadano $finalDealt obrażeń!');
-              } else {
-                appendBattleLog('Użyto ${jutsu.name}! Zadano $finalDealt obrażeń.');
-              }
-
-              if (enemyHp <= 0) {
-                Navigator.pop(ctx);
-
-                if (isExamFight) {
-                  setState(() => passedRankIndex = examTargetRank!);
-                  addExperience(350);
-                  addLog('🏆 ZDANO EGZAMIN na rangę: $ninjaRank!');
-                  return;
-                }
-
-                int locLvl = shinobiLocations.firstWhere((l) => l.id == currentSelectedLocationId, orElse: () => shinobiLocations[0]).minLevel;
-                int rewardRyo = template.isBoss ? (70 + locLvl * 6) : (12 + locLvl * 3);
-                int expGained = template.isBoss ? (80 + locLvl * 10) : (14 + locLvl * 3);
-
-                setState(() {
-                  ryo += rewardRyo;
-                  if (activeMissionIndex != null) {
-                    final activeMission = allMissionsPool[activeMissionIndex!];
-                    if (activeMission.type == MissionType.killCount && activeMission.targetEnemyId == template.id) {
-                      currentMissionKills++;
-                    } else if (activeMission.type == MissionType.bossHunt && activeMission.targetEnemyId == template.id) {
-                      currentMissionKills = 1;
-                    }
-                  }
-                });
-                addExperience(expGained);
-                addLog('🏆 Zwycięstwo nad $prefixTitle${template.name}! +$rewardRyo Ryo, +$expGained EXP.');
-                _findLoot(guaranteedBossDrop: template.isBoss, dungeonBossSetGroup: dungeonBossSetGroup);
-              } else {
-                enemyTurn();
-                setBattleState(() {});
-              }
-            }
-
-            void useBattleItem(Consumable item) {
-              if (item.type == ConsumableType.smokeEscape) {
-                if (template.isBoss || isExamFight) {
-                  appendBattleLog('Bomba dymna nie działa na bossów!');
-                  setBattleState(() {});
-                  return;
-                }
-                useConsumable(item);
-                Navigator.pop(ctx);
-                addLog('💨 Ucieknięto z walki za pomocą Bomby Dymnej!');
-                return;
-              }
-
-              if (item.type == ConsumableType.directDmg) {
-                if (useConsumable(item)) {
-                  int dmg = 35 + (level * 4);
-                  enemyHp = max(0, enemyHp - dmg);
-                  appendBattleLog('💥 Pieczęć Wybuchowa zadaje $dmg obrażeń!');
-                  if (enemyHp <= 0) {
-                    Navigator.pop(ctx);
-                    addLog('🏆 Wróg rozerwany eksplozją Pieczęci!');
-                    _findLoot(guaranteedBossDrop: template.isBoss, dungeonBossSetGroup: dungeonBossSetGroup);
-                  } else {
-                    enemyTurn();
-                    setBattleState(() {});
-                  }
-                }
-                return;
-              }
-
-              if (useConsumable(item)) {
-                appendBattleLog('Użyto ${item.name}!');
-                enemyTurn();
-                setBattleState(() {});
-              }
-            }
-
-            void openCombatBagDialog() {
-              showDialog(
-                context: context,
-                builder: (bagCtx) => AlertDialog(
-                  backgroundColor: const Color(0xFF191716),
-                  title: const Text('🎒 Użyj zapasu w walce', style: TextStyle(color: Color(0xFFFFB74D), fontSize: 15)),
-                  content: SizedBox(
-                    width: double.maxFinite,
-                    child: bag.isEmpty
-                        ? const Text('Brak przedmiotów w plecaku!', style: TextStyle(fontSize: 12, color: Colors.white54))
-                        : ListView(
-                            shrinkWrap: true,
-                            children: bag.entries.map((entry) {
-                              final item = allConsumables.firstWhere((c) => c.id == entry.key);
-                              return ListTile(
-                                dense: true,
-                                leading: Text(item.icon, style: const TextStyle(fontSize: 22)),
-                                title: Text('${item.name} (x${entry.value})', style: const TextStyle(fontSize: 12)),
-                                subtitle: Text(item.statBonusText, style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
-                                trailing: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(horizontal: 10)),
-                                  onPressed: () {
-                                    Navigator.pop(bagCtx);
-                                    useBattleItem(item);
-                                    setBattleState(() {});
-                                  },
-                                  child: const Text('Użyj', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                  ),
-                ),
-              );
-            }
-
-            return Container(
-              padding: const EdgeInsets.all(16),
-              height: 540,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Text(template.icon, style: const TextStyle(fontSize: 24)),
-                          const SizedBox(width: 8),
-                          Text('$prefixTitle${template.name}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: prefixColor)),
-                        ],
-                      ),
-                      Text('$enemyHp / $enemyMaxHp HP', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  LinearProgressIndicator(value: enemyHp / enemyMaxHp, color: const Color(0xFFEF5350), backgroundColor: Colors.white12, minHeight: 7),
-                  const SizedBox(height: 4),
-                  Text('Statystyki: Crit $enemyCrit% | Kawarimi $enemyDodge% | Przebicie $enemyPierce%', style: const TextStyle(fontSize: 10, color: Colors.white54)),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Text('Twoje HP: $hp / $maxHp', style: const TextStyle(fontSize: 12, color: Color(0xFF69F0AE), fontWeight: FontWeight.bold)),
-                      Text('Twoje CP: $chakra / $maxChakra', style: const TextStyle(fontSize: 12, color: Color(0xFF40C4FF), fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 90,
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: const Color(0xFF0F0E0D), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.white12)),
-                    child: ListView.builder(
-                      reverse: true,
-                      itemCount: battleLogHistory.length,
-                      itemBuilder: (context, index) {
-                        return Text(battleLogHistory[index], style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: Color(0xFFFFCC80)));
-                      },
-                    ),
-                  ),
-                  const Spacer(),
-                  Row(
-                    children: equippedJutsu.map((jutsu) {
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 3.0),
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: jutsu.color.withAlpha(120),
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                            ),
-                            onPressed: () => executeJutsu(jutsu),
-                            child: Text(jutsu.name, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00695C),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          onPressed: openCombatBagDialog,
-                          child: const Text('🎒 Plecak w walce', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF37474F),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          onPressed: () {
-                            if (template.isBoss || isExamFight) {
-                              appendBattleLog('Nie można uciec z tej walki!');
-                              setBattleState(() {});
-                              return;
-                            }
-                            Navigator.pop(ctx);
-                            addLog('💨 Ucieczka z pola walki!');
-                          },
-                          child: const Text('💨 Ucieczka', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _findLoot({bool guaranteedBossDrop = false, String? dungeonBossSetGroup}) {
-    if (dungeonBossSetGroup != null && _rng.nextInt(100) < 35) {
-      final bossPieces = bossExclusiveSetsPool.where((b) => b.setGroup == dungeonBossSetGroup).toList();
-      final unownedPieces = bossPieces.where((p) => !equippedList.any((e) => e.name == p.baseName)).toList();
-
-      final chosen = unownedPieces.isNotEmpty ? unownedPieces[_rng.nextInt(unownedPieces.length)] : bossPieces[_rng.nextInt(bossPieces.length)];
-
-      List<GearAffix> affixes = [
-        GearAffix(type: AffixType.critRate, value: 12),
-        GearAffix(type: AffixType.armorPierce, value: 15),
-      ];
-
-      final drop = NinjaGear(
-        name: chosen.baseName,
-        rarity: ItemRarity.legendary,
-        slot: chosen.slot,
-        baseStat: chosen.baseStat,
-        affixes: affixes,
-        setGroup: chosen.setGroup,
-        icon: chosen.icon,
-      );
-
-      NinjaGear currentGear = currentWeapon;
-      switch (chosen.slot) {
-        case GearSlot.weapon: currentGear = currentWeapon; break;
-        case GearSlot.armor: currentGear = currentArmor; break;
-        case GearSlot.helmet: currentGear = currentHelmet; break;
-        case GearSlot.boots: currentGear = currentBoots; break;
-        case GearSlot.trinket: currentGear = currentTrinket; break;
-      }
-      _showEquipDialog(newGear: drop, currentGear: currentGear, slot: chosen.slot);
-      return;
-    }
-
-    final slot = GearSlot.values[_rng.nextInt(5)];
-    final drop = _generateRandomGear(slot: slot, guaranteedBossDrop: guaranteedBossDrop);
-
-    NinjaGear currentGear = currentWeapon;
-    switch (slot) {
-      case GearSlot.weapon: currentGear = currentWeapon; break;
-      case GearSlot.armor: currentGear = currentArmor; break;
-      case GearSlot.helmet: currentGear = currentHelmet; break;
-      case GearSlot.boots: currentGear = currentBoots; break;
-      case GearSlot.trinket: currentGear = currentTrinket; break;
-    }
-
-    _showEquipDialog(newGear: drop, currentGear: currentGear, slot: slot);
-  }
-
-  NinjaGear _generateRandomGear({required GearSlot slot, bool guaranteedBossDrop = false}) {
-    ItemRarity rarity = ItemRarity.common;
-    final locId = currentSelectedLocationId;
-    final roll = _rng.nextInt(100);
-
-    if (guaranteedBossDrop) {
-      if (roll < 25) {
-        rarity = ItemRarity.rare;
-      } else if (roll < 80) {
-        rarity = ItemRarity.epic;
-      } else {
-        rarity = ItemRarity.legendary;
-      }
-    } else {
-      if (locId == 'loc_gate') {
-        rarity = roll < 82 ? ItemRarity.common : (roll < 98 ? ItemRarity.rare : ItemRarity.epic);
-      } else if (locId == 'loc_forest') {
-        rarity = roll < 60 ? ItemRarity.common : (roll < 92 ? ItemRarity.rare : (roll < 99 ? ItemRarity.epic : ItemRarity.legendary));
-      } else if (locId == 'loc_waves') {
-        rarity = roll < 38 ? ItemRarity.common : (roll < 82 ? ItemRarity.rare : (roll < 97 ? ItemRarity.epic : ItemRarity.legendary));
-      } else if (locId == 'loc_valley') {
-        rarity = roll < 18 ? ItemRarity.common : (roll < 63 ? ItemRarity.rare : (roll < 91 ? ItemRarity.epic : ItemRarity.legendary));
-      } else {
-        rarity = roll < 5 ? ItemRarity.common : (roll < 40 ? ItemRarity.rare : (roll < 82 ? ItemRarity.epic : ItemRarity.legendary));
-      }
-    }
-
-    final arch = standardArchetypesPool.where((a) => a.slot == slot).toList();
-    final chosen = arch[_rng.nextInt(arch.length)];
-
-    String prefix = '';
-    if (rarity == ItemRarity.rare) prefix = 'Mistrzowski ';
-    if (rarity == ItemRarity.epic) prefix = 'Pradawny ';
-    if (rarity == ItemRarity.legendary) prefix = 'Legendarny ';
-
-    List<GearAffix> generatedAffixes = [];
-    int affixesCount = rarity == ItemRarity.common ? 0 : (rarity == ItemRarity.rare ? 1 : (rarity == ItemRarity.epic ? 2 : 3));
-
-    final availableTypes = List<AffixType>.from(AffixType.values)..shuffle(_rng);
-    for (int i = 0; i < affixesCount && i < availableTypes.length; i++) {
-      final type = availableTypes[i];
-      int val = 0;
-      switch (type) {
-        case AffixType.critRate: val = 4 + (rarity.index * 4) + _rng.nextInt(3); break;
-        case AffixType.dodgeRate: val = 3 + (rarity.index * 3) + _rng.nextInt(3); break;
-        case AffixType.armorPierce: val = 5 + (rarity.index * 4) + _rng.nextInt(4); break;
-        case AffixType.lifeSteal: val = 4 + (rarity.index * 3) + _rng.nextInt(3); break;
-        case AffixType.hpRegen: val = 2 + (rarity.index * 2); break;
-        case AffixType.chakraRegen: val = 2 + (rarity.index * 2); break;
-        case AffixType.bonusHp: val = 15 + (rarity.index * 15); break;
-        case AffixType.bonusChakra: val = 12 + (rarity.index * 12); break;
-      }
-      generatedAffixes.add(GearAffix(type: type, value: val));
-    }
-
-    return NinjaGear(
-      name: '$prefix${chosen.baseName}',
-      rarity: rarity,
-      slot: slot,
-      baseStat: chosen.baseStat + (rarity.index * 4) + _rng.nextInt(2),
-      affixes: generatedAffixes,
-      setGroup: chosen.setGroup,
-      isSoulbound: false,
-      icon: chosen.icon,
-    );
-  }
-
-  void _showEquipDialog({required NinjaGear newGear, required NinjaGear currentGear, required GearSlot slot}) {
-    String slotName = slot == GearSlot.weapon ? 'Broń' : (slot == GearSlot.armor ? 'Pancerz' : (slot == GearSlot.helmet ? 'Głowa' : (slot == GearSlot.boots ? 'Buty' : 'Talizman')));
-    int diff = newGear.effectiveStat - currentGear.effectiveStat;
-    String diffText = diff > 0 ? '+$diff' : '$diff';
-    Color diffColor = diff > 0 ? const Color(0xFF69F0AE) : (diff < 0 ? const Color(0xFFFF5252) : Colors.grey);
-    final sellValue = newGear.sellPrice;
-    final bool canStash = equipmentStash.length < 10;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF191716),
-        title: Row(
-          children: [
-            Text('Odnaleziono: $slotName!', style: const TextStyle(color: Color(0xFFFFB74D), fontWeight: FontWeight.bold, fontSize: 16)),
-            const Spacer(),
-            if (newGear.isBossSet)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(4)),
-                child: const Text('SET BOSSA', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
-              ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF141211),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: newGear.borderColor, width: newGear.borderWidth),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(newGear.icon, style: const TextStyle(fontSize: 22)),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text('NOWY: ${newGear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: newGear.borderColor)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 3),
-                  Row(
-                    children: [
-                      Text('Moc: +${newGear.effectiveStat} ', style: const TextStyle(fontSize: 12)),
-                      Text('($diffText)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: diffColor)),
-                    ],
-                  ),
-                  Text('Wartość: ${newGear.marketValue} Ryo (Złomowanie: $sellValue Ryo)', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
-                  if (newGear.setGroup != 'none')
-                    Text('Zestaw: ${newGear.setGroup.toUpperCase()}', style: const TextStyle(fontSize: 11, color: Color(0xFF80D8FF))),
-                  if (newGear.affixes.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    ...newGear.affixes.map((a) => Text(a.label, style: const TextStyle(fontSize: 11, color: Color(0xFFFFD54F)))),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF141211),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: currentGear.borderColor, width: currentGear.borderWidth),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(currentGear.icon, style: const TextStyle(fontSize: 22)),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text('POSIADANY: ${currentGear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: currentGear.borderColor)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 3),
-                  Text('Moc: +${currentGear.effectiveStat}', style: const TextStyle(fontSize: 12)),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              addLog('Odrzucono: ${newGear.displayName}.');
-            },
-            child: const Text('Odrzuć', style: TextStyle(color: Colors.grey)),
-          ),
-          if (canStash)
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  equipmentStash.add(newGear);
-                });
-                _saveGameData();
-                Navigator.pop(ctx);
-                addLog('📦 Schowano [${newGear.displayName}] do plecaka.');
-              },
-              child: const Text('Zachowaj', style: TextStyle(color: Color(0xFF81C784), fontWeight: FontWeight.bold)),
-            ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100)),
-            onPressed: () {
-              setState(() {
-                switch (slot) {
-                  case GearSlot.weapon: currentWeapon = newGear; break;
-                  case GearSlot.armor: currentArmor = newGear; break;
-                  case GearSlot.helmet: currentHelmet = newGear; break;
-                  case GearSlot.boots: currentBoots = newGear; break;
-                  case GearSlot.trinket: currentTrinket = newGear; break;
-                }
-              });
-              _saveGameData();
-              Navigator.pop(ctx);
-              addLog('✨ Założono: ${newGear.displayName}!');
-            },
-            child: const Text('Zamień', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showItemDetailsDialog(String slotName, NinjaGear gear) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF191716),
-        title: Row(
-          children: [
-            Text(gear.icon, style: const TextStyle(fontSize: 24)),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text('$slotName: ${gear.displayName}', style: TextStyle(color: gear.borderColor, fontWeight: FontWeight.bold, fontSize: 16)),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (gear.isBossSet)
-              Container(
-                margin: const EdgeInsets.only(bottom: 6),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(4)),
-                child: const Text('UNIKALNY ZESTAW BOSSA LOCHU', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
-              ),
-            Text('Rzadkość: ${gear.rarityLabel}', style: TextStyle(color: gear.color, fontSize: 13, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text('Moc bazowa: +${gear.effectiveStat}', style: const TextStyle(fontSize: 13)),
-            Text('Wycena rynkowa: ${gear.marketValue} Ryo', style: const TextStyle(fontSize: 12, color: Color(0xFFFFD54F))),
-            if (gear.setGroup != 'none')
-              Text('Zestaw (Set): ${gear.setGroup.toUpperCase()}', style: const TextStyle(fontSize: 12, color: Color(0xFF80D8FF))),
-            if (gear.affixes.isNotEmpty) ...[
-              const SizedBox(height: 6),
-              const Text('Dodatkowe atuty:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFFB74D))),
-              ...gear.affixes.map((a) => Padding(
-                padding: const EdgeInsets.only(top: 3),
-                child: Text(a.label, style: const TextStyle(fontSize: 12, color: Color(0xFFFFE082))),
-              )),
-            ],
-            const SizedBox(height: 10),
-            Text(gear.isSoulbound ? '📜 Przedmiot zapieczętowany (bezpieczny)' : '⚠️ Przedmiot niezabezpieczony (Koszt pieczęci: ${gear.sealingCost} Ryo)', style: TextStyle(fontSize: 11, color: gear.isSoulbound ? const Color(0xFF69F0AE) : const Color(0xFFFF5252))),
-          ],
-        ),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zamknij', style: TextStyle(color: Colors.grey)))],
-      ),
-    );
-  }
-
-  void _openLocationSelectionModal() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF161412),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          height: 400,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Wybierz lokację eksploracji:', style: TextStyle(color: Color(0xFFFFAB91), fontWeight: FontWeight.bold, fontSize: 15)),
-              const SizedBox(height: 10),
-              Expanded(
-                child: ListView(
-                  children: shinobiLocations.map((loc) {
-                    final bool isLocked = level < loc.minLevel;
-                    return Card(
-                      color: const Color(0xFF1B1917),
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      child: ListTile(
-                        leading: Text(loc.icon, style: const TextStyle(fontSize: 26)),
-                        title: Text(loc.name, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isLocked ? Colors.white38 : Colors.white)),
-                        subtitle: Text('Wymagany poziom: ${loc.minLevel}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                        trailing: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isLocked ? const Color(0xFF37474F) : const Color(0xFFE65100),
-                          ),
-                          onPressed: () {
-                            if (isLocked) {
-                              showActionBlockedMessage('🚫 Wymagany poziom ${loc.minLevel}! (Masz Lvl $level)');
-                              return;
-                            }
-                            Navigator.pop(ctx);
-                            leaveVillage(loc);
-                          },
-                          child: Text(isLocked ? 'Zablokowane' : 'Wyrusz', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -3093,68 +2310,102 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFF3E2723), width: 1.4),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
         children: [
-          Expanded(
-            flex: 6,
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    _itemCardExpanded('Broń', currentWeapon, 'Atak: +$totalAttack'),
-                    const SizedBox(width: 5),
-                    _itemCardExpanded('Pancerz', currentArmor, 'Obr: +${currentArmor.effectiveStat}'),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                Row(
-                  children: [
-                    _itemCardExpanded('Głowa', currentHelmet, 'Obr: +${currentHelmet.effectiveStat}'),
-                    const SizedBox(width: 5),
-                    _itemCardExpanded('Buty', currentBoots, 'Obr: +${currentBoots.effectiveStat}'),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                Row(
-                  children: [
-                    _itemCardExpanded('Talizman', currentTrinket, 'Moc: +${currentTrinket.effectiveStat}'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            flex: 5,
-            child: InkWell(
-              onTap: _showStatsDialog,
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF140E0C),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white12),
-                ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 6,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Profil Ninja (ℹ️):', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                        Text('Lvl $level', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: rankColor)),
+                        _itemCardExpanded('Broń', currentWeapon, 'Atak: +$totalAttack'),
+                        const SizedBox(width: 5),
+                        _itemCardExpanded('Pancerz', currentArmor, 'Obr: +${currentArmor.effectiveStat}'),
                       ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(ninjaRank, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: rankColor)),
-                    const Divider(color: Colors.white12, height: 10),
-                    _statRowMini('EXP', '$ninjaExp / $expForNextLevel', const Color(0xFF80D8FF)),
-                    _statRowMini('HP', '$hp/$maxHp', const Color(0xFF69F0AE)),
-                    _statRowMini('CP', '$chakra/$maxChakra', const Color(0xFF40C4FF)),
-                    _statRowMini('Ryo', '$ryo', const Color(0xFFFFD54F)),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        _itemCardExpanded('Głowa', currentHelmet, 'Obr: +${currentHelmet.effectiveStat}'),
+                        const SizedBox(width: 5),
+                        _itemCardExpanded('Buty', currentBoots, 'Obr: +${currentBoots.effectiveStat}'),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        _itemCardExpanded('Talizman', currentTrinket, 'Moc: +${currentTrinket.effectiveStat}'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 5,
+                child: InkWell(
+                  onTap: _showStatsDialog,
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF140E0C),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Profil Ninja (ℹ️):', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                            Text('Lvl $level', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: rankColor)),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(ninjaRank, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: rankColor)),
+                        const Divider(color: Colors.white12, height: 10),
+                        _statRowMini('EXP', '$ninjaExp / $expForNextLevel', const Color(0xFF80D8FF)),
+                        _statRowMini('HP', '$hp/$maxHp', const Color(0xFF69F0AE)),
+                        _statRowMini('CP', '$chakra/$maxChakra', const Color(0xFF40C4FF)),
+                        _statRowMini('Ryo', '$ryo', const Color(0xFFFFD54F)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          // Kafelek plecaka wpasowany dokładnie w zaznaczone miejsce pod talizmanem
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _openEquipmentStashDialog,
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF140D0A),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFFFB74D).withAlpha(120), width: 1.2),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Text('📦', style: TextStyle(fontSize: 16)),
+                        SizedBox(width: 6),
+                        Text('Plecak Rynsztunku', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFFFB74D))),
+                      ],
+                    ),
+                    Text('${equipmentStash.length} / 10 slotów', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: equipmentStash.length >= 10 ? const Color(0xFFFF5252) : const Color(0xFF69F0AE))),
                   ],
                 ),
               ),
@@ -3199,13 +2450,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   icon: '📜',
                   color: const Color(0xFF5D4037),
                   onTap: _openVillageMissionsDialog,
-                ),
-                _villageHubCard(
-                  title: 'Plecak Rynsztunku',
-                  subtitle: '${equipmentStash.length}/10 schowanych przedmiotów',
-                  icon: '📦',
-                  color: const Color(0xFF4E342E),
-                  onTap: _openEquipmentStashDialog,
                 ),
                 _villageHubCard(
                   title: 'Prowiant i Zapas',
@@ -3344,38 +2588,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   ),
                 ],
               ],
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Kafelek plecaka wpasowany między statystyki/lokację a dolny ekran
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _openEquipmentStashDialog,
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E1714),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFFFB74D).withAlpha(120), width: 1.2),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Row(
-                      children: [
-                        Text('📦', style: TextStyle(fontSize: 20)),
-                        SizedBox(width: 8),
-                        Text('Plecak Rynsztunku', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFFB74D))),
-                      ],
-                    ),
-                    Text('${equipmentStash.length} / 10 slotów', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: equipmentStash.length >= 10 ? const Color(0xFFFF5252) : const Color(0xFF69F0AE))),
-                  ],
-                ),
-              ),
             ),
           ),
 
