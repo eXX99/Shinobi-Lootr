@@ -2120,13 +2120,13 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     final slot = GearSlot.values[_rng.nextInt(5)];
     final drop = _generateRandomGear(slot: slot, guaranteedBossDrop: guaranteedBossDrop);
     
-    NinjaGear currentGear;
+    NinjaGear currentGear = currentWeapon;
     switch (slot) {
       case GearSlot.weapon: currentGear = currentWeapon; break;
       case GearSlot.armor: currentGear = currentArmor; break;
       case GearSlot.helmet: currentGear = currentHelmet; break;
-      case GearSlot.boots: currentBoots = currentBoots; break;
-      case GearSlot.trinket: currentTrinket = currentTrinket; break;
+      case GearSlot.boots: currentGear = currentBoots; break;
+      case GearSlot.trinket: currentGear = currentTrinket; break;
     }
 
     _showEquipDialog(newGear: drop, currentGear: currentGear, slot: slot);
