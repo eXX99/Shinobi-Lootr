@@ -496,7 +496,7 @@ class _StartMenuScreenState extends State<StartMenuScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: _continueGame,
-                      child: const Text('Kontynuuj', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                      child: const Text('Kontynuuj', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -532,7 +532,7 @@ class _StartMenuScreenState extends State<StartMenuScreen> {
                         _startNewGame();
                       }
                     },
-                    child: const Text('Nowa Gra', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    child: const Text('Nowa Gra', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                 ),
               ],
@@ -2204,7 +2204,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Lewa strona: Kafelki ekwipunku postaci
                   Expanded(
                     flex: 5,
                     child: Column(
@@ -2234,7 +2233,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // Prawa strona: Ranga, EXP, HP, CP i Ryo
                   Expanded(
                     flex: 5,
                     child: Container(
@@ -2282,7 +2280,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100)),
                         onPressed: _openLocationSelectionModal,
                         icon: const Text('🌲', style: TextStyle(fontSize: 18)),
-                        label: const Text('Wyrusz w Las (Wybierz Lokację)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        label: const Text('Wyrusz w Las (Wybierz Lokację)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -2292,7 +2290,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF5D4037), padding: const EdgeInsets.symmetric(vertical: 10)),
                             onPressed: _openVillageMissionsDialog,
-                            child: const Text('📜 Biuro Misji', style: TextStyle(fontSize: 11)),
+                            child: const Text('📜 Biuro Misji', style: TextStyle(fontSize: 11, color: Colors.white)),
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -2300,7 +2298,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(vertical: 10)),
                             onPressed: _openBagDialog,
-                            child: Text('🎒 Plecak ($totalItemsInBag)', style: TextStyle(fontSize: 11)),
+                            child: Text('🎒 Plecak ($totalItemsInBag)', style: const TextStyle(fontSize: 11, color: Colors.white)),
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -2308,7 +2306,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), padding: const EdgeInsets.symmetric(vertical: 10)),
                             onPressed: _openScrollsDialog,
-                            child: Text('📜 Zwoje (${equippedJutsu.length}/3)', style: TextStyle(fontSize: 11)),
+                            child: Text('📜 Zwoje (${equippedJutsu.length}/3)', style: const TextStyle(fontSize: 11, color: Colors.white)),
                           ),
                         ),
                       ],
@@ -2318,17 +2316,17 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7B1FA2)),
                       onPressed: _openDungeonsDialog,
                       icon: const Text('🏛️'),
-                      label: const Text('Legendarne Lochy (Bossowie)'),
+                      label: const Text('Legendarne Lochy (Bossowie)', style: TextStyle(color: Colors.white)),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100)),
                       onPressed: _openBlacksmithDialog,
-                      child: const Text('Kowal'),
+                      child: const Text('Kowal', style: TextStyle(color: Colors.white)),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20)),
                       onPressed: _openMedicDialog,
-                      child: const Text('Szpital (Medyk)'),
+                      child: const Text('Szpital (Medyk)', style: TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),
@@ -2367,7 +2365,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(vertical: 12)),
                         onPressed: _openBagDialog,
-                        child: const Text('🎒 Plecak', style: TextStyle(fontSize: 11)),
+                        child: const Text('🎒 Plecak', style: TextStyle(fontSize: 11, color: Colors.white)),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -2376,7 +2374,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), padding: const EdgeInsets.symmetric(vertical: 12)),
                         onPressed: proceedExploration,
-                        child: const Text('Idź naprzód 🌲', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        child: const Text('Idź naprzód 🌲', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -2384,7 +2382,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B5E20), padding: const EdgeInsets.symmetric(vertical: 12)),
                         onPressed: returnToVillage,
-                        child: const Text('Powrót', style: TextStyle(fontSize: 11)),
+                        child: const Text('Powrót', style: TextStyle(fontSize: 11, color: Colors.white)),
                       ),
                     ),
                   ],
