@@ -2302,71 +2302,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     );
   }
 
-  void _showEquipDialog({required NinjaGear newGear, required NinjaGear currentGear, required GearSlot slot}) {
-    String slotName = slot == GearSlot.weapon ? 'Broń' : (slot == GearSlot.armor ? 'Pancerz' : (slot == GearSlot.helmet ? 'Głowa' : (slot == GearSlot.boots ? 'Buty' : 'Talizman')));
-    int diff = newGear.effectiveStat - currentGear.effectiveStat;
-    String diffText = diff > 0 ? '+$diff' : '$diff';
-    Color diffColor = diff > 0 ? const Color(0xFF69F0AE) : (diff < 0 ? const Color(0xFFFF5252) : Colors.grey);
-    final sellValue = newGear.sellPrice;
-    final bool canStash = equipmentStash.length < 10;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF191716),
-        title: Row(
-          children: [
-            Text('Odnaleziono: $slotName!', style: const TextStyle(color: Color(0xFFFFB74D), fontWeight: FontWeight.bold, fontSize: 16)),
-            const Spacer(),
-            if (newGear.isBossSet)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(4)),
-                child: const Text('SET BOSSA', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
-              ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF141211),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: newGear.borderColor, width: newGear.borderWidth),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(newGear.icon, style: const TextStyle(fontSize: 22)),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text('NOWY: ${newGear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: newGear.borderColor)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 3),
-                  Row(
-                    children: [
-                      Text('Moc: +${newGear.effectiveStat} ', style: const TextStyle(fontSize: 12)),
-                      Text('($diffText)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: diffColor)),
-                    ],
-                  ),
-                  Text('Wartość: ${newGear.marketValue} Ryo (Złomowanie: $sellValue Ryo)', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
-                  if (newGear.setGroup != 'none')
-                    Text('Zestaw: ${newGear.setGroup.toUpperCase()}', style: const TextStyle(fontSize: 11, color: Color(0xFF80D8FF))),
-                  if (newGear.affixes.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    ...newGear.affixes.map((a) => Text(a.label, style: const TextStyle(fontSize: 11, color: Color(0xFFFFD54F)))),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
+ 
   void _showEquipDialog({required NinjaGear newGear, required NinjaGear currentGear, required GearSlot slot}) {
     String slotName = slot == GearSlot.weapon ? 'Broń' : (slot == GearSlot.armor ? 'Pancerz' : (slot == GearSlot.helmet ? 'Głowa' : (slot == GearSlot.boots ? 'Buty' : 'Talizman')));
     int diff = newGear.effectiveStat - currentGear.effectiveStat;
