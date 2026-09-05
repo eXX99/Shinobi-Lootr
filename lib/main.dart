@@ -639,7 +639,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     }
   }
 
-  void _encounterWanderingMerchant() {
+    void _encounterWanderingMerchant() {
     addLog('💰 Spotkano Wędrownego Kupca na szlaku!');
     showDialog(
       context: context,
@@ -651,7 +651,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
             title: const Row(
               children: [
                 Text('🛒 ', style: TextStyle(fontSize: 22)),
-                Expanded(child: Text('Wędrowny Kupczenko', style: TextStyle(color: Color(0xFFFFD54F), fontWeight: FontWeight.bold, fontSize: 16))),
+                Expanded(child: Text('Wędrowny Skup Rynsztunku', style: TextStyle(color: Color(0xFFFFD54F), fontWeight: FontWeight.bold, fontSize: 16))),
               ],
             ),
             content: SizedBox(
@@ -661,35 +661,71 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('„Masz ryo? Mam towary z najdalszych zakątków świata!”', style: TextStyle(fontSize: 11, color: Colors.white70, fontStyle: FontStyle.italic)),
-                    const SizedBox(height: 10),
-                    const Text('Kup zapasy:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFFB74D))),
-                    const SizedBox(height: 6),
-                    ...allConsumables.map((c) {
-                      return ListTile(
-                        dense: true,
-                        leading: Text(c.icon, style: const TextStyle(fontSize: 20)),
-                        title: Text(c.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                        subtitle: Text('Cena: ${c.price} Ryo | ${c.statBonusText}', style: const TextStyle(fontSize: 10, color: Colors.white60)),
-                        trailing: ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4)),
-                          onPressed: () {
-                            if (ryo < c.price) {
-                              showActionBlockedMessage('💰 Za mało Ryo!');
-                              return;
-                            }
-                            setState(() {
-                              ryo -= c.price;
-                              bag[c.id] = (bag[c.id] ?? 0) + 1;
-                            });
-                            _saveGameData();
-                            setMerchantState(() {});
-                            addLog('🛒 Kupiono [${c.name}] od kupca.');
-                          },
-                          child: const Text('Kup', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                        ),
-                      );
-                    }),
+                    const Text('„Witaj wędrowcze! Skupuję rzadki sprzęt, którego już nie używasz. Płacę znacznie lepiej niż systemowe złomowanie (aż 70% wartości rynkowej)!”', style: TextStyle(fontSize: 11, color: Colors.white70, fontStyle: FontStyle.italic)),
+                    const SizedBox(height: 14),
+                    if (equipmentStash.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        child: Text('Twój plecak rynsztunku jest pusty. Nie masz nic na sprzedaż.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      )
+                    else
+                      ...equipmentStash.toList().map((gear) {
+                        final premiumPrice = (gear.marketValue * 0.7).round();
+                        String slotName = gear.slot == GearSlot.weapon ? 'Broń' : (gear.slot == GearSlot.armor ? 'Pancerz' : (gear.slot == GearSlot.helmet ? 'Głowa' : (gear.slot == GearSlot.boots ? 'Buty' : 'Talizman')));
+
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF141211),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: gear.borderColor, width: 1.0),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(gear.icon, style: const TextStyle(fontSize: 22)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                    Text('Oferta: $premiumPrice Ryo', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF00695C), 
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4)
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    ryo += premiumPrice;
+                                    equipmentStash.remove(gear);
+                                  });
+                                  _saveGameData();
+                                  setMerchantState(() {});
+                                  addLog('🛒 Sprzedano kupcowi [${gear.displayName}] za +$premiumPrice Ryo.');
+                                },
+                                child: const Text('Sprzedaj', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                  ],
+                ),
+              ),
+            ),
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Odejdź', style: TextStyle(color: Colors.grey)))],
+          );
+        },
+      ),
+    );
+  }
+
                     const Divider(color: Colors.white12),
                     const Text('Materiały i Klucze:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFFD54F))),
                     const SizedBox(height: 6),
