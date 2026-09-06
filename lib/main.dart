@@ -41,13 +41,13 @@ void showHelpDialog(BuildContext context) {
             children: [
               _helpSection('⛩️ Cel Gry', 'Eksploruj strefy, zbieraj surowce, ulepszaj rynsztunek i zdawaj egzaminy ninja na wyższe rangi.'),
               const Divider(color: Colors.white12),
-              _helpSection('📜 Zwój Powrotu (Extraction)', 'Podczas rajdu nie możesz wrócić w dowolnym momencie. Szukaj rzadkiego Zwoju Powrotu, aby bezpiecznie ewakuować się do Wioski z całym łupem.'),
+              _helpSection('🧱 Limity Rangi (Level Cap)', 'Twój poziom nie wzrośnie powyżej limitu rangi bez zdania Egzaminu Ninja w Biurze Misji!'),
               const Divider(color: Colors.white12),
-              _helpSection('🈴 Śmierć i Pieczęcie (Fūinjutsu)', 'Porażka w walce oznacza utratę plecaka i całego niezabezpieczonego sprzętu. Szukaj Mistrza Fūinjutsu w terenie, by na stałe zapieczętować cenne przedmioty (oznaczone ikoną 🈴).'),
+              _helpSection('📜 Zwój Powrotu (Extraction)', 'Podczas rajdu szukaj Zwoju Powrotu, aby bezpiecznie ewakuować się do Wioski ze zdobyczami.'),
               const Divider(color: Colors.white12),
-              _helpSection('⚔️ Walka i Rynsztunek', 'Gotowy rynsztunek wypada wyłącznie z pokonanych wrogów. Podczas eksploracji znajdziesz tylko surowce kowalskie i prowiant.'),
+              _helpSection('🈴 Śmierć i Pieczęcie', 'Porażka w walce oznacza utratę niezabezpieczonego sprzętu. Szukaj Mistrza Fūinjutsu w terenie, by oznaczyć rynsztunek pieczęcią (🈴).'),
               const Divider(color: Colors.white12),
-              _helpSection('🔨 Wioska Konoha', 'U Kowala ulepszysz rynsztunek surowcami, w Szpitalu wyleczysz rany i zwiększysz bazową witalność, a w Biurze Misji podejmiesz zlecenia oraz egzaminy na rangi.'),
+              _helpSection('🌲 Głębokość Rajdu & Kary', 'Im dalej w las, tym silniejsi wrogowie i lepszy łup. Zbyt wysoki poziom na łatwej strefie obcina EXP i Ryo do minimum!'),
             ],
           ),
         ),
@@ -258,6 +258,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
   bool inVillage = true;
   String currentSelectedLocationId = 'loc_gate';
+  int raidDepth = 0;
 
   int hp = 100;
   int baseMaxHp = 100;
@@ -297,18 +298,35 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
   static const int softCapLevel = 65;
 
+  int get maxLevelForCurrentRank {
+    switch (passedRankIndex) {
+      case 0: return 4;
+      case 1: return 12;
+      case 2: return 22;
+      case 3: return 35;
+      case 4: return 48;
+      case 5: return 60;
+      default: return softCapLevel;
+    }
+  }
+
   int get level {
+    int calculated = 1;
     for (int lvl = 1; lvl <= softCapLevel; lvl++) {
-      if (ninjaExp < expRequiredForLevel(lvl + 1)) {
-        return lvl;
+      if (ninjaExp >= expRequiredForLevel(lvl)) {
+        calculated = lvl;
+      } else {
+        break;
       }
     }
-    return softCapLevel;
+    return min(calculated, maxLevelForCurrentRank);
   }
+
+  bool get isCappedAtRank => level >= maxLevelForCurrentRank && passedRankIndex < 6;
 
   static int expRequiredForLevel(int lvl) {
     if (lvl <= 1) return 0;
-    return (70 * pow(lvl, 1.85) + 40 * lvl).floor();
+    return (75 * pow(lvl, 1.85) + 45 * lvl).floor();
   }
 
   int get expForNextLevel => level >= softCapLevel ? expRequiredForLevel(softCapLevel) : expRequiredForLevel(level + 1);
@@ -390,7 +408,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     return bonus;
   }
 
-  int get totalAttack => currentWeapon.effectiveStat + currentTrinket.effectiveStat + bonusAtk + setBonusAtk + (level * 2);
+  int get totalAttack => currentWeapon.effectiveStat + currentTrinket.effectiveStat + bonusAtk + setBonusAtk + level;
   int get totalDefense => currentArmor.effectiveStat + currentHelmet.effectiveStat + currentBoots.effectiveStat + setBonusDef;
 
   @override
@@ -421,6 +439,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       vitalTrainingCount = prefs.getInt('vitalTrainingCount') ?? 0;
       dungeonCooldownTimestamp = prefs.getInt('dungeonCooldownTimestamp') ?? 0;
       hasEscapeScroll = prefs.getBool('hasEscapeScroll') ?? false;
+      raidDepth = prefs.getInt('raidDepth') ?? 0;
 
       final completedList = prefs.getStringList('completedMissionsHistory');
       if (completedList != null) completedMissionsHistory = completedList.toSet();
@@ -482,6 +501,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     await prefs.setString('currentSelectedLocationId', currentSelectedLocationId);
     await prefs.setStringList('completedMissionsHistory', completedMissionsHistory.toList());
     await prefs.setBool('hasEscapeScroll', hasEscapeScroll);
+    await prefs.setInt('raidDepth', raidDepth);
 
     if (activeMissionIndex != null) {
       await prefs.setInt('activeMissionIndex', activeMissionIndex!);
@@ -552,6 +572,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     ninjaExp += amount;
     if (level > oldLvl) {
       addLog('⚡ AWANS! Osiągnięto Poziom $level!');
+    } else if (isCappedAtRank) {
+      addLog('🔒 Osiągnięto limit poziomu rangi ($maxLevelForCurrentRank)! Zdaj Egzamin, by awansować.');
     }
     _saveGameData();
   }
@@ -570,6 +592,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       hp = maxHp;
       chakra = maxChakra;
       hasEscapeScroll = false;
+      raidDepth = 0;
 
       if (fallenInBattle) {
         if (!currentWeapon.isSoulbound) currentWeapon = defaultStarterWeapon;
@@ -599,8 +622,9 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       inVillage = false;
       hasEscapeScroll = false;
       currentSelectedLocationId = location.id;
+      raidDepth = 1;
     });
-    addLog('🍃 Wyruszasz do: ${location.name}!');
+    addLog('🍃 Wyruszasz do: ${location.name} (Krok $raidDepth)!');
     _saveGameData();
   }
 
@@ -656,6 +680,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
   void proceedExploration() {
     if (hp <= 0) return;
 
+    setState(() => raidDepth++);
+
     if (totalHpRegen > 0) hp = min(maxHp, hp + totalHpRegen);
     if (totalChakraRegen > 0) chakra = min(maxChakra, chakra + totalChakraRegen);
 
@@ -669,7 +695,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
         '🌳 Cisza i spokój. Łapiesz krótki oddech.',
         '🌲 Pusta ścieżka, patrolujesz teren bez zakłóceń.'
       ];
-      addLog(emptyMessages[_rng.nextInt(emptyMessages.length)]);
+      addLog('${emptyMessages[_rng.nextInt(emptyMessages.length)]} (Głębokość: $raidDepth)');
     } else if (roll < 38) {
       final subRoll = _rng.nextInt(100);
       if (subRoll < 50) {
@@ -701,7 +727,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       final enemy = locationEnemies.isNotEmpty ? locationEnemies[_rng.nextInt(locationEnemies.length)] : standardEnemiesPool[0];
 
       final pRoll = _rng.nextInt(100);
-      EnemyPrefix p = pRoll < 60 ? EnemyPrefix.weak : (pRoll < 88 ? EnemyPrefix.normal : EnemyPrefix.strong);
+      EnemyPrefix p = pRoll < 55 ? EnemyPrefix.weak : (pRoll < 85 ? EnemyPrefix.normal : EnemyPrefix.strong);
       _startBattleWithEnemy(enemy, forcePrefix: p);
     } else if (roll < 92) {
       final locationBosses = bossesPool.where((b) => b.locationId == currentSelectedLocationId).toList();
@@ -998,7 +1024,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setMedicState) {
-          final int healCost = 25 + (level * 5);
+          final int healCost = 25 + (level * 4);
           final int vitalCost = (250 * pow(1.4, vitalTrainingCount)).floor();
 
           return AlertDialog(
@@ -1912,11 +1938,16 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _statPopupRow('Poziom Ninja', '$level (EXP: $ninjaExp / $expForNextLevel)', const Color(0xFF80D8FF)),
+              _statPopupRow('Poziom Ninja', '$level / $maxLevelForCurrentRank (EXP: $ninjaExp / $expForNextLevel)', const Color(0xFF80D8FF)),
+              if (isCappedAtRank)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 2.0),
+                  child: Text('⚠️ Osiągnięto limit rangi! Zdaj egzamin ninja.', style: TextStyle(fontSize: 10, color: Color(0xFFFFD54F), fontWeight: FontWeight.bold)),
+                ),
               _statPopupRow('Punkty Życia (HP)', '$hp / $maxHp (Baza: $baseMaxHp, Rynsztunek: +${sumAffix(AffixType.bonusHp)})', const Color(0xFF69F0AE)),
               _statPopupRow('Czakra (CP)', '$chakra / $maxChakra (Baza: $baseMaxChakra, Rynsztunek: +${sumAffix(AffixType.bonusChakra)})', const Color(0xFF40C4FF)),
               const Divider(color: Colors.white12),
-              _statPopupRow('Łączny Atak', '$totalAttack (Rynsztunek + Poziom)', const Color(0xFFFF8A65)),
+              _statPopupRow('Łączny Atak', '$totalAttack (Rynsztunek + Lvl $level)', const Color(0xFFFF8A65)),
               _statPopupRow('Łączna Obrona', '$totalDefense', const Color(0xFFB0BEC5)),
               _statPopupRow('Szansa na Krytyk', '$totalCritRate%', const Color(0xFFFF5252)),
               _statPopupRow('Unik (Kawarimi)', '$totalDodgeRate%', const Color(0xFFFFD54F)),
@@ -1959,8 +1990,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     if (!template.isBoss && !isExamFight) {
       switch (forcePrefix) {
         case EnemyPrefix.weak:
-          hpMult = 0.75;
-          atkMult = 0.8;
+          hpMult = 0.85;
+          atkMult = 0.85;
           prefixTitle = 'Słaby ';
           prefixColor = const Color(0xFFCFD8DC);
           break;
@@ -1971,17 +2002,21 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
           prefixColor = const Color(0xFFFFA726);
           break;
         case EnemyPrefix.strong:
-          hpMult = 1.35;
-          atkMult = 1.25;
+          hpMult = 1.45;
+          atkMult = 1.30;
           prefixTitle = 'Silny ⚠️ ';
           prefixColor = const Color(0xFFFF5252);
           enemyCrit += 8;
           enemyDodge += 5;
           enemyPierce += 10;
-          enemyBlock += 3;
+          enemyBlock += 4;
           break;
       }
     }
+
+    // Skalowanie głębokości rajdu (Raid Depth)
+    double depthHpBonus = inVillage ? 0.0 : (raidDepth * 0.04);
+    double depthAtkBonus = inVillage ? 0.0 : (raidDepth * 0.02);
 
     int scaledHp = template.baseHp;
     int scaledAtk = template.baseAtk;
@@ -1991,18 +2026,18 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       scaledHp = max(template.baseHp + (level * 28), minExamHp);
       scaledAtk = max(template.baseAtk + (level * 2), (totalDefense * 0.7).round() + 6);
     } else if (template.isBoss) {
-      scaledHp = (template.baseHp * (1.0 + (level * 0.08))).round();
-      scaledAtk = (template.baseAtk * (1.0 + (level * 0.05))).round();
+      scaledHp = (template.baseHp * (1.0 + (level * 0.08) + depthHpBonus)).round();
+      scaledAtk = (template.baseAtk * (1.0 + (level * 0.05) + depthAtkBonus)).round();
     } else {
-      scaledHp = (template.baseHp * (1.0 + (level * 0.06))).round();
-      scaledAtk = (template.baseAtk * (1.0 + (level * 0.04))).round();
+      scaledHp = (template.baseHp * (1.0 + (level * 0.06) + depthHpBonus)).round();
+      scaledAtk = (template.baseAtk * (1.0 + (level * 0.04) + depthAtkBonus)).round();
     }
 
     final int enemyMaxHp = (scaledHp * hpMult).round();
     final int enemyBaseAtk = (scaledAtk * atkMult).round();
     int enemyHp = enemyMaxHp;
 
-    String initialMsg = isExamFight ? '🥋 EGZAMIN: Egzaminator ${template.name} atakuje!' : (template.isBoss ? '⚠️ BOSS: Pojawia się ${template.name}!' : 'Z cienia atakuje $prefixTitle${template.name}!');
+    String initialMsg = isExamFight ? '🥋 EGZAMIN: Egzaminator ${template.name} atakuje!' : (template.isBoss ? '⚠️ BOSS: Pojawia się ${template.name}!' : 'Z cienia atakuje $prefixTitle${template.name} (Krok $raidDepth)!');
     List<String> battleLogHistory = [initialMsg];
     int frozenTurns = 0;
 
@@ -2122,14 +2157,27 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
                 if (isExamFight) {
                   setState(() => passedRankIndex = examTargetRank!);
-                  addExperience(350);
+                  addExperience(400);
                   addLog('🏆 ZDANO EGZAMIN na rangę: $ninjaRank!');
                   return;
                 }
 
                 int locLvl = shinobiLocations.firstWhere((l) => l.id == currentSelectedLocationId, orElse: () => shinobiLocations[0]).minLevel;
-                int rewardRyo = template.isBoss ? (50 + locLvl * 5) : (10 + locLvl * 2);
-                int expGained = template.isBoss ? (80 + locLvl * 8) : (14 + locLvl * 3);
+                
+                // Obliczanie kar za farmę łatwej lokacji
+                int levelDiff = level - locLvl;
+                double penaltyMult = 1.0;
+                if (levelDiff >= 7) {
+                  penaltyMult = 0.15;
+                } else if (levelDiff >= 4) {
+                  penaltyMult = 0.50;
+                }
+
+                int baseRewardRyo = template.isBoss ? (50 + locLvl * 5) : (10 + locLvl * 2);
+                int baseExpGained = template.isBoss ? (80 + locLvl * 8) : (14 + locLvl * 3);
+
+                int rewardRyo = max(1, (baseRewardRyo * penaltyMult).round());
+                int expGained = max(1, (baseExpGained * penaltyMult).round());
 
                 setState(() {
                   ryo += rewardRyo;
@@ -2143,11 +2191,15 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   }
                 });
                 addExperience(expGained);
-                addLog('🏆 Zwycięstwo nad $prefixTitle${template.name}! +$rewardRyo Ryo, +$expGained EXP.');
+                
+                String penaltyMsg = penaltyMult < 1.0 ? ' (Kara za łatwą strefę -${((1.0 - penaltyMult) * 100).round()}%)' : '';
+                addLog('🏆 Pokonano $prefixTitle${template.name}! +$rewardRyo Ryo, +$expGained EXP$penaltyMsg.');
 
+                // Przeszukanie łupu
                 bool shouldDropLoot = template.isBoss;
                 if (!shouldDropLoot) {
                   int chance = forcePrefix == EnemyPrefix.strong ? 35 : 18;
+                  if (penaltyMult < 0.20) chance = (chance * 0.3).round(); // rzadki drop ze zbytnio zoutlevelowanych stref
                   shouldDropLoot = _rng.nextInt(100) < chance;
                 }
 
@@ -2175,7 +2227,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
               if (item.type == ConsumableType.directDmg) {
                 if (useConsumable(item)) {
-                  int dmg = 35 + (level * 4);
+                  int dmg = 35 + (level * 3);
                   enemyHp = max(0, enemyHp - dmg);
                   appendBattleLog('💥 Pieczęć Wybuchowa zadaje $dmg obrażeń!');
                   if (enemyHp <= 0) {
@@ -2812,7 +2864,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
             child: Scaffold(
               backgroundColor: Colors.transparent,
               appBar: AppBar(
-                title: Text(inVillage ? 'Konohagakure (Baza)' : activeLocation.name),
+                title: Text(inVillage ? 'Konohagakure (Baza)' : '${activeLocation.name} (Krok $raidDepth)'),
                 centerTitle: true,
                 backgroundColor: const Color(0xFF1A100B),
                 elevation: 0,
@@ -3106,7 +3158,17 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(loc.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFFFB74D))),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(loc.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFFFB74D))),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(color: const Color(0xFFE65100).withAlpha(160), borderRadius: BorderRadius.circular(6)),
+                                child: Text('Głębokość: $raidDepth', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 2),
                           Text(loc.description, style: const TextStyle(fontSize: 11, color: Colors.white60), maxLines: 2),
                         ],
