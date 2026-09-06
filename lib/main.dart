@@ -43,7 +43,7 @@ void showHelpDialog(BuildContext context) {
               const Divider(color: Colors.white12),
               _helpSection('📜 Zwój Powrotu (Extraction)', 'Podczas rajdu nie możesz wrócić w dowolnym momencie. Szukaj rzadkiego Zwoju Powrotu, aby bezpiecznie ewakuować się do Wioski z całym łupem.'),
               const Divider(color: Colors.white12),
-              _helpSection('💀 Śmierć i Pieczęcie (Fūinjutsu)', 'Porażka w walce oznacza utratę plecaka i całego niezabezpieczonego sprzętu. Szukaj Mistrza Fūinjutsu w terenie, by na stałe zapieczętować cenne przedmioty.'),
+              _helpSection('🈴 Śmierć i Pieczęcie (Fūinjutsu)', 'Porażka w walce oznacza utratę plecaka i całego niezabezpieczonego sprzętu. Szukaj Mistrza Fūinjutsu w terenie, by na stałe zapieczętować cenne przedmioty (oznaczone ikoną 🈴).'),
               const Divider(color: Colors.white12),
               _helpSection('⚔️ Walka i Rynsztunek', 'Gotowy rynsztunek wypada wyłącznie z pokonanych wrogów. Podczas eksploracji znajdziesz tylko surowce kowalskie i prowiant.'),
               const Divider(color: Colors.white12),
@@ -762,7 +762,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                           decoration: BoxDecoration(
                             color: const Color(0xFF141211),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: gear.borderColor, width: 1.0),
+                            border: Border.all(color: gear.borderColor, width: gear.borderWidth),
                           ),
                           child: Row(
                             children: [
@@ -772,7 +772,15 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                    Row(
+                                      children: [
+                                        Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                        if (gear.isSoulbound) ...[
+                                          const SizedBox(width: 4),
+                                          const Text('🈴', style: TextStyle(fontSize: 11)),
+                                        ],
+                                      ],
+                                    ),
                                     Text('Oferta skupu: $premiumPrice Ryo', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
                                   ],
                                 ),
@@ -1182,6 +1190,10 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                     Text(gear.icon, style: const TextStyle(fontSize: 18)),
                                     const SizedBox(width: 6),
                                     Text('$slotLabel: ${gear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: gear.borderColor)),
+                                    if (gear.isSoulbound) ...[
+                                      const SizedBox(width: 4),
+                                      const Text('🈴', style: TextStyle(fontSize: 11)),
+                                    ],
                                   ],
                                 ),
                                 Text('Moc: +${gear.effectiveStat}', style: const TextStyle(fontSize: 11, color: Color(0xFF69F0AE), fontWeight: FontWeight.bold)),
@@ -1304,7 +1316,15 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                    Row(
+                                      children: [
+                                        Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                        if (gear.isSoulbound) ...[
+                                          const SizedBox(width: 4),
+                                          const Text('🈴', style: TextStyle(fontSize: 11)),
+                                        ],
+                                      ],
+                                    ),
                                     Text('Moc: +${gear.effectiveStat} | Złom: ${gear.sellPrice} Ryo', style: const TextStyle(fontSize: 9, color: Colors.white70)),
                                   ],
                                 ),
@@ -2125,7 +2145,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                 addExperience(expGained);
                 addLog('🏆 Zwycięstwo nad $prefixTitle${template.name}! +$rewardRyo Ryo, +$expGained EXP.');
 
-                // Zdobycie ekwipunku wyłącznie z pokonanego wroga
                 bool shouldDropLoot = template.isBoss;
                 if (!shouldDropLoot) {
                   int chance = forcePrefix == EnemyPrefix.strong ? 35 : 18;
@@ -2376,24 +2395,28 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     final roll = _rng.nextInt(100);
 
     if (guaranteedBossDrop) {
-      if (roll < 25) {
-        rarity = ItemRarity.rare;
-      } else if (roll < 80) {
-        rarity = ItemRarity.epic;
+      if (locId == 'loc_gate') {
+        rarity = roll < 80 ? ItemRarity.rare : ItemRarity.epic;
+      } else if (locId == 'loc_forest') {
+        rarity = roll < 65 ? ItemRarity.rare : (roll < 95 ? ItemRarity.epic : ItemRarity.legendary);
+      } else if (locId == 'loc_waves') {
+        rarity = roll < 45 ? ItemRarity.rare : (roll < 88 ? ItemRarity.epic : ItemRarity.legendary);
+      } else if (locId == 'loc_valley') {
+        rarity = roll < 25 ? ItemRarity.rare : (roll < 75 ? ItemRarity.epic : ItemRarity.legendary);
       } else {
-        rarity = ItemRarity.legendary;
+        rarity = roll < 50 ? ItemRarity.epic : ItemRarity.legendary;
       }
     } else {
       if (locId == 'loc_gate') {
-        rarity = roll < 82 ? ItemRarity.common : (roll < 98 ? ItemRarity.rare : ItemRarity.epic);
+        rarity = roll < 85 ? ItemRarity.common : (roll < 99 ? ItemRarity.rare : ItemRarity.epic);
       } else if (locId == 'loc_forest') {
-        rarity = roll < 60 ? ItemRarity.common : (roll < 92 ? ItemRarity.rare : (roll < 99 ? ItemRarity.epic : ItemRarity.legendary));
+        rarity = roll < 65 ? ItemRarity.common : (roll < 95 ? ItemRarity.rare : ItemRarity.epic);
       } else if (locId == 'loc_waves') {
-        rarity = roll < 38 ? ItemRarity.common : (roll < 82 ? ItemRarity.rare : (roll < 97 ? ItemRarity.epic : ItemRarity.legendary));
+        rarity = roll < 40 ? ItemRarity.common : (roll < 85 ? ItemRarity.rare : (roll < 98 ? ItemRarity.epic : ItemRarity.legendary));
       } else if (locId == 'loc_valley') {
-        rarity = roll < 18 ? ItemRarity.common : (roll < 63 ? ItemRarity.rare : (roll < 91 ? ItemRarity.epic : ItemRarity.legendary));
+        rarity = roll < 20 ? ItemRarity.common : (roll < 68 ? ItemRarity.rare : (roll < 94 ? ItemRarity.epic : ItemRarity.legendary));
       } else {
-        rarity = roll < 5 ? ItemRarity.common : (roll < 40 ? ItemRarity.rare : (roll < 82 ? ItemRarity.epic : ItemRarity.legendary));
+        rarity = roll < 8 ? ItemRarity.common : (roll < 45 ? ItemRarity.rare : (roll < 85 ? ItemRarity.epic : ItemRarity.legendary));
       }
     }
 
@@ -2494,7 +2517,17 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       Text(newGear.icon, style: const TextStyle(fontSize: 22)),
                       const SizedBox(width: 6),
                       Expanded(
-                        child: Text('NOWY: ${newGear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: newGear.borderColor)),
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text('NOWY: ${newGear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: newGear.borderColor)),
+                            ),
+                            if (newGear.isSoulbound) ...[
+                              const SizedBox(width: 4),
+                              const Text('🈴', style: TextStyle(fontSize: 12)),
+                            ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -2531,7 +2564,17 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       Text(currentGear.icon, style: const TextStyle(fontSize: 22)),
                       const SizedBox(width: 6),
                       Expanded(
-                        child: Text('POSIADANY: ${currentGear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: currentGear.borderColor)),
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text('POSIADANY: ${currentGear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: currentGear.borderColor)),
+                            ),
+                            if (currentGear.isSoulbound) ...[
+                              const SizedBox(width: 4),
+                              const Text('🈴', style: TextStyle(fontSize: 12)),
+                            ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -2649,7 +2692,17 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
             Text(gear.icon, style: const TextStyle(fontSize: 24)),
             const SizedBox(width: 8),
             Expanded(
-              child: Text('$slotName: ${gear.displayName}', style: TextStyle(color: gear.borderColor, fontWeight: FontWeight.bold, fontSize: 16)),
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text('$slotName: ${gear.displayName}', style: TextStyle(color: gear.borderColor, fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                  if (gear.isSoulbound) ...[
+                    const SizedBox(width: 6),
+                    const Text('🈴', style: TextStyle(fontSize: 15)),
+                  ],
+                ],
+              ),
             ),
           ],
         ),
@@ -2679,7 +2732,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               )),
             ],
             const SizedBox(height: 10),
-            Text(gear.isSoulbound ? '📜 Przedmiot zapieczętowany (bezpieczny)' : '⚠️ Przedmiot niezabezpieczony (Koszt pieczęci: ${gear.sealingCost} Ryo)', style: TextStyle(fontSize: 11, color: gear.isSoulbound ? const Color(0xFF69F0AE) : const Color(0xFFFF5252))),
+            Text(gear.isSoulbound ? '🈴 Przedmiot zapieczętowany (bezpieczny)' : '⚠️ Przedmiot niezabezpieczony (Koszt pieczęci: ${gear.sealingCost} Ryo)', style: TextStyle(fontSize: 11, color: gear.isSoulbound ? const Color(0xFF69F0AE) : const Color(0xFFFF5252))),
           ],
         ),
         actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zamknij', style: TextStyle(color: Colors.grey)))],
@@ -3254,7 +3307,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     if (item.isBossSet)
                       const Text('🔥', style: TextStyle(fontSize: 8))
                     else if (item.isSoulbound)
-                      const Text('📜', style: TextStyle(fontSize: 8)),
+                      const Text('🈴', style: TextStyle(fontSize: 8)),
                   ],
                 ),
                 const SizedBox(height: 1),
