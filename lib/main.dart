@@ -12,6 +12,70 @@ const NinjaGear defaultStarterHelmet = NinjaGear(name: 'Ochraniacz Protektor', r
 const NinjaGear defaultStarterBoots = NinjaGear(name: 'Sandały Shinobi', rarity: ItemRarity.common, slot: GearSlot.boots, baseStat: 3, isSoulbound: true, icon: '🥾');
 const NinjaGear defaultStarterTrinket = NinjaGear(name: 'Amulet Konohy', rarity: ItemRarity.common, slot: GearSlot.trinket, baseStat: 3, isSoulbound: true, icon: '📿');
 
+void showHelpDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      backgroundColor: const Color(0xFF1B1411),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFFFB74D), width: 1.2),
+      ),
+      title: const Row(
+        children: [
+          Text('📖 ', style: TextStyle(fontSize: 22)),
+          Expanded(
+            child: Text(
+              'Przewodnik Młodego Shinobi',
+              style: TextStyle(color: Color(0xFFFFB74D), fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _helpSection('⛩️ Cel Gry', 'Eksploruj strefy, zbieraj surowce, ulepszaj rynsztunek i zdawaj egzaminy ninja na wyższe rangi.'),
+              const Divider(color: Colors.white12),
+              _helpSection('📜 Zwój Powrotu (Extraction)', 'Podczas rajdu nie możesz wrócić w dowolnym momencie. Szukaj rzadkiego Zwoju Powrotu, aby bezpiecznie ewakuować się do Wioski z całym łupem.'),
+              const Divider(color: Colors.white12),
+              _helpSection('💀 Śmierć i Pieczęcie (Fūinjutsu)', 'Porażka w walce oznacza utratę plecaka i całego niezabezpieczonego sprzętu. Szukaj Mistrza Fūinjutsu w terenie, by na stałe zapieczętować cenne przedmioty.'),
+              const Divider(color: Colors.white12),
+              _helpSection('⚔️ Walka i Rynsztunek', 'Gotowy rynsztunek wypada wyłącznie z pokonanych wrogów. Podczas eksploracji znajdziesz tylko surowce kowalskie i prowiant.'),
+              const Divider(color: Colors.white12),
+              _helpSection('🔨 Wioska Konoha', 'U Kowala ulepszysz rynsztunek surowcami, w Szpitalu wyleczysz rany i zwiększysz bazową witalność, a w Biurze Misji podejmiesz zlecenia oraz egzaminy na rangi.'),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Rozumiem!', style: TextStyle(color: Color(0xFFFFB74D), fontWeight: FontWeight.bold)),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _helpSection(String title, String desc) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFFCC80))),
+        const SizedBox(height: 2),
+        Text(desc, style: const TextStyle(fontSize: 11, color: Colors.white70, height: 1.3)),
+      ],
+    ),
+  );
+}
+
 class ShinobiLooterApp extends StatelessWidget {
   const ShinobiLooterApp({super.key});
 
@@ -163,6 +227,12 @@ class _StartMenuScreenState extends State<StartMenuScreen> {
                         },
                         child: const Text('Nowa Gra', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                       ),
+                    ),
+                    const SizedBox(height: 14),
+                    TextButton.icon(
+                      onPressed: () => showHelpDialog(context),
+                      icon: const Icon(Icons.help_outline, color: Colors.white60, size: 18),
+                      label: const Text('Jak grać? (Poradnik)', style: TextStyle(color: Colors.white60, fontSize: 13)),
                     ),
                   ],
                 ),
@@ -973,7 +1043,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       contentPadding: EdgeInsets.zero,
                       leading: const Text('🧬', style: TextStyle(fontSize: 24)),
                       title: Text('Trening Witalności (#${vitalTrainingCount + 1})', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                      subtitle: const Text('+10 Max HP i +10 Max CP (Baza)', style: TextStyle(fontSize: 11, color: Colors.white60)),
+                      subtitle: const Text('+10 Max HP i +10 Max CP (Baza)', style: const TextStyle(fontSize: 11, color: Colors.white60)),
                       trailing: ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2E7D32)),
                         onPressed: () {
@@ -1921,7 +1991,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       isDismissible: false,
       enableDrag: false,
       backgroundColor: const Color(0xFF141211),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      shape: const RoundedRectangleBorder(borderRadius: vertical(top: Radius.circular(22))),
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setBattleState) {
@@ -2259,8 +2329,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       final chosen = unownedPieces.isNotEmpty ? unownedPieces[_rng.nextInt(unownedPieces.length)] : bossPieces[_rng.nextInt(bossPieces.length)];
 
       List<GearAffix> affixes = [
-        GearAffix(type: AffixType.critRate, value: 12),
-        GearAffix(type: AffixType.armorPierce, value: 15),
+        const GearAffix(type: AffixType.critRate, value: 12),
+        const GearAffix(type: AffixType.armorPierce, value: 15),
       ];
 
       final drop = NinjaGear(
@@ -2472,7 +2542,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Przyciski akcji z sugerowaną opcją na dole
             if (isBetter) ...[
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -2704,6 +2773,13 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     );
                   },
                 ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.help_outline, color: Color(0xFFFFB74D)),
+                    tooltip: 'Pomoc',
+                    onPressed: () => showHelpDialog(context),
+                  ),
+                ],
               ),
               body: Column(
                 children: [
