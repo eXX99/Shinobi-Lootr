@@ -1991,7 +1991,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       isDismissible: false,
       enableDrag: false,
       backgroundColor: const Color(0xFF141211),
-      shape: const RoundedRectangleBorder(borderRadius: vertical(top: Radius.circular(22))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setBattleState) {
