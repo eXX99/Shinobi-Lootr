@@ -1770,6 +1770,70 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                   setStashState(() {});
                                 },
                               ),
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF141211),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: gear.borderColor, width: gear.borderWidth),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(gear.icon, style: const TextStyle(fontSize: 22)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            '$slotName: ${gear.displayName}',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                        if (gear.isSoulbound) ...[
+                                          const SizedBox(width: 2),
+                                          const Text('🈴', style: TextStyle(fontSize: 10)),
+                                        ],
+                                        if (gear.isFavorite) ...[
+                                          const SizedBox(width: 2),
+                                          const Text('❤️', style: TextStyle(fontSize: 10)),
+                                        ],
+                                      ],
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      'Moc: +${gear.effectiveStat} | Złom: ${gear.sellPrice} Ryo',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F), fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                constraints: const BoxConstraints(),
+                                padding: const EdgeInsets.symmetric(horizontal: 2),
+                                icon: Icon(
+                                  gear.isFavorite ? Icons.favorite : Icons.favorite_border,
+                                  color: gear.isFavorite ? Colors.redAccent : Colors.grey,
+                                  size: 16,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    equipmentStash[index] = gear.copyWith(isFavorite: !gear.isFavorite);
+                                  });
+                                  _saveGameData();
+                                  setStashState(() {});
+                                },
+                              ),
+                              const SizedBox(width: 4),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4)),
                                 onPressed: () {
