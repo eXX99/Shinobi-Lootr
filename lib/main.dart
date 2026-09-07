@@ -4,55 +4,250 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'models.dart';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ShinobiApp());
+void main() => runApp(const ShinobiLooterApp());
+
+const NinjaGear defaultStarterWeapon = NinjaGear(name: 'Podstawowy Kunai', rarity: ItemRarity.common, slot: GearSlot.weapon, baseStat: 5, isSoulbound: true, icon: '🗡️');
+const NinjaGear defaultStarterArmor = NinjaGear(name: 'Szata Treningowa Genina', rarity: ItemRarity.common, slot: GearSlot.armor, baseStat: 4, isSoulbound: true, icon: '🥋');
+const NinjaGear defaultStarterHelmet = NinjaGear(name: 'Ochraniacz Protektor', rarity: ItemRarity.common, slot: GearSlot.helmet, baseStat: 3, isSoulbound: true, icon: '🛡️');
+const NinjaGear defaultStarterBoots = NinjaGear(name: 'Sandały Shinobi', rarity: ItemRarity.common, slot: GearSlot.boots, baseStat: 3, isSoulbound: true, icon: '🥾');
+const NinjaGear defaultStarterTrinket = NinjaGear(name: 'Amulet Konohy', rarity: ItemRarity.common, slot: GearSlot.trinket, baseStat: 3, isSoulbound: true, icon: '📿');
+
+void showHelpDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      backgroundColor: const Color(0xFF1B1411),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFFFB74D), width: 1.2),
+      ),
+      title: const Row(
+        children: [
+          Text('📖 ', style: TextStyle(fontSize: 22)),
+          Expanded(
+            child: Text(
+              'Przewodnik Młodego Shinobi',
+              style: TextStyle(color: Color(0xFFFFB74D), fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _helpSection('⛩️ Cel Gry', 'Eksploruj strefy, zbieraj surowce, ulepszaj rynsztunek i zdawaj egzaminy ninja na wyższe rangi.'),
+              const Divider(color: Colors.white12),
+              _helpSection('🧱 Limity Rangi (Level Cap)', 'Twój poziom nie wzrośnie powyżej limitu rangi bez zdania Egzaminu Ninja w Biurze Misji!'),
+              const Divider(color: Colors.white12),
+              _helpSection('📜 Zwój Powrotu (Extraction)', 'Podczas rajdu szukaj Zwoju Powrotu, aby bezpiecznie ewakuować się do Wioski ze zdobyczami.'),
+              const Divider(color: Colors.white12),
+              _helpSection('🈴 Śmierć i Pieczęcie', 'Porażka w walce oznacza utratę niezabezpieczonego sprzętu. Szukaj Mistrza Fūinjutsu w terenie, by oznaczyć rynsztunek pieczęcią (🈴).'),
+              const Divider(color: Colors.white12),
+              _helpSection('🌲 Głębokość Rajdu & Checkpointy', 'Co 50 kroków odblokowujesz skrót, pozwalający zacząć kolejny rajd od głębszego poziomu lasu!'),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Rozumiem!', style: TextStyle(color: Color(0xFFFFB74D), fontWeight: FontWeight.bold)),
+        ),
+      ],
+    ),
+  );
 }
 
-class ShinobiApp extends StatelessWidget {
-  const ShinobiApp({super.key});
+Widget _helpSection(String title, String desc) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFFCC80))),
+        const SizedBox(height: 2),
+        Text(desc, style: const TextStyle(fontSize: 11, color: Colors.white70, height: 1.3)),
+      ],
+    ),
+  );
+}
+
+class ShinobiLooterApp extends StatelessWidget {
+  const ShinobiLooterApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Shinobi Lootr',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF101216),
-        primaryColor: const Color(0xFFFF9800),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFFF9800),
-          secondary: Color(0xFF00E676),
-          surface: Color(0xFF171A21),
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF0C0807),
+        dialogBackgroundColor: const Color(0xFF1E1412),
+        cardColor: const Color(0xFF1F1613),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(foregroundColor: Colors.white),
         ),
-        fontFamily: 'Roboto',
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFFE65100),
+          secondary: Color(0xFFFF8F00),
+          surface: Color(0xFF1E1412),
+        ),
       ),
-      home: const ShinobiScreen(),
+      home: const StartMenuScreen(),
     );
   }
 }
 
-class ZoneData {
-  final String id;
-  final String name;
-  final String description;
-  final int minLevel;
-  final List<EnemyTemplate> enemies;
-  final EnemyTemplate boss;
+class StartMenuScreen extends StatefulWidget {
+  const StartMenuScreen({super.key});
 
-  const ZoneData({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.minLevel,
-    required this.enemies,
-    required this.boss,
-  });
+  @override
+  State<StartMenuScreen> createState() => _StartMenuScreenState();
+}
+
+class _StartMenuScreenState extends State<StartMenuScreen> {
+  bool hasExistingSave = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSave();
+  }
+
+  Future<void> _checkSave() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      hasExistingSave = prefs.containsKey('ninjaExp') || prefs.containsKey('hp');
+    });
+  }
+
+  Future<void> _startNewGame() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const ShinobiScreen(isNewGame: true)),
+    );
+  }
+
+  void _continueGame() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const ShinobiScreen(isNewGame: false)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0706),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF2D150B), Color(0xFF0F0A08), Color(0xFF140D0B)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('🔥', style: TextStyle(fontSize: 54)),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'SHINOBI LOOTR',
+                      style: TextStyle(
+                        fontFamily: 'serif',
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2.5,
+                        color: Color(0xFFFFB74D),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text('Droga Ninja i Legendarnego Łupu', style: TextStyle(fontSize: 13, color: Colors.white60)),
+                    const SizedBox(height: 48),
+                    if (hasExistingSave) ...[
+                      SizedBox(
+                        width: 240,
+                        height: 48,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFE65100),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: _continueGame,
+                          child: const Text('Kontynuuj Grę', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    SizedBox(
+                      width: 240,
+                      height: 48,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: hasExistingSave ? const Color(0xFF3E2723) : const Color(0xFFE65100),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () {
+                          if (hasExistingSave) {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Nowa Gra'),
+                                content: const Text('Rozpoczęcie nowej gry nadpisze obecny postęp. Na pewno chcesz zacząć od nowa?'),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Anuluj')),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                    onPressed: () {
+                                      Navigator.pop(ctx);
+                                      _startNewGame();
+                                    },
+                                    child: const Text('Tak, zacznij od nowa'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          } else {
+                            _startNewGame();
+                          }
+                        },
+                        child: const Text('Nowa Gra', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    TextButton.icon(
+                      onPressed: () => showHelpDialog(context),
+                      icon: const Icon(Icons.help_outline, color: Colors.white60, size: 18),
+                      label: const Text('Jak grać? (Poradnik)', style: TextStyle(color: Colors.white60, fontSize: 13)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class ShinobiScreen extends StatefulWidget {
-  const ShinobiScreen({super.key});
+  final bool isNewGame;
+  const ShinobiScreen({super.key, required this.isNewGame});
 
   @override
   State<ShinobiScreen> createState() => _ShinobiScreenState();
@@ -61,1113 +256,2198 @@ class ShinobiScreen extends StatefulWidget {
 class _ShinobiScreenState extends State<ShinobiScreen> {
   final Random _rng = Random();
 
-  // Podstawowe statystyki gracza
-  int level = 1;
-  int exp = 0;
-  int maxExp = 100;
-  int hp = 120;
-  int maxHp = 120;
+  bool inVillage = true;
+  String currentSelectedLocationId = 'loc_gate';
+  int raidDepth = 0;
+  Map<String, int> maxReachedDepths = {};
+
+  int hp = 100;
+  int baseMaxHp = 100;
   int chakra = 80;
-  int maxChakra = 80;
-  int ryo = 300;
-  String currentRank = 'Nowicjusz Akademii';
+  int baseMaxChakra = 80;
 
-  // Eksploracja stref
-  String currentZoneId = 'gate';
-  int currentZoneDepth = 0;
-  final Map<String, int> zoneCheckpoints = {
-    'gate': 0,
-    'forest': 0,
-    'bridge': 0,
-    'valley': 0,
-    'hideout': 0,
-  };
+  int bonusAtk = 0;
+  int ryo = 80;
+  int ninjaExp = 0;
+  int passedRankIndex = 0;
+  bool isLoading = true;
 
-  // Logi
-  final List<String> battleLogs = [];
-  final List<String> adventureLogs = [];
+  int? activeMissionIndex;
+  int currentMissionKills = 0;
+  Set<String> completedMissionsHistory = {};
 
-  // Modyfikatory tymczasowe / pasywne
-  int bonusAtk = 5;
-  int bonusDef = 2;
-  int shieldBonusDef = 0;
-  int passiveHpRegen = 0;
-  int passiveCpRegen = 0;
+  bool hasEscapeScroll = false;
 
-  // Ekwipunek gracza
-  late EquipmentItem currentWeapon;
-  late EquipmentItem currentHelmet;
-  late EquipmentItem currentArmor;
-  late EquipmentItem currentBoots;
-  late EquipmentItem currentTrinket;
-  final List<EquipmentItem> inventory = [];
+  Map<String, int> bag = {'c_pill': 2, 'c_dango': 1, 'c_kibaku': 1, 'c_smoke': 1};
+  Map<String, int> sealedBag = {};
+  Map<String, int> craftingBag = {matIronOre: 2, matDungeonKey: 1};
+  List<NinjaGear> equipmentStash = [];
 
-  // Techniki Jutsu
-  late Jutsu activeJutsu1;
-  late Jutsu activeJutsu2;
-  late Jutsu activeJutsu3;
-  final List<Jutsu> learnedJutsuList = [];
+  int vitalTrainingCount = 0;
+  int dungeonCooldownTimestamp = 0;
 
-  // Systemy Bingo Book i Milestones
-  late List<BingoTarget> bingoTargets;
-  MilestoneTracker milestones = MilestoneTracker();
+  List<Jutsu> equippedJutsu = [allJutsuPool[0]];
+  List<Jutsu> knownJutsu = [allJutsuPool[0]];
 
-  // Bazy danych stref i technik
-  late List<ZoneData> zones;
-  late List<Jutsu> allAvailableJutsus;
+  NinjaGear currentWeapon = defaultStarterWeapon;
+  NinjaGear currentArmor = defaultStarterArmor;
+  NinjaGear currentHelmet = defaultStarterHelmet;
+  NinjaGear currentBoots = defaultStarterBoots;
+  NinjaGear currentTrinket = defaultStarterTrinket;
 
-  // --- STATYSTYKI WYPOSAŻENIA I BONUSY ---
-  // Nowy podział: Broń + Głowa = Atak | Pancerz + Buty = Obrona | Talizman = Moc Jutsu %
-  int get totalAttack =>
-      currentWeapon.effectiveStat +
-      currentHelmet.effectiveStat +
-      bonusAtk +
-      setBonusAtk +
-      milestoneBonusAtk +
-      beltBonusAtk +
-      level;
+  final List<String> log = ['Witaj w Konohagakure! Wybierz strefę w menu, aby rozpocząć rajd.'];
 
-  int get totalDefense =>
-      currentArmor.effectiveStat +
-      currentBoots.effectiveStat +
-      bonusDef +
-      setBonusDef +
-      milestoneBonusDef +
-      beltBonusDef;
+  static const int softCapLevel = 65;
 
-  int get totalJutsuPower => currentTrinket.effectiveStat + beltBonusJutsuPower;
-  int get totalDodgeRate => min(35, 5 + milestoneBonusDodge + beltBonusDodge);
-  int get totalCritRate => min(40, 8 + beltBonusCrit);
-
-  // Bonusy z Kamieni Milowych (Milestones)
-  int get milestoneBonusAtk => (milestones.physicalHitsDealt ~/ 40) * 2;
-  int get milestoneBonusDef => (milestones.damageTaken ~/ 120) * 2;
-  int get milestoneBonusDodge => min(15, (milestones.enemiesSlain ~/ 25) * 2);
-  int get milestoneBonusMaxCp => (milestones.jutsuCasts ~/ 20) * 5;
-
-  // Bonusy z Pasów Rangowych
-  int get beltBonusAtk {
-    int b = 0;
-    if (level >= 10) b += 5; // Zielony Pas Genina
-    if (milestones.bountiesClaimed >= 3 && currentZoneDepth >= 100) b += 10; // Czarny Pas Jōnina
-    return b;
+  int get maxLevelForCurrentRank {
+    switch (passedRankIndex) {
+      case 0: return 4;
+      case 1: return 12;
+      case 2: return 22;
+      case 3: return 35;
+      case 4: return 48;
+      case 5: return 60;
+      default: return softCapLevel;
+    }
   }
 
-  int get beltBonusDef {
-    int b = 0;
-    if (level >= 10) b += 5; // Zielony Pas Genina
-    return b;
+  int get level {
+    int calculated = 1;
+    for (int lvl = 1; lvl <= softCapLevel; lvl++) {
+      if (ninjaExp >= expRequiredForLevel(lvl)) {
+        calculated = lvl;
+      } else {
+        break;
+      }
+    }
+    return min(calculated, maxLevelForCurrentRank);
   }
 
-  int get beltBonusJutsuPower {
-    int b = 0;
-    if (currentRank == 'Chūnin' || currentRank == 'Jōnin' || currentRank == 'Sannin') b += 5; // Niebieski Pas Chūnina
-    if (currentRank == 'Sannin') b += 15; // Szkarłatny Pas Sannina
-    return b;
+  bool get isCappedAtRank => level >= maxLevelForCurrentRank && passedRankIndex < 6;
+
+  static int expRequiredForLevel(int lvl) {
+    if (lvl <= 1) return 0;
+    return (75 * pow(lvl, 1.85) + 45 * lvl).floor();
   }
 
-  int get beltBonusDodge {
-    int b = 0;
-    if (milestones.bountiesClaimed >= 3 && currentZoneDepth >= 100) b += 5; // Czarny Pas Jōnina
-    return b;
+  int get expForNextLevel => level >= softCapLevel ? expRequiredForLevel(softCapLevel) : expRequiredForLevel(level + 1);
+
+  String get ninjaRank {
+    switch (passedRankIndex) {
+      case 6: return 'Legendarny Sannin / Kage';
+      case 5: return 'Elita ANBU (Korzeń)';
+      case 4: return 'Jōnin Bojowy';
+      case 3: return 'Tokubetsu Jōnin';
+      case 2: return 'Chūnin';
+      case 1: return 'Genin';
+      default: return 'Nowicjusz Akademii';
+    }
   }
 
-  int get beltBonusCrit {
-    int b = 0;
-    if (currentRank == 'Sannin') b += 10; // Szkarłatny Pas Sannina
-    return b;
+  Color get rankColor {
+    switch (passedRankIndex) {
+      case 6: return const Color(0xFFFFD54F);
+      case 5: return const Color(0xFFFF4081);
+      case 4: return const Color(0xFFFF5252);
+      case 3: return const Color(0xFFBA68C8);
+      case 2: return const Color(0xFF448AFF);
+      case 1: return const Color(0xFF69F0AE);
+      default: return const Color(0xFF90A4AE);
+    }
   }
 
-  // Bonusy Zestawowe (Set Groups)
+  List<NinjaGear> get equippedList => [currentWeapon, currentArmor, currentHelmet, currentBoots, currentTrinket];
+
+  int sumAffix(AffixType type) {
+    int total = 0;
+    for (var g in equippedList) {
+      total += g.getAffixValue(type);
+    }
+    return total;
+  }
+
+  int get maxHp => baseMaxHp + sumAffix(AffixType.bonusHp);
+  int get maxChakra => baseMaxChakra + sumAffix(AffixType.bonusChakra);
+
+  int get totalCritRate => sumAffix(AffixType.critRate) + (activeSetCounts['boss_kyubi'] != null && activeSetCounts['boss_kyubi']! >= 4 ? 25 : 0);
+  int get totalDodgeRate => sumAffix(AffixType.dodgeRate) + (activeSetCounts['boss_susanoo'] != null && activeSetCounts['boss_susanoo']! >= 2 ? 10 : 0);
+  int get totalArmorPierce => sumAffix(AffixType.armorPierce) + (activeSetCounts['boss_susanoo'] != null && activeSetCounts['boss_susanoo']! >= 4 ? 20 : 0);
+  int get totalLifeSteal => sumAffix(AffixType.lifeSteal) + (activeSetCounts['boss_kyubi'] != null && activeSetCounts['boss_kyubi']! >= 2 ? 12 : 0);
+  int get totalHpRegen => sumAffix(AffixType.hpRegen) + (activeSetCounts['boss_kyubi'] != null && activeSetCounts['boss_kyubi']! >= 4 ? 15 : 0);
+  int get totalChakraRegen => sumAffix(AffixType.chakraRegen) + (activeSetCounts['boss_kaguya'] != null && activeSetCounts['boss_kaguya']! >= 2 ? 20 : 0);
+
+  Map<String, int> get activeSetCounts {
+    Map<String, int> counts = {};
+    for (var gear in equippedList) {
+      if (gear.setGroup != 'none') {
+        counts[gear.setGroup] = (counts[gear.setGroup] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }
+
   int get setBonusAtk {
-    int countANBU = 0;
-    if (currentWeapon.setGroup == 'ANBU') countANBU++;
-    if (currentHelmet.setGroup == 'ANBU') countANBU++;
-    if (currentArmor.setGroup == 'ANBU') countANBU++;
-    if (currentBoots.setGroup == 'ANBU') countANBU++;
-    if (currentTrinket.setGroup == 'ANBU') countANBU++;
-    return countANBU >= 3 ? 15 : 0;
+    int bonus = 0;
+    activeSetCounts.forEach((setGroup, count) {
+      if (setGroup == 'anbu' && count >= 2) bonus += 6;
+      if (setGroup == 'myoboku' && count >= 2) bonus += 10;
+      if (setGroup == 'boss_kyubi' && count >= 2) bonus += 15;
+      if (setGroup == 'boss_kaguya' && count >= 4) bonus += 35;
+      if (count >= 4) bonus += 14;
+    });
+    return bonus;
   }
 
   int get setBonusDef {
-    int countMyoboku = 0;
-    if (currentWeapon.setGroup == 'Myoboku') countMyoboku++;
-    if (currentHelmet.setGroup == 'Myoboku') countMyoboku++;
-    if (currentArmor.setGroup == 'Myoboku') countMyoboku++;
-    if (currentBoots.setGroup == 'Myoboku') countMyoboku++;
-    if (currentTrinket.setGroup == 'Myoboku') countMyoboku++;
-    return countMyoboku >= 3 ? 15 : 0;
+    int bonus = 0;
+    activeSetCounts.forEach((setGroup, count) {
+      if (setGroup == 'anbu' && count >= 2) bonus += 5;
+      if (setGroup == 'myoboku' && count >= 2) bonus += 8;
+      if (setGroup == 'boss_susanoo' && count >= 2) bonus += 20;
+      if (count >= 4) bonus += 12;
+    });
+    return bonus;
   }
+
+  int get totalAttack => currentWeapon.effectiveStat + currentTrinket.effectiveStat + bonusAtk + setBonusAtk + level;
+  int get totalDefense => currentArmor.effectiveStat + currentHelmet.effectiveStat + currentBoots.effectiveStat + setBonusDef;
 
   @override
   void initState() {
     super.initState();
-    _initDefaultLoadout();
-    _initJutsuDatabase();
-    _initZonesDatabase();
-    _initBingoBook();
-    _loadGameData();
+    if (widget.isNewGame) {
+      setState(() => isLoading = false);
+    } else {
+      _loadGameData();
+    }
   }
 
-  void _initDefaultLoadout() {
-    currentWeapon = const EquipmentItem(
-      id: 'w_init',
-      name: 'Stalowy Kunai Bojowy',
-      slot: GearSlot.weapon,
-      rarity: ItemRarity.common,
-      baseStat: 15,
-      price: 60,
-    );
-    currentHelmet = const EquipmentItem(
-      id: 'h_init',
-      name: 'Ochraniacz Czoła Liścia',
-      slot: GearSlot.helmet,
-      rarity: ItemRarity.common,
-      baseStat: 10,
-      price: 50,
-    );
-    currentArmor = const EquipmentItem(
-      id: 'a_init',
-      name: 'Kamizelka Treningowa',
-      slot: GearSlot.armor,
-      rarity: ItemRarity.common,
-      baseStat: 14,
-      price: 60,
-    );
-    currentBoots = const EquipmentItem(
-      id: 'b_init',
-      name: 'Sandały Shinobi',
-      slot: GearSlot.boots,
-      rarity: ItemRarity.common,
-      baseStat: 8,
-      price: 45,
-    );
-    currentTrinket = const EquipmentItem(
-      id: 't_init',
-      name: 'Amulet Przepływu Czakry',
-      slot: GearSlot.trinket,
-      rarity: ItemRarity.common,
-      baseStat: 10,
-      price: 80,
-    );
-  }
-
-  void _initJutsuDatabase() {
-    allAvailableJutsus = const [
-      Jutsu(
-        id: 'j_taijutsu',
-        name: 'Taijutsu: Seria Ciosów',
-        rank: JutsuRank.academy,
-        type: JutsuType.damage,
-        chakraCost: 15,
-        powerMultiplier: 1.4,
-        description: 'Szybkie uderzenie wręcz omijające część obrony wroga.',
-        value: 120,
-      ),
-      Jutsu(
-        id: 'j_bunshin',
-        name: 'Bunshin no Jutsu: Klon Czakry',
-        rank: JutsuRank.academy,
-        type: JutsuType.shield,
-        chakraCost: 20,
-        powerMultiplier: 1.5,
-        description: 'Tworzy iluzję absorbującą kolejne uderzenie wroga.',
-        value: 150,
-      ),
-      Jutsu(
-        id: 'j_fireball',
-        name: 'Katon: Kula Ognia',
-        rank: JutsuRank.genin,
-        type: JutsuType.damage,
-        chakraCost: 28,
-        powerMultiplier: 2.1,
-        description: 'Potężny strumień płomieni wypalający pancerz.',
-        value: 300,
-      ),
-      Jutsu(
-        id: 'j_waterbullet',
-        name: 'Suiton: Wodna Kula',
-        rank: JutsuRank.genin,
-        type: JutsuType.damage,
-        chakraCost: 26,
-        powerMultiplier: 2.0,
-        description: 'Pocisk sprężonej wody uderzający z impetem.',
-        value: 280,
-      ),
-      Jutsu(
-        id: 'j_heal',
-        name: 'Iryōjutsu: Regeneracja Dłoni',
-        rank: JutsuRank.genin,
-        type: JutsuType.heal,
-        chakraCost: 30,
-        powerMultiplier: 2.2,
-        description: 'Medyczna czakra przywracająca znaczne punkty zdrowia.',
-        value: 350,
-      ),
-      Jutsu(
-        id: 'j_chidori',
-        name: 'Raiton: Chidori (Tysiąc Ptaków)',
-        rank: JutsuRank.chunin,
-        type: JutsuType.damage,
-        chakraCost: 45,
-        powerMultiplier: 3.2,
-        description: 'Błyskawiczne pchnięcie piorunem niszczące obronę celu.',
-        value: 750,
-      ),
-      Jutsu(
-        id: 'j_rasengan',
-        name: 'Ninjutsu: Rasengan',
-        rank: JutsuRank.chunin,
-        type: JutsuType.damage,
-        chakraCost: 45,
-        powerMultiplier: 3.3,
-        description: 'Wirująca sfera czakry rozbijająca cel na kawałki.',
-        value: 800,
-      ),
-      Jutsu(
-        id: 'j_earthwall',
-        name: 'Doton: Kamienny Mur',
-        rank: JutsuRank.chunin,
-        type: JutsuType.shield,
-        chakraCost: 35,
-        powerMultiplier: 2.6,
-        description: 'Wznosi potężną ścianę z ziemi znacznie redukującą ciosy.',
-        value: 650,
-      ),
-      Jutsu(
-        id: 'j_dragon_fire',
-        name: 'Katon: Smoczy Płomień',
-        rank: JutsuRank.jonin,
-        type: JutsuType.damage,
-        chakraCost: 65,
-        powerMultiplier: 4.2,
-        description: 'Piekielny strumień ognia trawiący całe pole bitwy.',
-        value: 1500,
-      ),
-      Jutsu(
-        id: 'j_water_dragon',
-        name: 'Suiton: Wodny Smok',
-        rank: JutsuRank.jonin,
-        type: JutsuType.damage,
-        chakraCost: 65,
-        powerMultiplier: 4.1,
-        description: 'Gigantyczna bestia z wody miażdżąca pozycje wroga.',
-        value: 1450,
-      ),
-      Jutsu(
-        id: 'j_shadow_clone_barrage',
-        name: 'Kage Bunshin: Wielka Nawałnica',
-        rank: JutsuRank.jonin,
-        type: JutsuType.damage,
-        chakraCost: 70,
-        powerMultiplier: 4.4,
-        description: 'Dziesiątki klonów cienia wyprowadzających grad uderzeń.',
-        value: 1600,
-      ),
-      Jutsu(
-        id: 'j_katsuyu_heal',
-        name: 'Kuchiyose: Dar Katsuyu',
-        rank: JutsuRank.jonin,
-        type: JutsuType.heal,
-        chakraCost: 55,
-        powerMultiplier: 4.0,
-        description: 'Medyczna ślina ślimaka przywracająca ogromne ilości zdrowia.',
-        value: 1500,
-      ),
-      Jutsu(
-        id: 'j_rasenshuriken',
-        name: 'Fūton: Rasenshuriken',
-        rank: JutsuRank.sannin,
-        type: JutsuType.damage,
-        chakraCost: 100,
-        powerMultiplier: 6.2,
-        description: 'Legendarna wirująca broń wiatru przecinająca nici czakry.',
-        value: 3500,
-      ),
-      Jutsu(
-        id: 'j_kirin',
-        name: 'Raiton: Kirin (Rycząca Bestia)',
-        rank: JutsuRank.sannin,
-        type: JutsuType.damage,
-        chakraCost: 95,
-        powerMultiplier: 6.0,
-        description: 'Prawdziwy piorun ściągnięty z chmur z prędkością światła.',
-        value: 3400,
-      ),
-      Jutsu(
-        id: 'j_byakugou',
-        name: 'Fūinjutsu: Pieczęć Siły Stu',
-        rank: JutsuRank.sannin,
-        type: JutsuType.heal,
-        chakraCost: 80,
-        powerMultiplier: 5.5,
-        description: 'Natychmiastowe odblokowanie zapasów czakry i pełna regeneracja.',
-        value: 3800,
-      ),
-      Jutsu(
-        id: 'j_sand_coffin',
-        name: 'Sabaku: Pustynne Więzienie',
-        rank: JutsuRank.jonin,
-        type: JutsuType.damage,
-        chakraCost: 75,
-        powerMultiplier: 4.6,
-        description: 'Bezlitosny uścisk sprężonego piasku łamiący kości.',
-        value: 1800,
-      ),
-      Jutsu(
-        id: 'j_reaper_seal',
-        name: 'Kinjutsu: Pieczęć Śmierci',
-        rank: JutsuRank.sannin,
-        type: JutsuType.damage,
-        chakraCost: 120,
-        powerMultiplier: 7.5,
-        description: 'Wezwanie Boga Śmierci Shiki Fūjin niszczącego duszę wroga.',
-        value: 5000,
-      ),
-    ];
-
-    activeJutsu1 = allAvailableJutsus[0]; // Taijutsu
-    activeJutsu2 = allAvailableJutsus[2]; // Kula Ognia
-    activeJutsu3 = allAvailableJutsus[4]; // Regeneracja Dłoni
-    learnedJutsuList.addAll([activeJutsu1, activeJutsu2, activeJutsu3]);
-  }
-
-  void _initZonesDatabase() {
-    zones = [
-      ZoneData(
-        id: 'gate',
-        name: 'Brama Wioski Liścia',
-        description: 'Obrzeża Konohy. Dzikie ogary i drobni złodzieje.',
-        minLevel: 1,
-        enemies: const [
-          EnemyTemplate(id: 'e_dog', name: 'Dziki Ogar z Lasu', maxHp: 65, baseAtk: 12, baseDef: 6),
-          EnemyTemplate(id: 'e_thief', name: 'Złodziej Zapieczętowanych Zwojów', maxHp: 80, baseAtk: 16, baseDef: 8),
-          EnemyTemplate(id: 'e_scout_spy', name: 'Szpieg Trawiastej Mgły', maxHp: 95, baseAtk: 18, baseDef: 10),
-        ],
-        boss: const EnemyTemplate(
-          id: 'b_mizuki',
-          name: 'Zdrajca Mizuki',
-          maxHp: 220,
-          baseAtk: 24,
-          baseDef: 14,
-          traits: [BossTrait.dodgeManiac],
-          isBoss: true,
-        ),
-      ),
-      ZoneData(
-        id: 'forest',
-        name: 'Las Śmierci (Egzamin Chūnina)',
-        description: 'Gęsta dżungla pełna jadowitych bestii i wrogich drużyn.',
-        minLevel: 8,
-        enemies: const [
-          EnemyTemplate(id: 'e_leech', name: 'Wielka Pijawka Czakry', maxHp: 150, baseAtk: 26, baseDef: 14, traits: [BossTrait.chakraLeech]),
-          EnemyTemplate(id: 'e_rain_genin', name: 'Genin Ukrytego Deszczu', maxHp: 180, baseAtk: 30, baseDef: 18),
-          EnemyTemplate(id: 'e_snake', name: 'Olbrzymi Pyton Śmierci', maxHp: 210, baseAtk: 34, baseDef: 20, traits: [BossTrait.poisonMaster]),
-        ],
-        boss: const EnemyTemplate(
-          id: 'b_dosu',
-          name: 'Dosu Kinuta (Dźwięk)',
-          maxHp: 480,
-          baseAtk: 42,
-          baseDef: 26,
-          traits: [BossTrait.chakraThorns, BossTrait.ironSkin],
-          isBoss: true,
-        ),
-      ),
-      ZoneData(
-        id: 'bridge',
-        name: 'Wielki Most Tenkū (Kraj Fali)',
-        description: 'Most spowity lodowatą mgłą. Rewir bezlitosnych najemników.',
-        minLevel: 16,
-        enemies: const [
-          EnemyTemplate(id: 'e_mist_thug', name: 'Najemnik Gato z Tasakiem', maxHp: 260, baseAtk: 45, baseDef: 28),
-          EnemyTemplate(id: 'e_hunter_ninja', name: 'Tropiciel Kirigakure (ANBU)', maxHp: 320, baseAtk: 52, baseDef: 34, traits: [BossTrait.dodgeManiac]),
-        ],
-        boss: const EnemyTemplate(
-          id: 'b_zabuza',
-          name: 'Zabuza Momochi (Demon Mgły)',
-          maxHp: 850,
-          baseAtk: 68,
-          baseDef: 42,
-          traits: [BossTrait.bloodEnrage, BossTrait.ironSkin],
-          isBoss: true,
-        ),
-      ),
-      ZoneData(
-        id: 'valley',
-        name: 'Dolina Końca',
-        description: 'Pradawne wodospady i zniszczone pomniki założycieli.',
-        minLevel: 25,
-        enemies: const [
-          EnemyTemplate(id: 'e_curse_warrior', name: 'Nosiciel Przeklętej Pieczęci', maxHp: 450, baseAtk: 68, baseDef: 48, traits: [BossTrait.bloodEnrage]),
-          EnemyTemplate(id: 'e_sound_four', name: 'Elitarny Strażnik Dźwięku', maxHp: 520, baseAtk: 76, baseDef: 54, traits: [BossTrait.chakraLeech]),
-        ],
-        boss: const EnemyTemplate(
-          id: 'b_gaara',
-          name: 'Gaara Pustynnego Piasku',
-          maxHp: 1350,
-          baseAtk: 92,
-          baseDef: 70,
-          traits: [BossTrait.ironSkin, BossTrait.chakraThorns],
-          isBoss: true,
-        ),
-      ),
-      ZoneData(
-        id: 'hideout',
-        name: 'Kryjówka Akatsuki',
-        description: 'Mroczne podziemia organizacji polującej na ogoniaste bestie.',
-        minLevel: 35,
-        enemies: const [
-          EnemyTemplate(id: 'e_white_zetsu', name: 'Armia Białych Zetsu', maxHp: 700, baseAtk: 95, baseDef: 65, traits: [BossTrait.chakraLeech, BossTrait.dodgeManiac]),
-          EnemyTemplate(id: 'e_puppet_renegade', name: 'Zbiegły Lalkarz Piasku', maxHp: 820, baseAtk: 110, baseDef: 72, traits: [BossTrait.poisonMaster]),
-        ],
-        boss: const EnemyTemplate(
-          id: 'b_itachi_clone',
-          name: 'Klon Cienia Itachiego Uchiha',
-          maxHp: 2100,
-          baseAtk: 135,
-          baseDef: 85,
-          traits: [BossTrait.dodgeManiac, BossTrait.bloodEnrage, BossTrait.chakraThorns],
-          isBoss: true,
-        ),
-      ),
-    ];
-  }
-
-  void _initBingoBook() {
-    bingoTargets = [
-      BingoTarget(
-        id: 'nukenin_1',
-        name: 'Mei Ukryty Cień',
-        title: 'Zbiegły Zwiadowca Liścia',
-        zoneId: 'gate',
-        minDepth: 25,
-        enemy: const EnemyTemplate(
-          id: 'e_mei',
-          name: 'Mei Ukryty Cień',
-          maxHp: 260,
-          baseAtk: 25,
-          baseDef: 14,
-          traits: [BossTrait.dodgeManiac],
-          isBoss: true,
-        ),
-        exclusiveReward: const EquipmentItem(
-          id: 'drop_mei_boots',
-          name: 'Ciche Kamasze Mglistego Widma',
-          slot: GearSlot.boots,
-          rarity: ItemRarity.epic,
-          baseStat: 26,
-          specialEffect: 'Mistrzowskie Zmylenie: Po uniku darmowe Jutsu',
-          price: 600,
-        ),
-        bountyRyo: 400,
-        bountyExp: 300,
-      ),
-      BingoTarget(
-        id: 'nukenin_2',
-        name: 'Juzo Żelaznoręki',
-        title: 'Przemytnik Broni z Iwa',
-        zoneId: 'forest',
-        minDepth: 50,
-        enemy: const EnemyTemplate(
-          id: 'e_juzo',
-          name: 'Juzo Żelaznoręki',
-          maxHp: 460,
-          baseAtk: 36,
-          baseDef: 26,
-          traits: [BossTrait.ironSkin, BossTrait.poisonMaster],
-          isBoss: true,
-        ),
-        exclusiveReward: const EquipmentItem(
-          id: 'drop_juzo_armor',
-          name: 'Żelazna Kolczuga Przemytnika',
-          slot: GearSlot.armor,
-          rarity: ItemRarity.epic,
-          baseStat: 38,
-          specialEffect: 'Antytoksyna: Pancerz redukuje trucizny',
-          price: 900,
-        ),
-        bountyRyo: 750,
-        bountyExp: 550,
-      ),
-      BingoTarget(
-        id: 'nukenin_3',
-        name: 'Ryōgo „Krwawa Brzytwa”',
-        title: 'Rzeźnik z Kraju Fali',
-        zoneId: 'bridge',
-        minDepth: 50,
-        enemy: const EnemyTemplate(
-          id: 'e_ryogo',
-          name: 'Ryōgo „Krwawa Brzytwa”',
-          maxHp: 640,
-          baseAtk: 52,
-          baseDef: 22,
-          traits: [BossTrait.bloodEnrage, BossTrait.dodgeManiac],
-          isBoss: true,
-        ),
-        exclusiveReward: const EquipmentItem(
-          id: 'drop_ryogo_blade',
-          name: 'Ząbkowany Sztylet Krwawej Brzytwy',
-          slot: GearSlot.weapon,
-          rarity: ItemRarity.legendary,
-          baseStat: 56,
-          specialEffect: 'Krwawiące Cięcie: Krytyki nakładają krwawienie',
-          price: 1500,
-        ),
-        bountyRyo: 1200,
-        bountyExp: 900,
-      ),
-      BingoTarget(
-        id: 'nukenin_4',
-        name: 'Gurenko Ognisty Pająk',
-        title: 'Zdrajca z Doliny Końca',
-        zoneId: 'valley',
-        minDepth: 75,
-        enemy: const EnemyTemplate(
-          id: 'e_gurenko',
-          name: 'Gurenko Ognisty Pająk',
-          maxHp: 820,
-          baseAtk: 60,
-          baseDef: 32,
-          traits: [BossTrait.chakraLeech, BossTrait.chakraThorns],
-          isBoss: true,
-        ),
-        exclusiveReward: const EquipmentItem(
-          id: 'drop_gurenko_talisman',
-          name: 'Ognisty Kokon Gurenko',
-          slot: GearSlot.trinket,
-          rarity: ItemRarity.legendary,
-          baseStat: 45,
-          specialEffect: 'Pożeracz Czakry: Wzmocnienie Jutsu i kradzież CP',
-          price: 2200,
-        ),
-        bountyRyo: 1800,
-        bountyExp: 1400,
-      ),
-      BingoTarget(
-        id: 'nukenin_5',
-        name: 'Kenshin Upadły Mistrz Miecza',
-        title: 'Egzekutor Cienia',
-        zoneId: 'hideout',
-        minDepth: 100,
-        enemy: const EnemyTemplate(
-          id: 'e_kenshin',
-          name: 'Kenshin Upadły Mistrz Miecza',
-          maxHp: 1250,
-          baseAtk: 84,
-          baseDef: 40,
-          traits: [BossTrait.ironSkin, BossTrait.bloodEnrage, BossTrait.chakraLeech],
-          isBoss: true,
-        ),
-        exclusiveReward: const EquipmentItem(
-          id: 'drop_kenshin_helm',
-          name: 'Pęknięta Maska Skrytobójcy',
-          slot: GearSlot.helmet,
-          rarity: ItemRarity.legendary,
-          baseStat: 52,
-          specialEffect: 'Zabójczy Instynkt: Potężny bonus do Ataku',
-          price: 3000,
-        ),
-        bountyRyo: 2800,
-        bountyExp: 2200,
-      ),
-    ];
-  }
-  void _saveGameData() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setInt('level', level);
-    prefs.setInt('exp', exp);
-    prefs.setInt('maxExp', maxExp);
-    prefs.setInt('hp', hp);
-    prefs.setInt('maxHp', maxHp);
-    prefs.setInt('chakra', chakra);
-    prefs.setInt('maxChakra', maxChakra);
-    prefs.setInt('ryo', ryo);
-    prefs.setString('rank', currentRank);
-    prefs.setString('milestones', jsonEncode(milestones.toJson()));
-
-    prefs.setString('weapon', jsonEncode(currentWeapon.toJson()));
-    prefs.setString('helmet', jsonEncode(currentHelmet.toJson()));
-    prefs.setString('armor', jsonEncode(currentArmor.toJson()));
-    prefs.setString('boots', jsonEncode(currentBoots.toJson()));
-    prefs.setString('trinket', jsonEncode(currentTrinket.toJson()));
-
-    final invList = inventory.map((i) => i.toJson()).toList();
-    prefs.setString('inventory', jsonEncode(invList));
-
-    final learnedList = learnedJutsuList.map((j) => j.toJson()).toList();
-    prefs.setString('learned_jutsu', jsonEncode(learnedList));
-    prefs.setString('j1', jsonEncode(activeJutsu1.toJson()));
-    prefs.setString('j2', jsonEncode(activeJutsu2.toJson()));
-    prefs.setString('j3', jsonEncode(activeJutsu3.toJson()));
-
-    final cpMap = {for (var e in zoneCheckpoints.entries) e.key: e.value};
-    prefs.setString('zone_checkpoints', jsonEncode(cpMap));
-
-    final bingoStates = {for (var b in bingoTargets) b.id: b.isDefeated};
-    prefs.setString('bingo_states', jsonEncode(bingoStates));
-  }
-
-  void _loadGameData() async {
+  Future<void> _loadGameData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      level = prefs.getInt('level') ?? level;
-      exp = prefs.getInt('exp') ?? exp;
-      maxExp = prefs.getInt('maxExp') ?? maxExp;
-      hp = prefs.getInt('hp') ?? hp;
-      maxHp = prefs.getInt('maxHp') ?? maxHp;
-      chakra = prefs.getInt('chakra') ?? chakra;
-      maxChakra = prefs.getInt('maxChakra') ?? maxChakra;
-      ryo = prefs.getInt('ryo') ?? ryo;
-      currentRank = prefs.getString('rank') ?? currentRank;
+      baseMaxHp = prefs.getInt('baseMaxHp') ?? prefs.getInt('maxHp') ?? 100;
+      baseMaxChakra = prefs.getInt('baseMaxChakra') ?? prefs.getInt('maxChakra') ?? 80;
+      hp = prefs.getInt('hp') ?? baseMaxHp;
+      chakra = prefs.getInt('chakra') ?? baseMaxChakra;
+      bonusAtk = prefs.getInt('bonusAtk') ?? 0;
+      ryo = prefs.getInt('ryo') ?? 80;
+      ninjaExp = prefs.getInt('ninjaExp') ?? 0;
+      passedRankIndex = prefs.getInt('passedRankIndex') ?? 0;
+      inVillage = prefs.getBool('inVillage') ?? true;
+      currentSelectedLocationId = prefs.getString('currentSelectedLocationId') ?? 'loc_gate';
+      activeMissionIndex = prefs.getInt('activeMissionIndex');
+      currentMissionKills = prefs.getInt('currentMissionKills') ?? 0;
+      vitalTrainingCount = prefs.getInt('vitalTrainingCount') ?? 0;
+      dungeonCooldownTimestamp = prefs.getInt('dungeonCooldownTimestamp') ?? 0;
+      hasEscapeScroll = prefs.getBool('hasEscapeScroll') ?? false;
+      raidDepth = prefs.getInt('raidDepth') ?? 0;
 
-      final mStr = prefs.getString('milestones');
-      if (mStr != null) {
-        milestones = MilestoneTracker.fromJson(jsonDecode(mStr));
+      final depthsJson = prefs.getString('maxReachedDepths');
+      if (depthsJson != null) maxReachedDepths = Map<String, int>.from(jsonDecode(depthsJson));
+
+      final completedList = prefs.getStringList('completedMissionsHistory');
+      if (completedList != null) completedMissionsHistory = completedList.toSet();
+
+      final bagJson = prefs.getString('ninjaBag');
+      if (bagJson != null) bag = Map<String, int>.from(jsonDecode(bagJson));
+
+      final sealedBagJson = prefs.getString('sealedBag');
+      if (sealedBagJson != null) sealedBag = Map<String, int>.from(jsonDecode(sealedBagJson));
+
+      final craftJson = prefs.getString('craftingBag');
+      if (craftJson != null) craftingBag = Map<String, int>.from(jsonDecode(craftJson));
+
+      final stashJson = prefs.getString('equipmentStash');
+      if (stashJson != null) {
+        final List decodedList = jsonDecode(stashJson);
+        equipmentStash = decodedList.map((item) => NinjaGear.fromJson(item)).toList();
       }
 
-      final wStr = prefs.getString('weapon');
-      if (wStr != null) currentWeapon = EquipmentItem.fromJson(jsonDecode(wStr));
-      final hStr = prefs.getString('helmet');
-      if (hStr != null) currentHelmet = EquipmentItem.fromJson(jsonDecode(hStr));
-      final aStr = prefs.getString('armor');
-      if (aStr != null) currentArmor = EquipmentItem.fromJson(jsonDecode(aStr));
-      final bStr = prefs.getString('boots');
-      if (bStr != null) currentBoots = EquipmentItem.fromJson(jsonDecode(bStr));
-      final tStr = prefs.getString('trinket');
-      if (tStr != null) currentTrinket = EquipmentItem.fromJson(jsonDecode(tStr));
+      final weaponStr = prefs.getString('currentWeapon');
+      if (weaponStr != null) currentWeapon = NinjaGear.fromJson(jsonDecode(weaponStr));
 
-      final invStr = prefs.getString('inventory');
-      if (invStr != null) {
-        final List list = jsonDecode(invStr);
-        inventory.clear();
-        for (var item in list) {
-          inventory.add(EquipmentItem.fromJson(item));
-        }
+      final armorStr = prefs.getString('currentArmor');
+      if (armorStr != null) currentArmor = NinjaGear.fromJson(jsonDecode(armorStr));
+
+      final helmetStr = prefs.getString('currentHelmet');
+      if (helmetStr != null) currentHelmet = NinjaGear.fromJson(jsonDecode(helmetStr));
+
+      final bootsStr = prefs.getString('currentBoots');
+      if (bootsStr != null) currentBoots = NinjaGear.fromJson(jsonDecode(bootsStr));
+
+      final trinketStr = prefs.getString('currentTrinket');
+      if (trinketStr != null) currentTrinket = NinjaGear.fromJson(jsonDecode(trinketStr));
+
+      final knownIds = prefs.getStringList('knownJutsuIds');
+      if (knownIds != null && knownIds.isNotEmpty) {
+        knownJutsu = allJutsuPool.where((j) => knownIds.contains(j.id)).toList();
       }
 
-      final jutsuStr = prefs.getString('learned_jutsu');
-      if (jutsuStr != null) {
-        final List list = jsonDecode(jutsuStr);
-        learnedJutsuList.clear();
-        for (var j in list) {
-          learnedJutsuList.add(Jutsu.fromJson(j));
-        }
+      final equippedIds = prefs.getStringList('equippedJutsuIds');
+      if (equippedIds != null && equippedIds.isNotEmpty) {
+        equippedJutsu = allJutsuPool.where((j) => equippedIds.contains(j.id)).toList();
       }
-
-      final j1Str = prefs.getString('j1');
-      if (j1Str != null) activeJutsu1 = Jutsu.fromJson(jsonDecode(j1Str));
-      final j2Str = prefs.getString('j2');
-      if (j2Str != null) activeJutsu2 = Jutsu.fromJson(jsonDecode(j2Str));
-      final j3Str = prefs.getString('j3');
-      if (j3Str != null) activeJutsu3 = Jutsu.fromJson(jsonDecode(j3Str));
-
-      final cpStr = prefs.getString('zone_checkpoints');
-      if (cpStr != null) {
-        final Map<String, dynamic> map = jsonDecode(cpStr);
-        map.forEach((k, v) => zoneCheckpoints[k] = v as int);
-      }
-
-      final bStates = prefs.getString('bingo_states');
-      if (bStates != null) {
-        final map = jsonDecode(bStates) as Map<String, dynamic>;
-        for (var target in bingoTargets) {
-          if (map.containsKey(target.id)) {
-            target.isDefeated = map[target.id] as bool;
-          }
-        }
-      }
+      isLoading = false;
     });
   }
 
-  void _addExp(int amount) {
-    exp += amount;
-    while (exp >= maxExp) {
-      exp -= maxExp;
-      level++;
-      maxExp = (maxExp * 1.35).round();
-      maxHp += 18;
-      maxChakra += 10;
-      hp = maxHp;
-      chakra = maxChakra;
-      adventureLogs.insert(0, '🎉 Awans na Poziom $level! Zdrowie i Czakra odnowione!');
+  Future<void> _saveGameData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('hp', hp);
+    await prefs.setInt('baseMaxHp', baseMaxHp);
+    await prefs.setInt('chakra', chakra);
+    await prefs.setInt('baseMaxChakra', baseMaxChakra);
+    await prefs.setInt('bonusAtk', bonusAtk);
+    await prefs.setInt('ryo', ryo);
+    await prefs.setInt('ninjaExp', ninjaExp);
+    await prefs.setInt('passedRankIndex', passedRankIndex);
+    await prefs.setBool('inVillage', inVillage);
+    await prefs.setString('currentSelectedLocationId', currentSelectedLocationId);
+    await prefs.setStringList('completedMissionsHistory', completedMissionsHistory.toList());
+    await prefs.setBool('hasEscapeScroll', hasEscapeScroll);
+    await prefs.setInt('raidDepth', raidDepth);
+    await prefs.setString('maxReachedDepths', jsonEncode(maxReachedDepths));
+
+    if (activeMissionIndex != null) {
+      await prefs.setInt('activeMissionIndex', activeMissionIndex!);
+    } else {
+      await prefs.remove('activeMissionIndex');
     }
+    await prefs.setInt('currentMissionKills', currentMissionKills);
+    await prefs.setInt('vitalTrainingCount', vitalTrainingCount);
+    await prefs.setInt('dungeonCooldownTimestamp', dungeonCooldownTimestamp);
+    await prefs.setString('ninjaBag', jsonEncode(bag));
+    await prefs.setString('sealedBag', jsonEncode(sealedBag));
+    await prefs.setString('craftingBag', jsonEncode(craftingBag));
+    await prefs.setString('equipmentStash', jsonEncode(equipmentStash.map((i) => i.toJson()).toList()));
+    await prefs.setString('currentWeapon', jsonEncode(currentWeapon.toJson()));
+    await prefs.setString('currentArmor', jsonEncode(currentArmor.toJson()));
+    await prefs.setString('currentHelmet', jsonEncode(currentHelmet.toJson()));
+    await prefs.setString('currentBoots', jsonEncode(currentBoots.toJson()));
+    await prefs.setString('currentTrinket', jsonEncode(currentTrinket.toJson()));
+    await prefs.setStringList('knownJutsuIds', knownJutsu.map((j) => j.id).toList());
+    await prefs.setStringList('equippedJutsuIds', equippedJutsu.map((j) => j.id).toList());
   }
 
-  void _applyTurnRegen() {
-    if (passiveHpRegen > 0) {
-      hp = min(maxHp, hp + passiveHpRegen);
-      battleLogs.insert(0, '💚 Regeneracja: +$passiveHpRegen HP.');
+  void showActionBlockedMessage(String msg) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (ctx) => Positioned(
+        top: 36,
+        left: 16,
+        right: 16,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFC62828),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: const [
+                BoxShadow(color: Colors.black87, blurRadius: 12, offset: Offset(0, 4)),
+              ],
+              border: Border.all(color: Colors.white24, width: 1.2),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    msg,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(entry);
+    Future.delayed(const Duration(milliseconds: 2200), () {
+      if (entry.mounted) entry.remove();
+    });
+  }
+
+  void addExperience(int amount) {
+    final int oldLvl = level;
+    ninjaExp += amount;
+    if (level > oldLvl) {
+      addLog('⚡ AWANS! Osiągnięto Poziom $level!');
+    } else if (isCappedAtRank) {
+      addLog('🔒 Osiągnięto limit poziomu rangi ($maxLevelForCurrentRank)! Zdaj Egzamin, by awansować.');
     }
-    if (passiveCpRegen > 0) {
-      chakra = min(maxChakra + milestoneBonusMaxCp, chakra + passiveCpRegen);
-      battleLogs.insert(0, '🌀 Regeneracja: +$passiveCpRegen CP.');
-    }
+    _saveGameData();
+  }
+
+  void addLog(String text) {
+    setState(() {
+      log.insert(0, text);
+      if (log.length > 30) log.removeLast();
+    });
+    _saveGameData();
   }
 
   void returnToVillage({bool fallenInBattle = false}) {
     setState(() {
-      currentZoneDepth = 0;
+      inVillage = true;
+      hp = maxHp;
+      chakra = maxChakra;
+      hasEscapeScroll = false;
+      raidDepth = 0;
+
       if (fallenInBattle) {
-        hp = 1;
-        adventureLogs.insert(0, '💀 Poległeś w starciu... Sanitariusze przenieśli Cię do Wioski z 1 HP.');
+        if (!currentWeapon.isSoulbound) currentWeapon = defaultStarterWeapon;
+        if (!currentArmor.isSoulbound) currentArmor = defaultStarterArmor;
+        if (!currentHelmet.isSoulbound) currentHelmet = defaultStarterHelmet;
+        if (!currentBoots.isSoulbound) currentBoots = defaultStarterBoots;
+        if (!currentTrinket.isSoulbound) currentTrinket = defaultStarterTrinket;
+        equipmentStash.clear();
+        bag.clear();
+      }
+    });
+
+    if (fallenInBattle) {
+      addLog('💀 Porażka w terenie! Utracono rynsztunek i plecak bez pieczęci.');
+    } else {
+      addLog('⛩️ Bezpieczna ewakuacja Zwojem Powrotu do Konohy.');
+    }
+    _saveGameData();
+  }
+
+  void leaveVillage(ShinobiLocation location, int startDepth) {
+    if (level < location.minLevel) {
+      showActionBlockedMessage('🚫 Wymagany poziom ${location.minLevel} dla tej strefy!');
+      return;
+    }
+    setState(() {
+      inVillage = false;
+      hasEscapeScroll = false;
+      currentSelectedLocationId = location.id;
+      raidDepth = startDepth;
+    });
+    addLog('🍃 Wyruszasz do: ${location.name} (Start od głębokości $raidDepth)!');
+    _saveGameData();
+  }
+
+  void addCraftingMaterial(String matId, [int count = 1]) {
+    craftingBag[matId] = (craftingBag[matId] ?? 0) + count;
+    _saveGameData();
+  }
+
+  bool useConsumable(Consumable item) {
+    bool fromUnsealed = (bag[item.id] ?? 0) > 0;
+    bool fromSealed = (sealedBag[item.id] ?? 0) > 0;
+    if (!fromUnsealed && !fromSealed) return false;
+
+    setState(() {
+      if (fromUnsealed) {
+        bag[item.id] = bag[item.id]! - 1;
+        if (bag[item.id] == 0) bag.remove(item.id);
       } else {
-        adventureLogs.insert(0, '🏡 Bezpiecznie powróciłeś do Wioski Liścia.');
+        sealedBag[item.id] = sealedBag[item.id]! - 1;
+        if (sealedBag[item.id] == 0) sealedBag.remove(item.id);
+      }
+
+      switch (item.type) {
+        case ConsumableType.healHpPercent:
+          int restoreHp = (maxHp * item.value / 100).round();
+          hp = min(maxHp, hp + restoreHp);
+          addLog('${item.icon} Użyto [${item.name}]: +$restoreHp HP.');
+          break;
+        case ConsumableType.healCpPercent:
+          int restoreCp = (maxChakra * item.value / 100).round();
+          chakra = min(maxChakra, chakra + restoreCp);
+          addLog('${item.icon} Użyto [${item.name}]: +$restoreCp CP.');
+          break;
+        case ConsumableType.ramenRestore:
+          baseMaxHp += item.value;
+          baseMaxChakra += item.value;
+          hp = maxHp;
+          chakra = maxChakra;
+          addLog('${item.icon} Pełnia sił! Limity bazowe wzrosły o +${item.value}!');
+          break;
+        case ConsumableType.buffAtk:
+          bonusAtk += item.value;
+          addLog('${item.icon} Zwiększono atak bazowy o ${item.value}.');
+          break;
+        default:
+          break;
+      }
+    });
+    _saveGameData();
+    return true;
+  }
+
+  void proceedExploration() {
+    if (hp <= 0) return;
+
+    setState(() {
+      raidDepth++;
+      int curMax = maxReachedDepths[currentSelectedLocationId] ?? 1;
+      if (raidDepth > curMax) {
+        maxReachedDepths[currentSelectedLocationId] = raidDepth;
+      }
+    });
+
+    if (totalHpRegen > 0) hp = min(maxHp, hp + totalHpRegen);
+    if (totalChakraRegen > 0) chakra = min(maxChakra, chakra + totalChakraRegen);
+
+    final loc = shinobiLocations.firstWhere((l) => l.id == currentSelectedLocationId);
+    final roll = _rng.nextInt(100);
+
+    if (roll < 20) {
+      const emptyMessages = [
+        '🌿 Spokojna okolica. Wokół panuje cisza.',
+        '🍃 Wędrówka mija bez echa, wiatr szumi w koronach.',
+        '🌳 Cisza i spokój. Łapiesz krótki oddech.',
+        '🌲 Pusta ścieżka, patrolujesz teren bez zakłóceń.'
+      ];
+      addLog('${emptyMessages[_rng.nextInt(emptyMessages.length)]} (Głębokość: $raidDepth)');
+    } else if (roll < 38) {
+      final subRoll = _rng.nextInt(100);
+      if (subRoll < 50) {
+        final List<String> commonDrops = ['c_pill', 'c_dango', 'c_bandage'];
+        final picked = commonDrops[_rng.nextInt(commonDrops.length)];
+        bag[picked] = (bag[picked] ?? 0) + 1;
+        final item = allConsumables.firstWhere((c) => c.id == picked);
+        addLog('🌿 Zwiadowcze znalezisko: ${item.icon} ${item.name}!');
+      } else {
+        String mat = matIronOre;
+        if (loc.id == 'loc_waves' || loc.id == 'loc_valley') {
+          mat = matSteel;
+        } else if (loc.id == 'loc_akatsuki') {
+          mat = matCrystal;
+        }
+        addCraftingMaterial(mat, 1);
+        final matInfo = craftingMaterials[mat]!;
+        addLog('⛏️ Odkryto żyłę czakry: ${matInfo.icon} ${matInfo.name}!');
       }
       _saveGameData();
-    });
-  }
+    } else if (!hasEscapeScroll && roll < 43) {
+      setState(() => hasEscapeScroll = true);
+      addLog('📜 ODKRYCIE! Znaleziono Zwój Powrotu! Możesz bezpiecznie ewakuować się do Konohy.');
+      _saveGameData();
+    } else if (roll < 46) {
+      _encounterWanderingMerchant();
+    } else if (roll < 88) {
+      final locationEnemies = standardEnemiesPool.where((e) => e.locationId == currentSelectedLocationId).toList();
+      final enemy = locationEnemies.isNotEmpty ? locationEnemies[_rng.nextInt(locationEnemies.length)] : standardEnemiesPool[0];
 
-  void _stepForwardInZone() {
-    final curZone = zones.firstWhere((z) => z.id == currentZoneId);
-    setState(() {
-      currentZoneDepth += 5;
-      adventureLogs.insert(0, '👣 ${curZone.name} – Głębokość: $currentZoneDepth kroków.');
-
-      // Checkpointy co 50 kroków
-      if (currentZoneDepth % 50 == 0 && currentZoneDepth > (zoneCheckpoints[currentZoneId] ?? 0)) {
-        zoneCheckpoints[currentZoneId] = currentZoneDepth;
-        adventureLogs.insert(0, '🚩 Zabezpieczono nowy posterunek zwiadowczy na głębokości $currentZoneDepth!');
-      }
-
-      // Szansa na wytropienie Nukenina z Bingo Book
-      final availableBounties = bingoTargets
-          .where((b) => !b.isDefeated && b.zoneId == currentZoneId && currentZoneDepth >= b.minDepth)
-          .toList();
-
-      if (availableBounties.isNotEmpty && _rng.nextInt(100) < 30) {
-        final target = availableBounties[_rng.nextInt(availableBounties.length)];
-        adventureLogs.insert(0, '⚠️ Czujesz obcą morderczą czakrę! Wytropiono zbiega: ${target.name}!');
-        _startBattleWithEnemy(target.enemy, bounty: target);
-        return;
-      }
-
-      // Boss strefy na progach 100, 200, 300...
-      if (currentZoneDepth > 0 && currentZoneDepth % 100 == 0) {
-        adventureLogs.insert(0, '🔥 Droga zablokowana! Wyłania się boss lokacji: ${curZone.boss.name}!');
-        _startBattleWithEnemy(curZone.boss, isZoneBoss: true);
-        return;
-      }
-
-      // Zwykłe starcie lub zdarzenie zwiadowcze
-      if (_rng.nextInt(100) < 60) {
-        final template = curZone.enemies[_rng.nextInt(curZone.enemies.length)];
-        final scaledEnemy = EnemyTemplate(
-          id: '${template.id}_$currentZoneDepth',
-          name: '${template.name} (Głęb. $currentZoneDepth)',
-          maxHp: template.maxHp + (currentZoneDepth * 3),
-          baseAtk: template.baseAtk + (currentZoneDepth ~/ 4),
-          baseDef: template.baseDef + (currentZoneDepth ~/ 6),
-          traits: template.traits,
-        );
-        _startBattleWithEnemy(scaledEnemy);
+      final pRoll = _rng.nextInt(100);
+      EnemyPrefix p = pRoll < 55 ? EnemyPrefix.weak : (pRoll < 85 ? EnemyPrefix.normal : EnemyPrefix.strong);
+      _startBattleWithEnemy(enemy, forcePrefix: p);
+    } else if (roll < 92) {
+      final locationBosses = bossesPool.where((b) => b.locationId == currentSelectedLocationId).toList();
+      if (locationBosses.isNotEmpty) {
+        final boss = locationBosses[_rng.nextInt(locationBosses.length)];
+        addLog('⚠️ ${loc.name}: Pojawił się boss -> ${boss.name}!');
+        _startBattleWithEnemy(boss);
       } else {
-        final foundRyo = 25 + _rng.nextInt(40) + (currentZoneDepth ~/ 2);
-        ryo += foundRyo;
-        adventureLogs.insert(0, '💰 Odnaleziono porzucony ekwipunek warty $foundRyo Ryo!');
+        final locationEnemies = standardEnemiesPool.where((e) => e.locationId == currentSelectedLocationId).toList();
+        final enemy = locationEnemies.isNotEmpty ? locationEnemies[_rng.nextInt(locationEnemies.length)] : standardEnemiesPool[0];
+        _startBattleWithEnemy(enemy, forcePrefix: EnemyPrefix.strong);
       }
-    });
+    } else if (roll < 96) {
+      _encounterSealMaster();
+    } else {
+      _encounterWanderingSage();
+    }
   }
 
-  void _startBattleWithEnemy(
-    EnemyTemplate template, {
-    BingoTarget? bounty,
-    bool isZoneBoss = false,
-    bool isExamFight = false,
-  }) {
-    int enemyHp = template.maxHp;
-    battleLogs.clear();
-    battleLogs.insert(0, '⚔️ Początek walki z: ${template.name}!');
+  void _encounterWanderingMerchant() {
+    addLog('💰 Spotkano Wędrownego Kupca na szlaku!');
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setMerchantState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF1E1C14),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFFFD54F), width: 1.2)),
+            title: Row(
+              children: [
+                const Text('🛒 ', style: TextStyle(fontSize: 22)),
+                const Expanded(child: Text('Wędrowny Skup Rynsztunku', style: TextStyle(color: Color(0xFFFFD54F), fontWeight: FontWeight.bold, fontSize: 15))),
+                Text('💰 $ryo Ryo', style: const TextStyle(fontSize: 12, color: Color(0xFFFFD54F), fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('„Witaj wędrowcze! Skupuję rzadki sprzęt z Twojego plecaka po okazyjnej cenie (45% wartości rynkowej).”', style: TextStyle(fontSize: 11, color: Colors.white70, fontStyle: FontStyle.italic)),
+                    const SizedBox(height: 14),
+                    if (equipmentStash.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        child: Text('Twój plecak rynsztunku jest pusty. Nie masz nic na sprzedaż.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      )
+                    else
+                      ...equipmentStash.toList().map((gear) {
+                        final premiumPrice = gear.merchantSellPrice;
+                        String slotName = gear.slot == GearSlot.weapon ? 'Broń' : (gear.slot == GearSlot.armor ? 'Pancerz' : (gear.slot == GearSlot.helmet ? 'Głowa' : (gear.slot == GearSlot.boots ? 'Buty' : 'Talizman')));
+
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF141211),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: gear.borderColor, width: gear.borderWidth),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(gear.icon, style: const TextStyle(fontSize: 22)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                        if (gear.isSoulbound) ...[
+                                          const SizedBox(width: 4),
+                                          const Text('🈴', style: TextStyle(fontSize: 11)),
+                                        ],
+                                      ],
+                                    ),
+                                    Text('Oferta skupu: $premiumPrice Ryo', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF00695C), 
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4)
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    ryo += premiumPrice;
+                                    equipmentStash.remove(gear);
+                                  });
+                                  _saveGameData();
+                                  setMerchantState(() {});
+                                  addLog('🛒 Sprzedano kupcowi [${gear.displayName}] za +$premiumPrice Ryo.');
+                                },
+                                child: const Text('Sprzedaj', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                  ],
+                ),
+              ),
+            ),
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Odejdź', style: TextStyle(color: Colors.grey)))],
+          );
+        },
+      ),
+    );
+  }
+
+  void _encounterSealMaster() {
+    final unsealedSlots = <GearSlot, NinjaGear>{};
+    if (!currentWeapon.isSoulbound) unsealedSlots[GearSlot.weapon] = currentWeapon;
+    if (!currentArmor.isSoulbound) unsealedSlots[GearSlot.armor] = currentArmor;
+    if (!currentHelmet.isSoulbound) unsealedSlots[GearSlot.helmet] = currentHelmet;
+    if (!currentBoots.isSoulbound) unsealedSlots[GearSlot.boots] = currentBoots;
+    if (!currentTrinket.isSoulbound) unsealedSlots[GearSlot.trinket] = currentTrinket;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF261214),
+        title: Row(
+          children: [
+            const Text('🈴 ', style: TextStyle(fontSize: 22)),
+            const Expanded(child: Text('Mistrz Fūinjutsu', style: TextStyle(color: Color(0xFFFF8A80), fontWeight: FontWeight.bold, fontSize: 15))),
+            Text('💰 $ryo Ryo', style: const TextStyle(fontSize: 12, color: Color(0xFFFFD54F), fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B1A1E),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFFF8A80), width: 1.5),
+                    ),
+                    child: const Text('📜', style: TextStyle(fontSize: 36)),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  '„Pieczętuję ekwipunek wieczną czakrą ochrony. Zapieczętowany rynsztunek nigdy nie przepadnie.”',
+                  style: TextStyle(fontSize: 11, color: Colors.white70, fontStyle: FontStyle.italic),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+                if (unsealedSlots.isEmpty)
+                  const Center(child: Text('Wszystkie przedmioty są już zapieczętowane!', style: TextStyle(color: Color(0xFF69F0AE), fontSize: 11)))
+                else
+                  ...unsealedSlots.entries.map((entry) {
+                    final slot = entry.key;
+                    final gear = entry.value;
+                    final cost = gear.sealingCost;
+                    String slotName = slot == GearSlot.weapon ? 'Broń' : (slot == GearSlot.armor ? 'Pancerz' : (slot == GearSlot.helmet ? 'Głowa' : (slot == GearSlot.boots ? 'Buty' : 'Talizman')));
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Text(gear.icon, style: const TextStyle(fontSize: 22)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 12, fontWeight: FontWeight.bold)),
+                                Text('Koszt: $cost Ryo', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFB71C1C),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            ),
+                            onPressed: () {
+                              if (ryo < cost) {
+                                showActionBlockedMessage('💰 Za mało Ryo! Brakuje Ci ${cost - ryo} Ryo.');
+                                return;
+                              }
+                              setState(() {
+                                ryo -= cost;
+                                switch (slot) {
+                                  case GearSlot.weapon: currentWeapon = currentWeapon.copyWith(isSoulbound: true); break;
+                                  case GearSlot.armor: currentArmor = currentArmor.copyWith(isSoulbound: true); break;
+                                  case GearSlot.helmet: currentHelmet = currentHelmet.copyWith(isSoulbound: true); break;
+                                  case GearSlot.boots: currentBoots = currentBoots.copyWith(isSoulbound: true); break;
+                                  case GearSlot.trinket: currentTrinket = currentTrinket.copyWith(isSoulbound: true); break;
+                                }
+                              });
+                              _saveGameData();
+                              Navigator.pop(ctx);
+                              addLog('🈴 Zapieczętowano ${gear.name} (-$cost Ryo)!');
+                            },
+                            child: const Text('Pieczęć', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+              ],
+            ),
+          ),
+        ),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Odejdź', style: TextStyle(color: Colors.grey)))],
+      ),
+    );
+  }
+
+  void _encounterWanderingSage() {
+    final unlearnedJutsu = allJutsuPool.where((j) => !j.availableInVillage && !knownJutsu.any((k) => k.id == j.id)).toList();
+    if (unlearnedJutsu.isEmpty) {
+      addLog('👴🏻 Spotkano Wędrownego Mędrca, ale znasz już wszystkie jego sekretne techniki.');
+      return;
+    }
+    final offered = unlearnedJutsu[_rng.nextInt(unlearnedJutsu.length)];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1C1814),
+        title: Row(
+          children: [
+            const Text('👴🏻 ', style: TextStyle(fontSize: 22)),
+            const Expanded(child: Text('Wędrowny Mędrzec', style: TextStyle(color: Color(0xFFFFD54F), fontWeight: FontWeight.bold, fontSize: 15))),
+            Text('💰 $ryo Ryo', style: const TextStyle(fontSize: 12, color: Color(0xFFFFD54F), fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 6),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2E261B),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFFFD54F), width: 1.5),
+              ),
+              child: const Text('📜', style: TextStyle(fontSize: 36)),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '„Mogę zdradzić ci tajemnicę sekretnego zwoju [${offered.name}] w zamian za ${offered.costRyo} Ryo.”',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12, color: Colors.white70),
+            ),
+            const SizedBox(height: 6),
+            Text(offered.effectDescription, style: const TextStyle(fontSize: 10, color: Color(0xFFFFCC80))),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Odejdź', style: TextStyle(color: Colors.grey))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100)),
+            onPressed: () {
+              if (ryo < offered.costRyo) {
+                showActionBlockedMessage('💰 Brakuje Ci ${offered.costRyo - ryo} Ryo!');
+                return;
+              }
+              setState(() {
+                ryo -= offered.costRyo;
+                knownJutsu.add(offered);
+              });
+              _saveGameData();
+              Navigator.pop(ctx);
+              addLog('📜 Poznano sekretne Jutsu: [${offered.name}]!');
+            },
+            child: const Text('Kup Zwój', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openMedicDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setMedicState) {
+          final int healCost = 25 + (level * 4);
+          final int vitalCost = (250 * pow(1.4, vitalTrainingCount)).floor();
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF102018),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFF66BB6A), width: 1.2)),
+            title: Row(
+              children: [
+                const Text('🩺 ', style: TextStyle(fontSize: 22)),
+                const Expanded(child: Text('Szpital Konohy (Medyk)', style: TextStyle(color: Color(0xFFA5D6A7), fontWeight: FontWeight.bold))),
+                Text('💰 $ryo Ryo', style: const TextStyle(fontSize: 12, color: Color(0xFFFFD54F), fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Text('💚', style: TextStyle(fontSize: 24)),
+                      title: const Text('Pełne Leczenie', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                      subtitle: Text('Odnawia HP i CP do 100% ($healCost Ryo)', style: const TextStyle(fontSize: 11, color: Colors.white60)),
+                      trailing: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C)),
+                        onPressed: () {
+                          if (hp >= maxHp && chakra >= maxChakra) {
+                            showActionBlockedMessage('✨ Masz już pełne zdrowie i czakrę!');
+                            return;
+                          }
+                          if (ryo < healCost) {
+                            showActionBlockedMessage('💰 Brakuje Ci ${healCost - ryo} Ryo!');
+                            return;
+                          }
+                          setState(() {
+                            ryo -= healCost;
+                            hp = maxHp;
+                            chakra = maxChakra;
+                          });
+                          _saveGameData();
+                          setMedicState(() {});
+                          addLog('🩺 Opatrzono rany (-$healCost Ryo).');
+                        },
+                        child: Text('$healCost Ryo', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const Divider(color: Colors.white12),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Text('🧬', style: TextStyle(fontSize: 24)),
+                      title: Text('Trening Witalności (#${vitalTrainingCount + 1})', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                      subtitle: const Text('+10 Max HP i +10 Max CP (Baza)', style: const TextStyle(fontSize: 11, color: Colors.white60)),
+                      trailing: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2E7D32)),
+                        onPressed: () {
+                          if (ryo < vitalCost) {
+                            showActionBlockedMessage('💰 Brakuje Ci ${vitalCost - ryo} Ryo!');
+                            return;
+                          }
+                          setState(() {
+                            ryo -= vitalCost;
+                            vitalTrainingCount++;
+                            baseMaxHp += 10;
+                            baseMaxChakra += 10;
+                            hp += 10;
+                            chakra += 10;
+                          });
+                          _saveGameData();
+                          setMedicState(() {});
+                          addLog('✨ Rozwinięto witalność za $vitalCost Ryo.');
+                        },
+                        child: Text('$vitalCost Ryo', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const Divider(color: Colors.white12),
+                    const Text('Kup zapasy na drogę:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFFB74D))),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: allConsumables.map((c) {
+                        return ActionChip(
+                          avatar: Text(c.icon),
+                          label: Text('${c.name} (${c.price} Ryo)', style: const TextStyle(fontSize: 11)),
+                          onPressed: () {
+                            if (ryo < c.price) {
+                              showActionBlockedMessage('💰 Brakuje Ci ${c.price - ryo} Ryo!');
+                              return;
+                            }
+                            setState(() {
+                              ryo -= c.price;
+                              bag[c.id] = (bag[c.id] ?? 0) + 1;
+                            });
+                            _saveGameData();
+                            setMedicState(() {});
+                            addLog('📦 Zakupiono [${c.name}].');
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Wyjdź', style: TextStyle(color: Colors.grey)))],
+          );
+        },
+      ),
+    );
+  }
+
+  void _openBlacksmithDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setSmithState) {
+          final items = [
+            {'slot': 'Broń', 'gear': currentWeapon, 'slotEnum': GearSlot.weapon},
+            {'slot': 'Pancerz', 'gear': currentArmor, 'slotEnum': GearSlot.armor},
+            {'slot': 'Głowa', 'gear': currentHelmet, 'slotEnum': GearSlot.helmet},
+            {'slot': 'Buty', 'gear': currentBoots, 'slotEnum': GearSlot.boots},
+            {'slot': 'Talizman', 'gear': currentTrinket, 'slotEnum': GearSlot.trinket},
+          ];
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF1E1712),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFFF8A65), width: 1.2)),
+            title: Row(
+              children: [
+                const Text('🔨 ', style: TextStyle(fontSize: 22)),
+                const Expanded(child: Text('Zbrojmistrz Konohy (Kowal)', style: TextStyle(color: Color(0xFFFFAB91), fontWeight: FontWeight.bold))),
+                Text('💰 $ryo Ryo', style: const TextStyle(fontSize: 12, color: Color(0xFFFFD54F), fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Text('🪨 Ruda: ${craftingBag[matIronOre] ?? 0}', style: const TextStyle(fontSize: 11)),
+                        Text('🧱 Stal: ${craftingBag[matSteel] ?? 0}', style: const TextStyle(fontSize: 11)),
+                        Text('💎 Kryształ: ${craftingBag[matCrystal] ?? 0}', style: const TextStyle(fontSize: 11)),
+                      ],
+                    ),
+                    const Divider(color: Colors.white12),
+                    ...items.map((entry) {
+                      final slotLabel = entry['slot'] as String;
+                      final gear = entry['gear'] as NinjaGear;
+                      final slotEnum = entry['slotEnum'] as GearSlot;
+
+                      final int curLvl = gear.upgradeLevel;
+                      final bool isMax = curLvl >= 9;
+
+                      String neededMatId = matIronOre;
+                      int neededMatCount = 1 + (curLvl ~/ 2);
+                      int ryoCost = (60 * pow(1 + curLvl, 1.5) + (gear.rarity.index * 45)).round();
+
+                      if (curLvl >= 6) {
+                        neededMatId = matCrystal;
+                      } else if (curLvl >= 3) {
+                        neededMatId = matSteel;
+                      }
+
+                      final matInfo = craftingMaterials[neededMatId]!;
+                      final int ownedMats = craftingBag[neededMatId] ?? 0;
+
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 5),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF141211),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: gear.borderColor, width: gear.borderWidth),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(gear.icon, style: const TextStyle(fontSize: 18)),
+                                    const SizedBox(width: 6),
+                                    Text('$slotLabel: ${gear.displayName}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: gear.borderColor)),
+                                    if (gear.isSoulbound) ...[
+                                      const SizedBox(width: 4),
+                                      const Text('🈴', style: TextStyle(fontSize: 11)),
+                                    ],
+                                  ],
+                                ),
+                                Text('Moc: +${gear.effectiveStat}', style: const TextStyle(fontSize: 11, color: Color(0xFF69F0AE), fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            if (isMax)
+                              const Text('✨ Maksymalny poziom kuźniczy (+9)!', style: TextStyle(color: Color(0xFFFFD54F), fontSize: 11))
+                            else ...[
+                              Text('Wymaga: ${matInfo.icon} $neededMatCount ${matInfo.name} oraz $ryoCost Ryo', style: const TextStyle(fontSize: 10, color: Colors.white60)),
+                              const SizedBox(height: 6),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFE65100),
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  ),
+                                  onPressed: () {
+                                    if (isMax) {
+                                      showActionBlockedMessage('✨ Przedmiot osiągnął maksimum (+9)!');
+                                      return;
+                                    }
+                                    if (ryo < ryoCost) {
+                                      showActionBlockedMessage('💰 Za mało Ryo! Brakuje Ci ${ryoCost - ryo} Ryo.');
+                                      return;
+                                    }
+                                    if (ownedMats < neededMatCount) {
+                                      showActionBlockedMessage('⚒️ Brak materiału: ${matInfo.name}!');
+                                      return;
+                                    }
+                                    setState(() {
+                                      ryo -= ryoCost;
+                                      craftingBag[neededMatId] = ownedMats - neededMatCount;
+                                      int successRate = curLvl < 3 ? 90 : (curLvl < 6 ? 70 : 50);
+                                      bool success = _rng.nextInt(100) < successRate;
+
+                                      NinjaGear upgraded = success ? gear.copyWith(upgradeLevel: curLvl + 1) : gear;
+                                      if (success) {
+                                        addLog('🔨 Sukces! ${gear.name} ulepszono na +${curLvl + 1}!');
+                                      } else {
+                                        addLog('⚠️ Kucie nie powiodło się, materiały przepadły.');
+                                      }
+
+                                      switch (slotEnum) {
+                                        case GearSlot.weapon: currentWeapon = upgraded; break;
+                                        case GearSlot.armor: currentArmor = upgraded; break;
+                                        case GearSlot.helmet: currentHelmet = upgraded; break;
+                                        case GearSlot.boots: currentBoots = upgraded; break;
+                                        case GearSlot.trinket: currentTrinket = upgraded; break;
+                                      }
+                                    });
+                                    _saveGameData();
+                                    setSmithState(() {});
+                                  },
+                                  child: Text('Kuj na +${curLvl + 1}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ),
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Odejdź', style: TextStyle(color: Colors.grey)))],
+          );
+        },
+      ),
+    );
+  }
+
+  void _openEquipmentStashDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setStashState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF191716),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFFFB74D), width: 1.2)),
+            title: Row(
+              children: [
+                const Text('📦 ', style: TextStyle(fontSize: 22)),
+                Expanded(child: Text('Plecak Ekwipunku (${equipmentStash.length}/10)', style: const TextStyle(color: Color(0xFFFFB74D), fontSize: 15, fontWeight: FontWeight.bold))),
+                Text('💰 $ryo Ryo', style: const TextStyle(fontSize: 12, color: Color(0xFFFFD54F), fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (equipmentStash.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Text('Plecak z rynsztunkiem jest pusty.', style: TextStyle(fontSize: 12, color: Colors.white54)),
+                      )
+                    else
+                      ...equipmentStash.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final gear = entry.value;
+                        String slotName = gear.slot == GearSlot.weapon ? 'Broń' : (gear.slot == GearSlot.armor ? 'Pancerz' : (gear.slot == GearSlot.helmet ? 'Głowa' : (gear.slot == GearSlot.boots ? 'Buty' : 'Talizman')));
+
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF141211),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: gear.borderColor, width: gear.borderWidth),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(gear.icon, style: const TextStyle(fontSize: 22)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                        if (gear.isSoulbound) ...[
+                                          const SizedBox(width: 4),
+                                          const Text('🈴', style: TextStyle(fontSize: 11)),
+                                        ],
+                                      ],
+                                    ),
+                                    Text('Moc: +${gear.effectiveStat} | Złom: ${gear.sellPrice} Ryo', style: const TextStyle(fontSize: 9, color: Colors.white70)),
+                                  ],
+                                ),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4)),
+                                onPressed: () {
+                                  setState(() {
+                                    NinjaGear oldGear;
+                                    switch (gear.slot) {
+                                      case GearSlot.weapon: oldGear = currentWeapon; currentWeapon = gear; break;
+                                      case GearSlot.armor: oldGear = currentArmor; currentArmor = gear; break;
+                                      case GearSlot.helmet: oldGear = currentHelmet; currentHelmet = gear; break;
+                                      case GearSlot.boots: oldGear = currentBoots; currentBoots = gear; break;
+                                      case GearSlot.trinket: oldGear = currentTrinket; currentTrinket = gear; break;
+                                    }
+                                    equipmentStash[index] = oldGear;
+                                  });
+                                  _saveGameData();
+                                  setStashState(() {});
+                                  addLog('✨ Założono ${gear.displayName} z plecaka.');
+                                },
+                                child: const Text('Załóż', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                              ),
+                              const SizedBox(width: 4),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB71C1C), padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4)),
+                                onPressed: () {
+                                  final price = gear.sellPrice;
+                                  setState(() {
+                                    ryo += price;
+                                    equipmentStash.removeAt(index);
+                                  });
+                                  _saveGameData();
+                                  setStashState(() {});
+                                  addLog('💰 Zezłomowano z plecaka [${gear.displayName}] za +$price Ryo.');
+                                },
+                                child: const Text('Złomuj', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                  ],
+                ),
+              ),
+            ),
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zamknij', style: TextStyle(color: Colors.grey)))],
+          );
+        },
+      ),
+    );
+  }
+
+  void _openVillageMissionsDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setMissionState) {
+          final nextExam = shinobiExams.firstWhere(
+            (e) => e.targetRankIndex == passedRankIndex + 1,
+            orElse: () => shinobiExams.last,
+          );
+          final bool hasPendingExam = passedRankIndex < 6 && level >= nextExam.requiredLevel;
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF1A1816),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFFFB74D), width: 1.2)),
+            title: Row(
+              children: [
+                const Expanded(child: Text('📜 Biuro Misji i Egzaminów', style: TextStyle(color: Color(0xFFFFB74D), fontWeight: FontWeight.bold, fontSize: 16))),
+                Text('💰 $ryo Ryo', style: const TextStyle(fontSize: 12, color: Color(0xFFFFD54F), fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (passedRankIndex < 6) ...[
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: hasPendingExam ? const Color(0xFF2E1C0A) : const Color(0xFF141211),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: hasPendingExam ? const Color(0xFFFFD54F) : Colors.white12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(nextExam.icon, style: const TextStyle(fontSize: 18)),
+                                    const SizedBox(width: 6),
+                                    Text('Egzamin na ${nextExam.rankTitle}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: hasPendingExam ? const Color(0xFFFFD54F) : Colors.white70)),
+                                  ],
+                                ),
+                                Text('Wymaga: Lvl ${nextExam.requiredLevel}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Text('Egzaminator: ${nextExam.examinerName} (${nextExam.examinerTitle})', style: const TextStyle(fontSize: 11, color: Colors.white70)),
+                            const SizedBox(height: 6),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: hasPendingExam ? const Color(0xFFE65100) : const Color(0xFF37474F),
+                                minimumSize: const Size(double.infinity, 34),
+                              ),
+                              onPressed: () {
+                                if (!hasPendingExam) {
+                                  showActionBlockedMessage('🚫 Osiągnij poziom ${nextExam.requiredLevel} na ten egzamin!');
+                                  return;
+                                }
+                                Navigator.pop(ctx);
+                                _startBattleWithEnemy(
+                                  EnemyTemplate(
+                                    id: 'exam',
+                                    name: nextExam.examinerName,
+                                    title: nextExam.examinerTitle,
+                                    baseHp: nextExam.hp,
+                                    baseAtk: nextExam.atk,
+                                    locationId: '',
+                                    isBoss: true,
+                                    icon: nextExam.icon,
+                                    critRate: nextExam.critRate,
+                                    dodgeRate: nextExam.dodgeRate,
+                                  ),
+                                  isExamFight: true,
+                                  examTargetRank: nextExam.targetRankIndex,
+                                );
+                              },
+                              child: Text(hasPendingExam ? 'Przystąp do Egzaminu!' : 'Zablokowane (Wymaga Lvl ${nextExam.requiredLevel})', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+
+                    const Text('Zlecenia Hokage:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFFFAB91))),
+                    const SizedBox(height: 6),
+
+                    if (activeMissionIndex != null)
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(color: const Color(0xFF141211), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFF69F0AE).withAlpha(160))),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Aktywna Misja: Ranga ${allMissionsPool[activeMissionIndex!].rank}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFFFFD54F))),
+                            Text(allMissionsPool[activeMissionIndex!].title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 6),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(3),
+                              child: LinearProgressIndicator(
+                                value: currentMissionKills / allMissionsPool[activeMissionIndex!].requiredCount,
+                                color: const Color(0xFF69F0AE),
+                                backgroundColor: Colors.white12,
+                                minHeight: 6,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text('Postęp: $currentMissionKills / ${allMissionsPool[activeMissionIndex!].requiredCount}', style: const TextStyle(fontSize: 11)),
+                            const SizedBox(height: 8),
+                            if (currentMissionKills >= allMissionsPool[activeMissionIndex!].requiredCount)
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2E7D32), minimumSize: const Size(double.infinity, 32)),
+                                onPressed: () {
+                                  final m = allMissionsPool[activeMissionIndex!];
+                                  final bool isRepeat = completedMissionsHistory.contains(m.id);
+                                  final int payoutRyo = isRepeat ? max(10, (m.rewardRyo * 0.40).round()) : m.rewardRyo;
+                                  final int payoutExp = isRepeat ? max(10, (m.rewardExp * 0.40).round()) : m.rewardExp;
+
+                                  setState(() {
+                                    if (m.type == MissionType.itemSupply) {
+                                      craftingBag[m.supplyItemId!] = (craftingBag[m.supplyItemId!] ?? 0) - m.requiredCount;
+                                    }
+                                    ryo += payoutRyo;
+                                    completedMissionsHistory.add(m.id);
+                                    activeMissionIndex = null;
+                                    currentMissionKills = 0;
+                                  });
+                                  addExperience(payoutExp);
+                                  _saveGameData();
+                                  Navigator.pop(ctx);
+                                  addLog('🎖️ Ukończono: ${m.title}! +$payoutRyo Ryo, +$payoutExp EXP ${isRepeat ? "(Powtórzenie)" : ""}');
+                                  
+                                },
+                                child: const Text('Odbierz Nagrodę! 🎁', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                              )
+                            else
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    activeMissionIndex = null;
+                                    currentMissionKills = 0;
+                                  });
+                                  _saveGameData();
+                                  Navigator.pop(ctx);
+                                  addLog('❌ Porzucono zlecenie.');
+                                },
+                                child: const Text('Porzuć misję', style: TextStyle(color: Color(0xFFFF5252), fontSize: 11)),
+                              ),
+                          ],
+                        ),
+                      )
+                    else
+                      ...shinobiLocations.map((loc) {
+                        final locMissions = allMissionsPool.where((m) => m.locationId == loc.id).toList();
+                        if (locMissions.isEmpty) return const SizedBox.shrink();
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Text('${loc.icon} ${loc.name}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF80D8FF))),
+                            ),
+                            ...locMissions.map((m) {
+                              final bool isUnlocked = passedRankIndex >= m.minRankIndex;
+                              final bool isCompleted = completedMissionsHistory.contains(m.id);
+                              final int displayRyo = isCompleted ? (m.rewardRyo * 0.4).round() : m.rewardRyo;
+                              final int displayExp = isCompleted ? (m.rewardExp * 0.4).round() : m.rewardExp;
+
+                              return Container(
+                                margin: const EdgeInsets.symmetric(vertical: 3),
+                                child: ListTile(
+                                  dense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: CircleAvatar(
+                                    radius: 14,
+                                    backgroundColor: isUnlocked ? const Color(0xFFE65100) : const Color(0xFF263238),
+                                    child: Text(m.rank, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: isUnlocked ? Colors.white : Colors.white38)),
+                                  ),
+                                  title: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(m.title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isUnlocked ? Colors.white : Colors.white38)),
+                                      ),
+                                      if (isCompleted)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                          decoration: BoxDecoration(color: Colors.blueGrey.withAlpha(80), borderRadius: BorderRadius.circular(4)),
+                                          child: const Text('Powtórka -60%', style: TextStyle(fontSize: 9, color: Color(0xFF80D8FF))),
+                                        ),
+                                    ],
+                                  ),
+                                  subtitle: Text('${m.desc}\nNagroda: $displayRyo Ryo | +$displayExp EXP', style: const TextStyle(fontSize: 10, color: Colors.white60)),
+                                  trailing: isUnlocked
+                                      ? ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(0xFFE65100),
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              activeMissionIndex = allMissionsPool.indexOf(m);
+                                              if (m.type == MissionType.itemSupply) {
+                                                final held = craftingBag[m.supplyItemId] ?? 0;
+                                                currentMissionKills = min(held, m.requiredCount);
+                                              } else {
+                                                currentMissionKills = 0;
+                                              }
+                                            });
+                                            _saveGameData();
+                                            Navigator.pop(ctx);
+                                            addLog('📜 Przyjęto zlecenie: ${m.title}!');
+                                          },
+                                          child: const Text('Przyjmij', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                        )
+                                      : IconButton(
+                                          icon: const Icon(Icons.lock, size: 18, color: Colors.grey),
+                                          onPressed: () => showActionBlockedMessage('🚫 Wymagana wyższa ranga ninja na tę misję!'),
+                                        ),
+                                ),
+                              );
+                            }),
+                            const Divider(color: Colors.white12),
+                          ],
+                        );
+                      }),
+                  ],
+                ),
+              ),
+            ),
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zamknij', style: TextStyle(color: Colors.grey)))],
+          );
+        },
+      ),
+    );
+  }
+
+  void _openScrollsDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setScrollsState) {
+          final villageJutsu = allJutsuPool.where((j) => j.availableInVillage).toList();
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF141920),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFF42A5F5), width: 1.2)),
+            title: Row(
+              children: [
+                const Expanded(child: Text('📜 Szkoła Jutsu (Max 3 aktywne)', style: TextStyle(color: Color(0xFF80D8FF), fontSize: 14, fontWeight: FontWeight.bold))),
+                Text('💰 $ryo Ryo', style: const TextStyle(fontSize: 12, color: Color(0xFFFFD54F), fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: villageJutsu.length,
+                separatorBuilder: (_, __) => const Divider(color: Colors.white12),
+                itemBuilder: (context, index) {
+                  final jutsu = villageJutsu[index];
+                  final bool isKnown = knownJutsu.any((j) => j.id == jutsu.id);
+                  final bool isEquipped = equippedJutsu.any((j) => j.id == jutsu.id);
+                  final bool meetsRank = passedRankIndex >= jutsu.minRankIndex;
+
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(jutsu.name, style: TextStyle(fontSize: 13, color: jutsu.color, fontWeight: FontWeight.bold)),
+                    subtitle: Text('Koszt: ${jutsu.chakraCost} CP | ${jutsu.type == JutsuType.healing ? "Leczenie: +${jutsu.effectValue}% HP" : "Moc: x${jutsu.powerMultiplier}"}\n${jutsu.effectDescription}', style: const TextStyle(fontSize: 11, color: Colors.white60)),
+                    trailing: isKnown
+                        ? ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isEquipped ? const Color(0xFF2E7D32) : const Color(0xFF37474F),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                if (isEquipped) {
+                                  if (equippedJutsu.length > 1) {
+                                    equippedJutsu.removeWhere((j) => j.id == jutsu.id);
+                                  }
+                                } else {
+                                  if (equippedJutsu.length >= 3) {
+                                    equippedJutsu.removeLast();
+                                  }
+                                  equippedJutsu.add(jutsu);
+                                }
+                              });
+                              _saveGameData();
+                              setScrollsState(() {});
+                            },
+                            child: Text(isEquipped ? 'Założone' : 'Załóż', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          )
+                        : ElevatedButton(
+                            style: ElevatedButton.styleFrom(backgroundColor: meetsRank ? const Color(0xFFE65100) : Colors.grey[800]),
+                            onPressed: () {
+                              if (!meetsRank) {
+                                showActionBlockedMessage('🚫 Wymagana wyższa ranga ninja, by pojąć tę technikę!');
+                                return;
+                              }
+                              if (ryo < jutsu.costRyo) {
+                                showActionBlockedMessage('💰 Brakuje Ci ${jutsu.costRyo - ryo} Ryo!');
+                                return;
+                              }
+                              setState(() {
+                                ryo -= jutsu.costRyo;
+                                knownJutsu.add(jutsu);
+                              });
+                              _saveGameData();
+                              setScrollsState(() {});
+                              addLog('📜 Nauczono się techniki: ${jutsu.name}!');
+                            },
+                            child: Text(meetsRank ? 'Kup (${jutsu.costRyo})' : 'Ranga za niska', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                          ),
+                  );
+                },
+              ),
+            ),
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zamknij', style: TextStyle(color: Colors.grey)))],
+          );
+        },
+      ),
+    );
+  }
+
+  void _openBagDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setBagState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF191716),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFFF8A65), width: 1.2)),
+            title: Row(
+              children: [
+                const Expanded(child: Text('🎒 Prowiant i Surowce', style: TextStyle(color: Color(0xFFFFB74D), fontSize: 16, fontWeight: FontWeight.bold))),
+                Text('💰 $ryo Ryo', style: const TextStyle(fontSize: 12, color: Color(0xFFFFD54F), fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Posiadany prowiant i mikstury:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white70)),
+                    const SizedBox(height: 4),
+                    if (bag.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Text('Brak przedmiotów w plecaku!', style: TextStyle(fontSize: 12, color: Colors.white54)),
+                      )
+                    else
+                      ...bag.entries.map((entry) {
+                        final item = allConsumables.firstWhere((c) => c.id == entry.key);
+                        final qty = entry.value;
+
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(color: const Color(0xFF141211), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.white12)),
+                          child: Row(
+                            children: [
+                              Text(item.icon, style: const TextStyle(fontSize: 24)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('${item.name} (x$qty)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                    Text(item.description, style: const TextStyle(fontSize: 10, color: Colors.white60)),
+                                    const SizedBox(height: 2),
+                                    Text(item.statBonusText, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFFFD54F))),
+                                  ],
+                                ),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(horizontal: 10)),
+                                onPressed: () {
+                                  useConsumable(item);
+                                  setBagState(() {});
+                                },
+                                child: const Text('Użyj', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    const Divider(color: Colors.white12),
+                    const Text('Materiały rzemieślnicze:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFFFD54F))),
+                    ...craftingMaterials.values.map((mat) {
+                      final count = craftingBag[mat.id] ?? 0;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('${mat.icon} ${mat.name}', style: const TextStyle(fontSize: 11, color: Colors.white70)),
+                            Text('$count szt.', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFFFD54F))),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ),
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zamknij', style: TextStyle(color: Colors.grey)))],
+          );
+        },
+      ),
+    );
+  }
+
+  void _openDungeonsDialog() {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final inCooldown = now < dungeonCooldownTimestamp;
+    final remainingCooldownSec = inCooldown ? ((dungeonCooldownTimestamp - now) ~/ 1000) : 0;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDungeonState) {
+          final keysCount = craftingBag[matDungeonKey] ?? 0;
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF161218),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFAB47BC), width: 1.2)),
+            title: Row(
+              children: [
+                const Text('🏛️ ', style: TextStyle(fontSize: 22)),
+                const Expanded(child: Text('Legendarne Lochy', style: TextStyle(color: Color(0xFFCE93D8), fontWeight: FontWeight.bold))),
+                Text('💰 $ryo Ryo', style: const TextStyle(fontSize: 12, color: Color(0xFFFFD54F), fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Posiadane klucze: 🗝️ $keysCount szt.', style: const TextStyle(fontSize: 12, color: Color(0xFFFFD54F), fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
+                    if (inCooldown)
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: Colors.red.withAlpha(40), borderRadius: BorderRadius.circular(6)),
+                        child: Text('⏳ Odnowienie lochów: ${remainingCooldownSec ~/ 60}m ${remainingCooldownSec % 60}s', style: const TextStyle(fontSize: 11, color: Color(0xFFFF5252))),
+                      ),
+                    const Divider(color: Colors.white12),
+                    ...dungeonBossesPool.map((boss) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 5),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF141211),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.purple.withAlpha(120)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('${boss.icon} ${boss.name}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFF3E5F5))),
+                                Text('Lvl ${boss.minLevel}+', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                              ],
+                            ),
+                            Text('${boss.title} (Unikalny Set Bossa)', style: const TextStyle(fontSize: 10, color: Color(0xFFFF8A80))),
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7B1FA2)),
+                                onPressed: () {
+                                  if (level < boss.minLevel) {
+                                    showActionBlockedMessage('🚫 Wymagany poziom ${boss.minLevel} do tej walki!');
+                                    return;
+                                  }
+                                  if (keysCount <= 0) {
+                                    showActionBlockedMessage('🗝️ Brak Klucza do Lochów!');
+                                    return;
+                                  }
+                                  if (inCooldown) {
+                                    showActionBlockedMessage('⏳ Loch w trakcie odnowienia!');
+                                    return;
+                                  }
+                                  setState(() {
+                                    craftingBag[matDungeonKey] = keysCount - 1;
+                                    dungeonCooldownTimestamp = DateTime.now().millisecondsSinceEpoch + (3 * 60 * 1000);
+                                  });
+                                  _saveGameData();
+                                  Navigator.pop(ctx);
+                                  _startBattleWithEnemy(
+                                    EnemyTemplate(id: boss.id, name: boss.name, title: boss.title, baseHp: boss.baseHp, baseAtk: boss.baseAtk, locationId: '', isBoss: true, icon: boss.icon, critRate: 15, armorPierce: 15),
+                                    dungeonBossSetGroup: boss.setGroup,
+                                  );
+                                },
+                                child: const Text('Wejdź do Lochu', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ),
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zamknij', style: TextStyle(color: Colors.grey)))],
+          );
+        },
+      ),
+    );
+  }
+
+  void _showStatsDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF191311),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFFFB74D), width: 1.2)),
+        title: Row(
+          children: [
+            const Text('🥋 ', style: TextStyle(fontSize: 22)),
+            Expanded(child: Text('Statystyki ($ninjaRank)', style: TextStyle(color: rankColor, fontSize: 15, fontWeight: FontWeight.bold))),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _statPopupRow('Poziom Ninja', '$level / $maxLevelForCurrentRank (EXP: $ninjaExp / $expForNextLevel)', const Color(0xFF80D8FF)),
+              if (isCappedAtRank)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 2.0),
+                  child: Text('⚠️ Osiągnięto limit rangi! Zdaj egzamin ninja.', style: TextStyle(fontSize: 10, color: Color(0xFFFFD54F), fontWeight: FontWeight.bold)),
+                ),
+              _statPopupRow('Punkty Życia (HP)', '$hp / $maxHp (Baza: $baseMaxHp, Rynsztunek: +${sumAffix(AffixType.bonusHp)})', const Color(0xFF69F0AE)),
+              _statPopupRow('Czakra (CP)', '$chakra / $maxChakra (Baza: $baseMaxChakra, Rynsztunek: +${sumAffix(AffixType.bonusChakra)})', const Color(0xFF40C4FF)),
+              const Divider(color: Colors.white12),
+              _statPopupRow('Łączny Atak', '$totalAttack (Rynsztunek + Lvl $level)', const Color(0xFFFF8A65)),
+              _statPopupRow('Łączna Obrona', '$totalDefense', const Color(0xFFB0BEC5)),
+              _statPopupRow('Szansa na Krytyk', '$totalCritRate%', const Color(0xFFFF5252)),
+              _statPopupRow('Unik (Kawarimi)', '$totalDodgeRate%', const Color(0xFFFFD54F)),
+              _statPopupRow('Przebicie Pancerza', '$totalArmorPierce%', const Color(0xFFBA68C8)),
+              _statPopupRow('Kradzież Życia (Lifesteal)', '$totalLifeSteal%', const Color(0xFFE91E63)),
+              _statPopupRow('Regeneracja HP/turę', '+$totalHpRegen HP', const Color(0xFF81C784)),
+              _statPopupRow('Regeneracja CP/turę', '+$totalChakraRegen CP', const Color(0xFF4FC3F7)),
+            ],
+          ),
+        ),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zamknij', style: TextStyle(color: Colors.grey)))],
+      ),
+    );
+  }
+
+  Widget _statPopupRow(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 12, color: Colors.white70)),
+          Text(value, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color)),
+        ],
+      ),
+    );
+  }
+
+  void _startBattleWithEnemy(EnemyTemplate template, {EnemyPrefix forcePrefix = EnemyPrefix.normal, bool isExamFight = false, int? examTargetRank, String? dungeonBossSetGroup}) {
+    double hpMult = 1.0;
+    double atkMult = 1.0;
+    String prefixTitle = '';
+    Color prefixColor = const Color(0xFFFFA726);
+
+    int enemyCrit = template.critRate;
+    int enemyDodge = template.dodgeRate;
+    int enemyPierce = template.armorPierce;
+    int enemyBlock = template.flatBlock;
+
+    if (!template.isBoss && !isExamFight) {
+      switch (forcePrefix) {
+        case EnemyPrefix.weak:
+          hpMult = 0.85;
+          atkMult = 0.85;
+          prefixTitle = 'Słaby ';
+          prefixColor = const Color(0xFFCFD8DC);
+          break;
+        case EnemyPrefix.normal:
+          hpMult = 1.0;
+          atkMult = 1.0;
+          prefixTitle = '';
+          prefixColor = const Color(0xFFFFA726);
+          break;
+        case EnemyPrefix.strong:
+          hpMult = 1.45;
+          atkMult = 1.30;
+          prefixTitle = 'Silny ⚠️ ';
+          prefixColor = const Color(0xFFFF5252);
+          enemyCrit += 8;
+          enemyDodge += 5;
+          enemyPierce += 10;
+          enemyBlock += 4;
+          break;
+      }
+    }
+
+    double depthHpBonus = inVillage ? 0.0 : (raidDepth * 0.04);
+    double depthAtkBonus = inVillage ? 0.0 : (raidDepth * 0.02);
+
+    int scaledHp = template.baseHp;
+    int scaledAtk = template.baseAtk;
+
+    if (isExamFight) {
+      int minExamHp = (totalAttack * 4).round();
+      scaledHp = max(template.baseHp + (level * 28), minExamHp);
+      scaledAtk = max(template.baseAtk + (level * 2), (totalDefense * 0.7).round() + 6);
+    } else if (template.isBoss) {
+      scaledHp = (template.baseHp * (1.0 + (level * 0.08) + depthHpBonus)).round();
+      scaledAtk = (template.baseAtk * (1.0 + (level * 0.05) + depthAtkBonus)).round();
+    } else {
+      scaledHp = (template.baseHp * (1.0 + (level * 0.06) + depthHpBonus)).round();
+      scaledAtk = (template.baseAtk * (1.0 + (level * 0.04) + depthAtkBonus)).round();
+    }
+
+    final int enemyMaxHp = (scaledHp * hpMult).round();
+    final int enemyBaseAtk = (scaledAtk * atkMult).round();
+    int enemyHp = enemyMaxHp;
+
+    String initialMsg = isExamFight ? '🥋 EGZAMIN: Egzaminator ${template.name} atakuje!' : (template.isBoss ? '⚠️ BOSS: Pojawia się ${template.name}!' : 'Z cienia atakuje $prefixTitle${template.name} (Krok $raidDepth)!');
+    List<String> battleLogHistory = [initialMsg];
+    int frozenTurns = 0;
+    int shieldBonusDef = 0;
 
     showModalBottomSheet(
       context: context,
       isDismissible: false,
       enableDrag: false,
-      backgroundColor: const Color(0xFF14161C),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: const Color(0xFF141211),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setBattleState) {
-            void appendBattleLog(String log) {
-              setBattleState(() {
-                battleLogs.insert(0, log);
-              });
+            void appendBattleLog(String line) {
+              battleLogHistory.insert(0, line);
+              if (battleLogHistory.length > 8) battleLogHistory.removeLast();
+            }
+
+            void applyTurnRegen() {
+              if (totalHpRegen > 0) {
+                setState(() => hp = min(maxHp, hp + totalHpRegen));
+                appendBattleLog('💚 Regeneracja: +$totalHpRegen HP.');
+              }
+              if (totalChakraRegen > 0) {
+                setState(() => chakra = min(maxChakra, chakra + totalChakraRegen));
+                appendBattleLog('🌀 Regeneracja: +$totalChakraRegen CP.');
+              }
             }
 
             void enemyTurn() {
               if (enemyHp <= 0) return;
-
-              // Kawarimi gracza
-              if (_rng.nextInt(100) < totalDodgeRate) {
-                appendBattleLog('🪵 Kawarimi! Zastąpiłeś się kłodą i uniknąłeś ciosu!');
-                _applyTurnRegen();
+              if (frozenTurns > 0) {
+                frozenTurns--;
+                appendBattleLog('❄️ ${template.name} jest unieruchomiony!');
+                applyTurnRegen();
                 setBattleState(() {});
                 return;
               }
 
-              bool isEnemyCrit = _rng.nextInt(100) < template.critRate;
-              double eCritMult = isEnemyCrit ? 1.5 : 1.0;
-
-              // Cecha: Szał Krwi (Blood Enrage)
-              double enrageBonus = 1.0;
-              if (template.traits.contains(BossTrait.bloodEnrage) &&
-                  (enemyHp / template.maxHp) <= 0.35) {
-                enrageBonus = 1.5;
-                appendBattleLog('🩸 ${template.name} wpada w SZAŁ KRWI! Obrażenia +50%!');
+              if (_rng.nextInt(100) < totalDodgeRate) {
+                appendBattleLog('🪵 Kawarimi! Uniknąłeś ataku dzięki podmianie z kłodą!');
+                applyTurnRegen();
+                setBattleState(() {});
+                return;
               }
 
-              final effectivePlayerDef = (totalDefense + shieldBonusDef);
-              final rawDmg = ((template.baseAtk * enrageBonus + _rng.nextInt(5)) * eCritMult).round();
-              final dmg = max(3, rawDmg - (effectivePlayerDef ~/ 2));
+              bool isEnemyCrit = _rng.nextInt(100) < enemyCrit;
+              double eCritMult = isEnemyCrit ? 1.5 : 1.0;
+
+              int effectivePlayerDef = ((totalDefense + shieldBonusDef) * (100 - enemyPierce) / 100).round();
+              final rawDmg = ((enemyBaseAtk + _rng.nextInt(4)) * eCritMult).round();
+              final dmg = max(2, rawDmg - (effectivePlayerDef ~/ 2));
 
               setState(() {
                 hp = max(0, hp - dmg);
-                milestones.damageTaken += dmg;
               });
 
               if (isEnemyCrit) {
                 appendBattleLog('💥 KRYTYK WROGA! ${template.name} zadaje $dmg obrażeń!');
               } else {
-                appendBattleLog('${template.name} atakuje i zadaje $dmg obrażeń.');
+                appendBattleLog('${template.name} zadaje Ci $dmg obrażeń.');
               }
 
-              // Cecha: Pijawka Czakry (Chakra Leech)
-              if (template.traits.contains(BossTrait.chakraLeech)) {
-                final leech = min(chakra, 12);
-                chakra -= leech;
-                enemyHp = min(template.maxHp, enemyHp + leech);
-                appendBattleLog('🌀 Pijawka Czakry wysysa $leech CP i uzdrawia wroga!');
-              }
+                            shieldBonusDef = 0;
 
-              // Cecha: Mistrz Trucizn (Poison Master)
-              if (template.traits.contains(BossTrait.poisonMaster)) {
-                final poisonDmg = max(2, (maxHp * 0.04).round());
-                setState(() => hp = max(0, hp - poisonDmg));
-                appendBattleLog('🧪 Trucizna wypala Twoje żyły! -$poisonDmg HP.');
-              }
-
-              shieldBonusDef = 0;
-
-              // SPRAWDZENIE ŚMIERCI PRZED REGENERACJĄ (NAPRAWIONY BŁĄD REANIMACJI)
               if (hp <= 0) {
                 _saveGameData();
                 Navigator.pop(ctx);
                 if (isExamFight) {
                   setState(() => hp = 1);
-                  adventureLogs.insert(0, '❌ Egzamin oblany! Wróć silniejszy.');
+                  addLog('❌ Egzamin oblany!');
                 } else {
                   returnToVillage(fallenInBattle: true);
                 }
                 return;
               }
 
-              _applyTurnRegen();
+              applyTurnRegen();
               _saveGameData();
             }
 
             void executeJutsu(Jutsu jutsu) {
               if (chakra < jutsu.chakraCost) {
-                appendBattleLog('❌ Za mało czakry na: ${jutsu.name}!');
+                appendBattleLog('Brak czakry na ${jutsu.name}!');
                 setBattleState(() {});
                 return;
               }
 
               setState(() {
                 chakra -= jutsu.chakraCost;
-                milestones.jutsuCasts++;
               });
 
-              // Jutsu Medyczne (Heal)
-              if (jutsu.type == JutsuType.heal) {
-                final healAmount = ((35 + (totalJutsuPower * 0.9)) * jutsu.powerMultiplier).round();
+              // Obsługa czystego leczenia
+              if (jutsu.type == JutsuType.healing) {
+                int healPercent = jutsu.effectValue;
+                if (jutsu.id == 'j_byakugo' && hp < (maxHp * 0.2)) {
+                  healPercent = 100;
+                }
+                int healAmount = (maxHp * (healPercent / 100)).round();
                 setState(() {
                   hp = min(maxHp, hp + healAmount);
                 });
-                appendBattleLog('💚 ${jutsu.name} odnawia $healAmount punktów życia!');
-                enemyTurn();
-                setBattleState(() {});
-                return;
-              }
+                appendBattleLog('💚 ${jutsu.name}: Przywrócono $healAmount HP (+$healPercent%)!');
+                
+                if (jutsu.powerMultiplier > 0) {
+                  // Leczenie połączone z uderzeniem skalpelem
+                  final dealt = max(2, ((totalAttack * jutsu.powerMultiplier) - enemyBlock).round());
+                  enemyHp = max(0, enemyHp - dealt);
+                  appendBattleLog('🗡️ Skalpel czakry zadał $dealt obrażeń!');
+                }
 
-              // Jutsu Ochronne (Shield)
-              if (jutsu.type == JutsuType.shield) {
-                shieldBonusDef = (25 * jutsu.powerMultiplier).round();
-                appendBattleLog('🛡️ ${jutsu.name} formuje barierę czakry (+${shieldBonusDef} Def)!');
-                enemyTurn();
-                setBattleState(() {});
-                return;
-              }
-
-              // SKALOWANIE OBRAŻEŃ: Atak * Mnożnik * MOC JUTSU Z TALIZMANU
-              double jutsuScaling = jutsu.powerMultiplier * (1.0 + (totalJutsuPower / 100.0));
-
-              // Cecha: Żelazna Skóra redukuje techniki wręcz
-              double traitReduction = 1.0;
-              if (template.traits.contains(BossTrait.ironSkin) && jutsu.rank == JutsuRank.academy) {
-                traitReduction = 0.55;
-                appendBattleLog('🛡️ Żelazna Skóra tłumi obrażenia fizyczne!');
-              }
-
-              final dealt = max(
-                6,
-                ((totalAttack * jutsuScaling * traitReduction).round() - (template.baseDef ~/ 2)),
-              );
-
-              enemyHp -= dealt;
-              appendBattleLog('🔥 Uderzenie ${jutsu.name}! Zadano $dealt obrażeń!');
-
-              // Cecha: Ciernie Czakry (Chakra Thorns)
-              if (template.traits.contains(BossTrait.chakraThorns)) {
-                final reflect = max(2, (dealt * 0.15).round());
-                setState(() => hp = max(0, hp - reflect));
-                appendBattleLog('⚡ Ciernie Czakry odbijają $reflect obrażeń w Twoją stronę!');
-                if (hp <= 0) {
-                  _saveGameData();
-                  Navigator.pop(ctx);
-                  returnToVillage(fallenInBattle: true);
+                if (enemyHp <= 0) {
+                  // Pokonany skalpelem
+                } else {
+                  enemyTurn();
+                  setBattleState(() {});
                   return;
+                }
+              } else if (jutsu.type == JutsuType.shield) {
+                shieldBonusDef = jutsu.effectValue;
+                appendBattleLog('🛡️ Doton wzmocnił Twoją obronę o +$shieldBonusDef!');
+              } else if (jutsu.type == JutsuType.stun) {
+                frozenTurns = 1;
+                appendBattleLog('🕸️ Wróg zaplątany w druty ninja!');
+              }
+
+              if (jutsu.powerMultiplier > 0 && jutsu.type != JutsuType.healing) {
+                if (_rng.nextInt(100) < enemyDodge) {
+                  appendBattleLog('🪵 Wróg wykonał Kawarimi i uniknął ciosu!');
+                  enemyTurn();
+                  setBattleState(() {});
+                  return;
+                }
+
+                bool isPlayerCrit = _rng.nextInt(100) < totalCritRate;
+                double pCritMult = isPlayerCrit ? 1.5 : 1.0;
+
+                final dealt = ((((totalAttack * jutsu.powerMultiplier) + _rng.nextInt(4)) * pCritMult).round() - enemyBlock);
+                final finalDealt = max(2, dealt);
+
+                enemyHp = max(0, enemyHp - finalDealt);
+
+                if (totalLifeSteal > 0) {
+                  int healed = max(1, (finalDealt * totalLifeSteal / 100).round());
+                  setState(() => hp = min(maxHp, hp + healed));
+                  appendBattleLog('🩸 Lifesteal: Odzyskano $healed HP!');
+                }
+
+                if (isPlayerCrit) {
+                  appendBattleLog('💥 KRYTYK! Użyto ${jutsu.name}! Zadano $finalDealt obrażeń!');
+                } else {
+                  appendBattleLog('Użyto ${jutsu.name}! Zadano $finalDealt obrażeń.');
                 }
               }
 
               if (enemyHp <= 0) {
-                _handleVictory(ctx, template, bounty, isZoneBoss, isExamFight);
-                return;
-              }
+                Navigator.pop(ctx);
 
-              enemyTurn();
-              setBattleState(() {});
-            }
+                if (isExamFight) {
+                  setState(() => passedRankIndex = examTargetRank!);
+                  addExperience(400);
+                  addLog('🏆 ZDANO EGZAMIN na rangę: $ninjaRank!');
+                  return;
+                }
 
-            void executeBasicAttack() {
-              setState(() {
-                milestones.physicalHitsDealt++;
-              });
+                int locLvl = shinobiLocations.firstWhere((l) => l.id == currentSelectedLocationId, orElse: () => shinobiLocations[0]).minLevel;
+                
+                int levelDiff = level - locLvl;
+                double penaltyMult = 1.0;
+                if (levelDiff >= 7) {
+                  penaltyMult = 0.15;
+                } else if (levelDiff >= 4) {
+                  penaltyMult = 0.50;
+                }
 
-              // Kawarimi wroga
-              int eDodge = template.dodgeRate + (template.traits.contains(BossTrait.dodgeManiac) ? 20 : 0);
-              if (_rng.nextInt(100) < eDodge) {
-                appendBattleLog('💨 Wróg zniknął w kłębie dymu (Kawarimi)!');
+                // Dynamiczny przelicznik nagród na bazie siły potwora (Power Rating)
+                double pr = template.powerRating;
+                double prefixMult = forcePrefix == EnemyPrefix.weak ? 0.8 : (forcePrefix == EnemyPrefix.strong ? 1.5 : 1.0);
+                
+                int rawExp = (pr * 0.28 * prefixMult).round();
+                int rawRyo = (pr * 0.18 * prefixMult).round();
+                if (template.isBoss) {
+                  rawExp = (rawExp * 1.8).round();
+                  rawRyo = (rawRyo * 1.6).round();
+                }
+
+                int rewardRyo = max(1, (rawRyo * penaltyMult).round());
+                int expGained = max(1, (rawExp * penaltyMult).round());
+
+                setState(() {
+                  ryo += rewardRyo;
+                  if (activeMissionIndex != null) {
+                    final activeMission = allMissionsPool[activeMissionIndex!];
+                    if (activeMission.type == MissionType.killCount && activeMission.targetEnemyId == template.id) {
+                      currentMissionKills++;
+                    } else if (activeMission.type == MissionType.bossHunt && activeMission.targetEnemyId == template.id) {
+                      currentMissionKills = 1;
+                    }
+                  }
+                });
+                addExperience(expGained);
+                
+                String penaltyMsg = penaltyMult < 1.0 ? ' (Kara za strefę -${((1.0 - penaltyMult) * 100).round()}%)' : '';
+                addLog('🏆 Pokonano $prefixTitle${template.name}! +$rewardRyo Ryo, +$expGained EXP$penaltyMsg.');
+
+                bool shouldDropLoot = template.isBoss;
+                if (!shouldDropLoot) {
+                  int chance = forcePrefix == EnemyPrefix.strong ? 35 : 18;
+                  if (penaltyMult < 0.20) chance = (chance * 0.3).round();
+                  shouldDropLoot = _rng.nextInt(100) < chance;
+                }
+
+                if (shouldDropLoot) {
+                  _findLoot(guaranteedBossDrop: template.isBoss, dungeonBossSetGroup: dungeonBossSetGroup);
+                }
+              } else {
                 enemyTurn();
                 setBattleState(() {});
+              }
+            }
+
+            void useBattleItem(Consumable item) {
+              if (item.type == ConsumableType.smokeEscape) {
+                if (template.isBoss || isExamFight) {
+                  appendBattleLog('Bomba dymna nie działa na bossów!');
+                  setBattleState(() {});
+                  return;
+                }
+                useConsumable(item);
+                Navigator.pop(ctx);
+                addLog('💨 Ucieknięto z walki za pomocą Bomby Dymnej!');
                 return;
               }
 
-              bool isCrit = _rng.nextInt(100) < totalCritRate;
-              double critMult = isCrit ? 1.5 : 1.0;
+              if (item.type == ConsumableType.directDmg) {
+                if (useConsumable(item)) {
+                  int dmg = 35 + (level * 3);
+                  enemyHp = max(0, enemyHp - dmg);
+                  appendBattleLog('💥 Pieczęć Wybuchowa zadaje $dmg obrażeń!');
+                  if (enemyHp <= 0) {
+                    Navigator.pop(ctx);
+                    addLog('🏆 Wróg rozerwany eksplozją Pieczęci!');
+                    if (template.isBoss || _rng.nextInt(100) < 20) {
+                      _findLoot(guaranteedBossDrop: template.isBoss, dungeonBossSetGroup: dungeonBossSetGroup);
+                    }
+                  } else {
+                    enemyTurn();
+                    setBattleState(() {});
+                  }
+                }
+                return;
+              }
 
-              double damageFactor = template.traits.contains(BossTrait.ironSkin) ? 0.5 : 1.0;
-              final dealt = max(
-                3,
-                (((totalAttack * damageFactor + _rng.nextInt(4)) * critMult).round() - (template.baseDef ~/ 2)),
+              if (useConsumable(item)) {
+                appendBattleLog('Użyto ${item.name}!');
+                enemyTurn();
+                setBattleState(() {});
+              }
+            }
+
+            void openCombatBagDialog() {
+              showDialog(
+                context: context,
+                builder: (bagCtx) => AlertDialog(
+                  backgroundColor: const Color(0xFF191716),
+                  title: const Text('🎒 Użyj zapasu w walce', style: TextStyle(color: Color(0xFFFFB74D), fontSize: 15)),
+                  content: SizedBox(
+                    width: double.maxFinite,
+                    child: bag.isEmpty
+                        ? const Text('Brak przedmiotów w plecaku!', style: TextStyle(fontSize: 12, color: Colors.white54))
+                        : ListView(
+                            shrinkWrap: true,
+                            children: bag.entries.map((entry) {
+                              final item = allConsumables.firstWhere((c) => c.id == entry.key);
+                              return ListTile(
+                                dense: true,
+                                leading: Text(item.icon, style: const TextStyle(fontSize: 22)),
+                                title: Text('${item.name} (x${entry.value})', style: const TextStyle(fontSize: 12)),
+                                subtitle: Text(item.statBonusText, style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
+                                trailing: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(horizontal: 10)),
+                                  onPressed: () {
+                                    Navigator.pop(bagCtx);
+                                    useBattleItem(item);
+                                    setBattleState(() {});
+                                  },
+                                  child: const Text('Użyj', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                  ),
+                ),
               );
-
-              enemyHp -= dealt;
-              if (isCrit) {
-                appendBattleLog('💥 KRYTYK! Zwykły cios zadał $dealt obrażeń!');
-              } else {
-                appendBattleLog('🗡️ Zwykły atak zadał $dealt obrażeń.');
-              }
-
-              if (enemyHp <= 0) {
-                _handleVictory(ctx, template, bounty, isZoneBoss, isExamFight);
-                return;
-              }
-
-              enemyTurn();
-              setBattleState(() {});
             }
 
             return Container(
               padding: const EdgeInsets.all(16),
               height: 540,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        child: Text(
-                          template.name,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.amber),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      Row(
+                        children: [
+                          Text(template.icon, style: const TextStyle(fontSize: 24)),
+                          const SizedBox(width: 8),
+                          Text('$prefixTitle${template.name}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: prefixColor)),
+                        ],
                       ),
-                      Text(
-                        '$enemyHp / ${template.maxHp} HP',
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.redAccent),
-                      ),
+                      Text('$enemyHp / $enemyMaxHp HP', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  LinearProgressIndicator(
-                    value: max(0.0, min(1.0, enemyHp / template.maxHp)),
-                    backgroundColor: Colors.white10,
-                    color: Colors.redAccent,
-                    minHeight: 8,
-                  ),
-                  const SizedBox(height: 12),
+                  LinearProgressIndicator(value: enemyHp / enemyMaxHp, color: const Color(0xFFEF5350), backgroundColor: Colors.white12, minHeight: 7),
+                  const SizedBox(height: 4),
+                  Text('Statystyki: Crit $enemyCrit% | Kawarimi $enemyDodge% | Przebicie $enemyPierce%', style: const TextStyle(fontSize: 10, color: Colors.white54)),
+                  const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      Text('❤️ HP: $hp / $maxHp', style: const TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
-                      Text('🌀 CP: $chakra / ${maxChakra + milestoneBonusMaxCp}', style: const TextStyle(color: Colors.lightBlueAccent, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.black38,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white10),
-                      ),
-                      child: ListView.builder(
-                        itemCount: battleLogs.length,
-                        itemBuilder: (context, idx) => Text(
-                          battleLogs[idx],
-                          style: const TextStyle(fontSize: 12, height: 1.4),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      ElevatedButton(
-                        onPressed: executeBasicAttack,
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF37474F)),
-                        child: const Text('Atak Wręcz'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => executeJutsu(activeJutsu1),
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E88E5)),
-                        child: Text(activeJutsu1.name),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => executeJutsu(activeJutsu2),
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE53935)),
-                        child: Text(activeJutsu2.name),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => executeJutsu(activeJutsu3),
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF43A047)),
-                        child: Text(activeJutsu3.name),
-                      ),
+                      Text('Twoje HP: $hp / $maxHp', style: const TextStyle(fontSize: 12, color: Color(0xFF69F0AE), fontWeight: FontWeight.bold)),
+                      Text('Twoje CP: $chakra / $maxChakra', style: const TextStyle(fontSize: 12, color: Color(0xFF40C4FF), fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      returnToVillage();
-                    },
-                    child: const Text('💨 Wycofaj się do Wioski', style: TextStyle(color: Colors.grey)),
-                  )
+                  Container(
+                    height: 90,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: const Color(0xFF0F0E0D), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.white12)),
+                    child: ListView.builder(
+                      reverse: true,
+                      itemCount: battleLogHistory.length,
+                      itemBuilder: (context, index) {
+                        return Text(battleLogHistory[index], style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: Color(0xFFFFCC80)));
+                      },
+                    ),
+                  ),
+                  const Spacer(),
+                  Row(
+                    children: equippedJutsu.map((jutsu) {
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: jutsu.color.withAlpha(120),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                            ),
+                            onPressed: () => executeJutsu(jutsu),
+                            child: Text(jutsu.name, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF00695C),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          onPressed: openCombatBagDialog,
+                          child: const Text('🎒 Plecak w walce', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF37474F),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          onPressed: () {
+                            if (template.isBoss || isExamFight) {
+                              appendBattleLog('Nie można uciec z tej walki!');
+                              setBattleState(() {});
+                              return;
+                            }
+                            Navigator.pop(ctx);
+                            addLog('💨 Ucieczka z pola walki!');
+                          },
+                          child: const Text('💨 Ucieczka', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             );
@@ -1177,572 +2457,536 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     );
   }
 
-  void _handleVictory(
-    BuildContext ctx,
-    EnemyTemplate enemy,
-    BingoTarget? bounty,
-    bool isZoneBoss,
-    bool isExamFight,
-  ) {
-    Navigator.pop(ctx);
-    setState(() {
-      milestones.enemiesSlain++;
+  void _findLoot({bool guaranteedBossDrop = false, String? dungeonBossSetGroup}) {
+    if (dungeonBossSetGroup != null && _rng.nextInt(100) < 35) {
+      final bossPieces = bossExclusiveSetsPool.where((b) => b.setGroup == dungeonBossSetGroup).toList();
+      final unownedPieces = bossPieces.where((p) => !equippedList.any((e) => e.name == p.baseName)).toList();
 
-      if (isExamFight) {
-        if (currentRank == 'Nowicjusz Akademii') currentRank = 'Genin';
-        else if (currentRank == 'Genin') currentRank = 'Chūnin';
-        else if (currentRank == 'Chūnin') currentRank = 'Jōnin';
-        else if (currentRank == 'Jōnin') currentRank = 'Sannin';
+      final chosen = unownedPieces.isNotEmpty ? unownedPieces[_rng.nextInt(unownedPieces.length)] : bossPieces[_rng.nextInt(bossPieces.length)];
 
-        adventureLogs.insert(0, '🎖️ EGZAMIN ZDANY! Uzyskano prestiżową rangę: $currentRank!');
-        _saveGameData();
-        return;
+      List<GearAffix> affixes = [
+        const GearAffix(type: AffixType.critRate, value: 12),
+        const GearAffix(type: AffixType.armorPierce, value: 15),
+      ];
+
+      final drop = NinjaGear(
+        name: chosen.baseName,
+        rarity: ItemRarity.legendary,
+        slot: chosen.slot,
+        baseStat: chosen.baseStat,
+        affixes: affixes,
+        setGroup: chosen.setGroup,
+        icon: chosen.icon,
+      );
+
+      NinjaGear currentGear = currentWeapon;
+      switch (chosen.slot) {
+        case GearSlot.weapon: currentGear = currentWeapon; break;
+        case GearSlot.armor: currentGear = currentArmor; break;
+        case GearSlot.helmet: currentGear = currentHelmet; break;
+        case GearSlot.boots: currentGear = currentBoots; break;
+        case GearSlot.trinket: currentGear = currentTrinket; break;
       }
+      _showEquipDialog(newGear: drop, currentGear: currentGear, slot: chosen.slot);
+      return;
+    }
 
-      int rewardExp = 30 + (currentZoneDepth * 3);
-      int rewardRyo = 45 + (currentZoneDepth * 4);
+    final slot = GearSlot.values[_rng.nextInt(5)];
+    final drop = _generateRandomGear(slot: slot, guaranteedBossDrop: guaranteedBossDrop);
 
-      if (bounty != null) {
-        bounty.isDefeated = true;
-        milestones.bountiesClaimed++;
-        rewardExp += bounty.bountyExp;
-        rewardRyo += bounty.bountyRyo;
-        inventory.add(bounty.exclusiveReward);
-        adventureLogs.insert(0, '🏆 Zlecenie z Bingo Book zrealizowane: ${bounty.name}!');
-        adventureLogs.insert(0, '🎁 Zdobyto unikat: ${bounty.exclusiveReward.name}!');
-      }
+    NinjaGear currentGear = currentWeapon;
+    switch (slot) {
+      case GearSlot.weapon: currentGear = currentWeapon; break;
+      case GearSlot.armor: currentGear = currentArmor; break;
+      case GearSlot.helmet: currentGear = currentHelmet; break;
+      case GearSlot.boots: currentGear = currentBoots; break;
+      case GearSlot.trinket: currentGear = currentTrinket; break;
+    }
 
-      // Szansa na losowy łup ze zwykłych wrogów lub bossa
-      if (isZoneBoss || _rng.nextInt(100) < 35) {
-        final drop = _generateRandomLoot(isZoneBoss);
-        inventory.add(drop);
-        adventureLogs.insert(0, '📦 Zdobyto wyposażenie: ${drop.name} (${drop.rarity.name.toUpperCase()})!');
-      }
-
-      ryo += rewardRyo;
-      _addExp(rewardExp);
-      adventureLogs.insert(0, '⚔️ Zwycięstwo nad ${enemy.name}! (+${rewardRyo} Ryo, +${rewardExp} EXP)');
-      _saveGameData();
-    });
+    _showEquipDialog(newGear: drop, currentGear: currentGear, slot: slot);
   }
 
-  EquipmentItem _generateRandomLoot(bool isBossDrop) {
-    final slots = GearSlot.values;
-    final slot = slots[_rng.nextInt(slots.length)];
-    final rarityRoll = _rng.nextInt(100);
-
+  NinjaGear _generateRandomGear({required GearSlot slot, bool guaranteedBossDrop = false}) {
     ItemRarity rarity = ItemRarity.common;
-    if (isBossDrop || rarityRoll > 85) {
-      rarity = ItemRarity.epic;
-    } else if (rarityRoll > 60) {
-      rarity = ItemRarity.rare;
-    }
+    final locId = currentSelectedLocationId;
+    final roll = _rng.nextInt(100);
 
-    int stat = 12 + (currentZoneDepth ~/ 4) + (rarity.index * 10);
-    String name = 'Łup Shinobi';
-    String? setGroup;
-
-    if (slot == GearSlot.weapon) name = 'Ostrze Bojowe';
-    if (slot == GearSlot.helmet) name = 'Kaptur Zwiadowcy';
-    if (slot == GearSlot.armor) name = 'Pancerz Ochronny';
-    if (slot == GearSlot.boots) name = 'Kamasze Szybkości';
-    if (slot == GearSlot.trinket) name = 'Talizman Czakry';
-
-    if (rarity == ItemRarity.epic && _rng.nextBool()) {
-      setGroup = _rng.nextBool() ? 'ANBU' : 'Myoboku';
-      name += ' [$setGroup]';
-    }
-
-    return EquipmentItem(
-      id: 'item_${DateTime.now().millisecondsSinceEpoch}_${_rng.nextInt(999)}',
-      name: name,
-      slot: slot,
-      rarity: rarity,
-      baseStat: stat,
-      setGroup: setGroup,
-      price: stat * 8,
-    );
-  }
-  void _showMilestonesDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1D24),
-        title: const Row(
-          children: [
-            Icon(Icons.military_tech, color: Colors.amber),
-            SizedBox(width: 8),
-            Text('Dojo Kamieni Milowych'),
-          ],
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              const Text('🥋 PASY RANGOWE KONOHY', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
-              _beltTile('Biały Pas Nowicjusza', 'Początek drogi ninja', '+30 Max HP', true),
-              _beltTile('Zielony Pas Genina', 'Osiągnij 10. Poziom', '+5 Atak, +5 Obrona', level >= 10),
-              _beltTile('Niebieski Pas Chūnina', 'Ranga Chūnin lub wyższa', '+5% Mocy Jutsu', currentRank != 'Nowicjusz Akademii' && currentRank != 'Genin'),
-              _beltTile('Czarny Pas Jōnina', '3 zlecenia Bingo i 100 głębokości', '+10 Atak, +5% Kawarimi', milestones.bountiesClaimed >= 3 && currentZoneDepth >= 100),
-              _beltTile('Szkarłatny Pas Sannina', 'Osiągnij Rangę Sannin', '+10% Krytyk, +15% Mocy Jutsu', currentRank == 'Sannin'),
-              const Divider(color: Colors.white24, height: 24),
-              const Text('🎖️ STATYSTYKI I PROGRES', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
-              _milestoneProgressTile('Zlikwidowani Wrogowie', '${milestones.enemiesSlain} wrogów', '+${milestoneBonusDodge}% Kawarimi'),
-              _milestoneProgressTile('Ciosy Fizyczne', '${milestones.physicalHitsDealt} ataków', '+${milestoneBonusAtk} Ataku'),
-              _milestoneProgressTile('Użycia Technik Jutsu', '${milestones.jutsuCasts} aktywacji', '+${milestoneBonusMaxCp} Max CP'),
-              _milestoneProgressTile('Przyjęte Obrażenia', '${milestones.damageTaken} pkt obrażeń', '+${milestoneBonusDef} Obrony'),
-              _milestoneProgressTile('Zrealizowane Listy Gończe', '${milestones.bountiesClaimed} / 5 Nukeninów', 'Dedykowane łupy w plecaku'),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Zamknij', style: TextStyle(color: Colors.amber)),
-          )
-        ],
-      ),
-    );
-  }
-
-  void _showBingoBookDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1D24),
-        title: const Row(
-          children: [
-            Icon(Icons.menu_book, color: Colors.redAccent),
-            SizedBox(width: 8),
-            Text('Bingo Book (Lista Gończych)'),
-          ],
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: bingoTargets.length,
-            itemBuilder: (context, idx) {
-              final b = bingoTargets[idx];
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: b.isDefeated ? Colors.black45 : const Color(0xFF222630),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: b.isDefeated ? Colors.grey : Colors.redAccent.withOpacity(0.6)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          b.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: b.isDefeated ? Colors.grey : Colors.redAccent,
-                            decoration: b.isDefeated ? TextDecoration.lineThrough : null,
-                          ),
-                        ),
-                        Text(
-                          b.isDefeated ? 'POKONANY' : 'POSZUKIWANY',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: b.isDefeated ? Colors.grey : Colors.greenAccent,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(b.title, style: const TextStyle(fontSize: 12, color: Colors.white70)),
-                    const SizedBox(height: 4),
-                    Text('Lokacja: ${b.zoneId.toUpperCase()} | Głębokość: ${b.minDepth}+', style: const TextStyle(fontSize: 11, color: Colors.amber)),
-                    Text('Nagroda: ${b.bountyRyo} Ryo | Drop: ${b.exclusiveReward.name}', style: const TextStyle(fontSize: 11, color: Colors.lightBlueAccent)),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Zamknij', style: TextStyle(color: Colors.amber)),
-          )
-        ],
-      ),
-    );
-  }
-
-  void _showInventoryDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setInvState) {
-          return AlertDialog(
-            backgroundColor: const Color(0xFF1A1D24),
-            title: Text('Plecak Shinobi (${inventory.length} przedmiotów)'),
-            content: SizedBox(
-              width: double.maxFinite,
-              height: 400,
-              child: inventory.isEmpty
-                  ? const Center(child: Text('Plecak jest pusty. Ruszaj na misję!'))
-                  : ListView.builder(
-                      itemCount: inventory.length,
-                      itemBuilder: (context, idx) {
-                        final item = inventory[idx];
-                        return ListTile(
-                          title: Text(item.name, style: TextStyle(color: _getRarityColor(item.rarity), fontWeight: FontWeight.bold)),
-                          subtitle: Text('${_statLabelForSlot(item.slot)}: +${item.effectiveStat} ${item.specialEffect != null ? '\n✨ ${item.specialEffect}' : ''}'),
-                          trailing: Row(
-                            mainAxisSize: minAxisSize,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.check_circle_outline, color: Colors.greenAccent),
-                                tooltip: 'Załóż',
-                                onPressed: () {
-                                  _equipItem(item);
-                                  setInvState(() {});
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.monetization_on_outlined, color: Colors.amber),
-                                tooltip: 'Sprzedaj',
-                                onPressed: () {
-                                  setState(() {
-                                    ryo += (item.price * 0.6).round();
-                                    inventory.removeAt(idx);
-                                    _saveGameData();
-                                  });
-                                  setInvState(() {});
-                                },
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Zamknij', style: TextStyle(color: Colors.amber)),
-              )
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  void _equipItem(EquipmentItem item) {
-    setState(() {
-      inventory.remove(item);
-      switch (item.slot) {
-        case GearSlot.weapon:
-          inventory.add(currentWeapon);
-          currentWeapon = item;
-          break;
-        case GearSlot.helmet:
-          inventory.add(currentHelmet);
-          currentHelmet = item;
-          break;
-        case GearSlot.armor:
-          inventory.add(currentArmor);
-          currentArmor = item;
-          break;
-        case GearSlot.boots:
-          inventory.add(currentBoots);
-          currentBoots = item;
-          break;
-        case GearSlot.trinket:
-          inventory.add(currentTrinket);
-          currentTrinket = item;
-          break;
+    if (guaranteedBossDrop) {
+      if (locId == 'loc_gate') {
+        rarity = roll < 80 ? ItemRarity.rare : ItemRarity.epic;
+      } else if (locId == 'loc_forest') {
+        rarity = roll < 65 ? ItemRarity.rare : (roll < 95 ? ItemRarity.epic : ItemRarity.legendary);
+      } else if (locId == 'loc_waves') {
+        rarity = roll < 45 ? ItemRarity.rare : (roll < 88 ? ItemRarity.epic : ItemRarity.legendary);
+      } else if (locId == 'loc_valley') {
+        rarity = roll < 25 ? ItemRarity.rare : (roll < 75 ? ItemRarity.epic : ItemRarity.legendary);
+      } else {
+        rarity = roll < 50 ? ItemRarity.epic : ItemRarity.legendary;
       }
-      _saveGameData();
-    });
+    } else {
+      if (locId == 'loc_gate') {
+        rarity = roll < 85 ? ItemRarity.common : (roll < 99 ? ItemRarity.rare : ItemRarity.epic);
+      } else if (locId == 'loc_forest') {
+        rarity = roll < 65 ? ItemRarity.common : (roll < 95 ? ItemRarity.rare : ItemRarity.epic);
+      } else if (locId == 'loc_waves') {
+        rarity = roll < 40 ? ItemRarity.common : (roll < 85 ? ItemRarity.rare : (roll < 98 ? ItemRarity.epic : ItemRarity.legendary));
+      } else if (locId == 'loc_valley') {
+        rarity = roll < 20 ? ItemRarity.common : (roll < 68 ? ItemRarity.rare : (roll < 94 ? ItemRarity.epic : ItemRarity.legendary));
+      } else {
+        rarity = roll < 8 ? ItemRarity.common : (roll < 45 ? ItemRarity.rare : (roll < 85 ? ItemRarity.epic : ItemRarity.legendary));
+      }
+    }
+
+    final arch = standardArchetypesPool.where((a) => a.slot == slot).toList();
+    final chosen = arch[_rng.nextInt(arch.length)];
+
+    String prefix = '';
+    if (rarity == ItemRarity.rare) prefix = 'Mistrzowski ';
+    if (rarity == ItemRarity.epic) prefix = 'Pradawny ';
+    if (rarity == ItemRarity.legendary) prefix = 'Legendarny ';
+
+    List<GearAffix> generatedAffixes = [];
+    int affixesCount = rarity == ItemRarity.common ? 0 : (rarity == ItemRarity.rare ? 1 : (rarity == ItemRarity.epic ? 2 : 3));
+
+    final availableTypes = List<AffixType>.from(AffixType.values)..shuffle(_rng);
+    for (int i = 0; i < affixesCount && i < availableTypes.length; i++) {
+      final type = availableTypes[i];
+      int val = 0;
+      switch (type) {
+        case AffixType.critRate: val = 4 + (rarity.index * 4) + _rng.nextInt(3); break;
+        case AffixType.dodgeRate: val = 3 + (rarity.index * 3) + _rng.nextInt(3); break;
+        case AffixType.armorPierce: val = 5 + (rarity.index * 4) + _rng.nextInt(4); break;
+        case AffixType.lifeSteal: val = 4 + (rarity.index * 3) + _rng.nextInt(3); break;
+        case AffixType.hpRegen: val = 2 + (rarity.index * 2); break;
+        case AffixType.chakraRegen: val = 2 + (rarity.index * 2); break;
+        case AffixType.bonusHp: val = 15 + (rarity.index * 15); break;
+        case AffixType.bonusChakra: val = 12 + (rarity.index * 12); break;
+      }
+      generatedAffixes.add(GearAffix(type: type, value: val));
+    }
+
+    return NinjaGear(
+      name: '$prefix${chosen.baseName}',
+      rarity: rarity,
+      slot: slot,
+      baseStat: chosen.baseStat + (rarity.index * 4) + _rng.nextInt(2),
+      affixes: generatedAffixes,
+      setGroup: chosen.setGroup,
+      isSoulbound: false,
+      icon: chosen.icon,
+    );
   }
 
-  void _showBlacksmithDialog() {
+  void _showEquipDialog({required NinjaGear newGear, required NinjaGear currentGear, required GearSlot slot}) {
+    String slotName = slot == GearSlot.weapon ? 'Broń' : (slot == GearSlot.armor ? 'Pancerz' : (slot == GearSlot.helmet ? 'Głowa' : (slot == GearSlot.boots ? 'Buty' : 'Talizman')));
+    int diff = newGear.effectiveStat - currentGear.effectiveStat;
+    String diffText = diff > 0 ? '+$diff' : '$diff';
+    Color diffColor = diff > 0 ? const Color(0xFF69F0AE) : (diff < 0 ? const Color(0xFFFF5252) : Colors.grey);
+    final sellValue = newGear.sellPrice;
+    final bool canStash = equipmentStash.length < 10;
+
+    bool isBetter = newGear.effectiveStat > currentGear.effectiveStat || (newGear.effectiveStat == currentGear.effectiveStat && newGear.affixes.length >= currentGear.affixes.length);
+
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setForgeState) {
-          final equipped = [currentWeapon, currentHelmet, currentArmor, currentBoots, currentTrinket];
-          return AlertDialog(
-            backgroundColor: const Color(0xFF1A1D24),
-            title: const Row(
-              children: [
-                Icon(Icons.gavel, color: Colors.orangeAccent),
-                SizedBox(width: 8),
-                Text('Kowal Konohy (Ulepszenia)'),
-              ],
-            ),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: equipped.length,
-                itemBuilder: (context, idx) {
-                  final item = equipped[idx];
-                  final cost = 80 + (item.upgradeLevel * 60);
-                  return ListTile(
-                    title: Text('${item.name} (+${item.upgradeLevel})'),
-                    subtitle: Text('Aktualnie: ${_statLabelForSlot(item.slot)} +${item.effectiveStat}'),
-                    trailing: ElevatedButton(
-                      onPressed: ryo < cost
-                          ? null
-                          : () {
-                              setState(() {
-                                ryo -= cost;
-                                final upgraded = item.copyWith(upgradeLevel: item.upgradeLevel + 1);
-                                if (item.slot == GearSlot.weapon) currentWeapon = upgraded;
-                                if (item.slot == GearSlot.helmet) currentHelmet = upgraded;
-                                if (item.slot == GearSlot.armor) currentArmor = upgraded;
-                                if (item.slot == GearSlot.boots) currentBoots = upgraded;
-                                if (item.slot == GearSlot.trinket) currentTrinket = upgraded;
-                                _saveGameData();
-                              });
-                              setForgeState(() {});
-                            },
-                      child: Text('$cost Ryo'),
-                    ),
-                  );
-                },
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF191716),
+        title: Row(
+          children: [
+            Text('Odnaleziono: $slotName!', style: const TextStyle(color: Color(0xFFFFB74D), fontWeight: FontWeight.bold, fontSize: 16)),
+            const Spacer(),
+            if (newGear.isBossSet)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(4)),
+                child: const Text('SET BOSSA', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+              ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: isBetter ? const Color(0xFF1B5E20).withAlpha(120) : const Color(0xFFB71C1C).withAlpha(120),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                isBetter ? '💡 Sugestia: Ten sprzęt jest silniejszy!' : '⚠️ Sugestia: Ten sprzęt jest słabszy.',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isBetter ? const Color(0xFF69F0AE) : const Color(0xFFFF8A80)),
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Zamknij', style: TextStyle(color: Colors.amber)),
-              )
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF141211),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: newGear.borderColor, width: newGear.borderWidth),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(newGear.icon, style: const TextStyle(fontSize: 22)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text('NOWY: ${newGear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: newGear.borderColor)),
+                            ),
+                            if (newGear.isSoulbound) ...[
+                              const SizedBox(width: 4),
+                              const Text('🈴', style: TextStyle(fontSize: 12)),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      Text('Moc: +${newGear.effectiveStat} ', style: const TextStyle(fontSize: 12)),
+                      Text('($diffText)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: diffColor)),
+                    ],
+                  ),
+                  Text('Wartość: ${newGear.marketValue} Ryo (Złomowanie: $sellValue Ryo)', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
+                  if (newGear.setGroup != 'none')
+                    Text('Zestaw: ${newGear.setGroup.toUpperCase()}', style: const TextStyle(fontSize: 11, color: Color(0xFF80D8FF))),
+                  if (newGear.affixes.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    ...newGear.affixes.map((a) => Text(a.label, style: const TextStyle(fontSize: 11, color: Color(0xFFFFD54F)))),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF141211),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: currentGear.borderColor, width: currentGear.borderWidth),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(currentGear.icon, style: const TextStyle(fontSize: 22)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text('POSIADANY: ${currentGear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: currentGear.borderColor)),
+                            ),
+                            if (currentGear.isSoulbound) ...[
+                              const SizedBox(width: 4),
+                              const Text('🈴', style: TextStyle(fontSize: 12)),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text('Moc: +${currentGear.effectiveStat}', style: const TextStyle(fontSize: 12)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            if (isBetter) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      addLog('Odrzucono: ${newGear.displayName}.');
+                    },
+                    child: const Text('Odrzuć', style: TextStyle(color: Colors.grey)),
+                  ),
+                  if (canStash)
+                    TextButton(
+                      onPressed: () {
+                        setState(() => equipmentStash.add(newGear));
+                        _saveGameData();
+                        Navigator.pop(ctx);
+                        addLog('📦 Schowano [${newGear.displayName}] do plecaka.');
+                      },
+                      child: const Text('Zachowaj', style: TextStyle(color: Color(0xFF81C784), fontWeight: FontWeight.bold)),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), padding: const EdgeInsets.symmetric(vertical: 12)),
+                  onPressed: () {
+                    setState(() {
+                      switch (slot) {
+                        case GearSlot.weapon: currentWeapon = newGear; break;
+                        case GearSlot.armor: currentArmor = newGear; break;
+                        case GearSlot.helmet: currentHelmet = newGear; break;
+                        case GearSlot.boots: currentBoots = newGear; break;
+                        case GearSlot.trinket: currentTrinket = newGear; break;
+                      }
+                    });
+                    _saveGameData();
+                    Navigator.pop(ctx);
+                    addLog('✨ Założono: ${newGear.displayName}!');
+                  },
+                  child: const Text('Zamień ⭐', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ] else ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        switch (slot) {
+                          case GearSlot.weapon: currentWeapon = newGear; break;
+                          case GearSlot.armor: currentArmor = newGear; break;
+                          case GearSlot.helmet: currentHelmet = newGear; break;
+                          case GearSlot.boots: currentBoots = newGear; break;
+                          case GearSlot.trinket: currentTrinket = newGear; break;
+                        }
+                      });
+                      _saveGameData();
+                      Navigator.pop(ctx);
+                      addLog('✨ Założono: ${newGear.displayName}!');
+                    },
+                    child: const Text('Zamień mimo to', style: TextStyle(color: Colors.grey)),
+                  ),
+                  if (canStash)
+                    TextButton(
+                      onPressed: () {
+                        setState(() => equipmentStash.add(newGear));
+                        _saveGameData();
+                        Navigator.pop(ctx);
+                        addLog('📦 Schowano [${newGear.displayName}] do plecaka.');
+                      },
+                      child: const Text('Zachowaj', style: TextStyle(color: Color(0xFF81C784), fontWeight: FontWeight.bold)),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF37474F), padding: const EdgeInsets.symmetric(vertical: 12)),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    addLog('Odrzucono: ${newGear.displayName}.');
+                  },
+                  child: const Text('Odrzuć ⭐', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white70)),
+                ),
+              ),
             ],
-          );
-        },
+          ],
+        ),
       ),
     );
   }
 
-  void _showExamDialog() {
+  void _showItemDetailsDialog(String slotName, NinjaGear gear) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1D24),
-        title: const Text('Egzaminy Shinobi'),
+        backgroundColor: const Color(0xFF191716),
+        title: Row(
+          children: [
+            Text(gear.icon, style: const TextStyle(fontSize: 24)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text('$slotName: ${gear.displayName}', style: TextStyle(color: gear.borderColor, fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                  if (gear.isSoulbound) ...[
+                    const SizedBox(width: 6),
+                    const Text('🈴', style: TextStyle(fontSize: 15)),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Obecna Ranga: $currentRank', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.amber)),
-            const SizedBox(height: 12),
-            if (currentRank == 'Nowicjusz Akademii')
-              ElevatedButton(
-                onPressed: level < 5
-                    ? null
-                    : () {
-                        Navigator.pop(ctx);
-                        _startBattleWithEnemy(
-                          const EnemyTemplate(id: 'ex_genin', name: 'Instruktor Iruka', maxHp: 180, baseAtk: 22, baseDef: 14),
-                          isExamFight: true,
-                        );
-                      },
-                child: const Text('Przystąp do Egzaminu na Genina (Wymagany Lvl 5)'),
+            if (gear.isBossSet)
+              Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(4)),
+                child: const Text('UNIKALNY ZESTAW BOSSA LOCHU', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
               ),
-            if (currentRank == 'Genin')
-              ElevatedButton(
-                onPressed: level < 15
-                    ? null
-                    : () {
-                        Navigator.pop(ctx);
-                        _startBattleWithEnemy(
-                          const EnemyTemplate(id: 'ex_chunin', name: 'Egzaminator Baki', maxHp: 480, baseAtk: 46, baseDef: 30, traits: [BossTrait.ironSkin]),
-                          isExamFight: true,
-                        );
-                      },
-                child: const Text('Egzamin Chūnina (Wymagany Lvl 15)'),
-              ),
-            if (currentRank == 'Chūnin')
-              ElevatedButton(
-                onPressed: level < 28
-                    ? null
-                    : () {
-                        Navigator.pop(ctx);
-                        _startBattleWithEnemy(
-                          const EnemyTemplate(id: 'ex_jonin', name: 'Kakashi Hatake (Kopia)', maxHp: 950, baseAtk: 78, baseDef: 45, traits: [BossTrait.dodgeManiac, BossTrait.bloodEnrage]),
-                          isExamFight: true,
-                        );
-                      },
-                child: const Text('Test Kwalifikacyjny na Jōnina (Wymagany Lvl 28)'),
-              ),
-            if (currentRank == 'Jōnin')
-              ElevatedButton(
-                onPressed: level < 40
-                    ? null
-                    : () {
-                        Navigator.pop(ctx);
-                        _startBattleWithEnemy(
-                          const EnemyTemplate(id: 'ex_sannin', name: 'Jiraiya (Tryb Mędrca)', maxHp: 1800, baseAtk: 110, baseDef: 65, traits: [BossTrait.ironSkin, BossTrait.chakraLeech, BossTrait.chakraThorns]),
-                          isExamFight: true,
-                        );
-                      },
-                child: const Text('Próba Mędrca na Sannina (Wymagany Lvl 40)'),
-              ),
-            if (currentRank == 'Sannin')
-              const Text('Osiągnąłeś szczyt hierarchii ninja jako Legendarny Sannin!', style: TextStyle(color: Colors.greenAccent)),
+            Text('Rzadkość: ${gear.rarityLabel}', style: TextStyle(color: gear.color, fontSize: 13, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text('Moc bazowa: +${gear.effectiveStat}', style: const TextStyle(fontSize: 13)),
+            Text('Wycena rynkowa: ${gear.marketValue} Ryo (Złom: ${gear.sellPrice} Ryo)', style: const TextStyle(fontSize: 12, color: Color(0xFFFFD54F))),
+            if (gear.setGroup != 'none')
+              Text('Zestaw (Set): ${gear.setGroup.toUpperCase()}', style: const TextStyle(fontSize: 12, color: Color(0xFF80D8FF))),
+            if (gear.affixes.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              const Text('Dodatkowe atuty:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFFB74D))),
+              ...gear.affixes.map((a) => Padding(
+                padding: const EdgeInsets.only(top: 3),
+                child: Text(a.label, style: const TextStyle(fontSize: 12, color: Color(0xFFFFE082))),
+              )),
+            ],
+            const SizedBox(height: 10),
+            Text(gear.isSoulbound ? '🈴 Przedmiot zapieczętowany (bezpieczny)' : '⚠️ Przedmiot niezabezpieczony (Koszt pieczęci: ${gear.sealingCost} Ryo)', style: TextStyle(fontSize: 11, color: gear.isSoulbound ? const Color(0xFF69F0AE) : const Color(0xFFFF5252))),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Zamknij', style: TextStyle(color: Colors.amber)),
-          )
-        ],
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zamknij', style: TextStyle(color: Colors.grey)))],
       ),
     );
   }
 
-  void _showZoneSelectDialog() {
-    showDialog(
+  void _openLocationSelectionModal() {
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1D24),
-        title: const Text('Wybierz Obszar Misji'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: zones.length,
-            itemBuilder: (context, idx) {
-              final z = zones[idx];
-              final cp = zoneCheckpoints[z.id] ?? 0;
-              final isUnlocked = level >= z.minLevel;
-              return ListTile(
-                title: Text(z.name, style: TextStyle(color: isUnlocked ? Colors.white : Colors.grey)),
-                subtitle: Text('Wymagany Lvl: ${z.minLevel} | Odblokowany Posterunek: $cp'),
-                trailing: isUnlocked
-                    ? ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            currentZoneId = z.id;
-                            currentZoneDepth = cp;
-                            adventureLogs.insert(0, '🗺️ Wyruszasz do strefy: ${z.name} (Zaczynasz od głębokości $cp).');
-                          });
-                          Navigator.pop(ctx);
-                        },
-                        child: const Text('Wybierz'),
-                      )
-                    : const Icon(Icons.lock, color: Colors.grey),
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Zamknij', style: TextStyle(color: Colors.amber)),
-          )
-        ],
-      ),
-    );
-  }
-
-  Color _getRarityColor(ItemRarity rarity) {
-    switch (rarity) {
-      case ItemRarity.common:
-        return Colors.white;
-      case ItemRarity.rare:
-        return Colors.blueAccent;
-      case ItemRarity.epic:
-        return Colors.purpleAccent;
-      case ItemRarity.legendary:
-        return Colors.amberAccent;
-    }
-  }
-
-  String _statLabelForSlot(GearSlot slot) {
-    switch (slot) {
-      case GearSlot.weapon:
-      case GearSlot.helmet:
-        return 'Atak';
-      case GearSlot.armor:
-      case GearSlot.boots:
-        return 'Obrona';
-      case GearSlot.trinket:
-        return 'Moc Jutsu';
-    }
-  }
-
-  MainAxisSize get minAxisSize => MainAxisSize.min;
-
-  Widget _beltTile(String title, String desc, String bonus, bool isUnlocked) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: isUnlocked ? const Color(0xFF1B3B2B) : Colors.black38,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: isUnlocked ? Colors.greenAccent : Colors.white12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: isUnlocked ? Colors.white : Colors.grey)),
-                Text(desc, style: const TextStyle(fontSize: 10, color: Colors.white60)),
-              ],
-            ),
-          ),
-          Text(bonus, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isUnlocked ? Colors.greenAccent : Colors.grey)),
-        ],
-      ),
-    );
-  }
-
-  Widget _milestoneProgressTile(String name, String stat, String currentBonus) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
+      backgroundColor: const Color(0xFF161412),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          height: 440,
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
-              Text(stat, style: const TextStyle(fontSize: 11, color: Colors.white54)),
+              const Text('Wybierz lokację eksploracji:', style: TextStyle(color: Color(0xFFFFAB91), fontWeight: FontWeight.bold, fontSize: 15)),
+              const SizedBox(height: 10),
+              Expanded(
+                child: ListView(
+                  children: shinobiLocations.map((loc) {
+                    final bool isLocked = level < loc.minLevel;
+                    int maxDepth = maxReachedDepths[loc.id] ?? 1;
+
+                    List<int> availableStarts = [1];
+                    for (int d = 50; d <= maxDepth; d += 50) {
+                      availableStarts.add(d);
+                    }
+
+                    return Card(
+                      color: const Color(0xFF1B1917),
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: Text(loc.icon, style: const TextStyle(fontSize: 26)),
+                              title: Text(loc.name, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isLocked ? Colors.white38 : Colors.white)),
+                              subtitle: Text('Wymagany poziom: ${loc.minLevel} | Osiągnięta głębokość: $maxDepth', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                            ),
+                            if (!isLocked) ...[
+                              const Divider(color: Colors.white12),
+                              Wrap(
+                                spacing: 8,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  const Text('Start:', style: TextStyle(fontSize: 11, color: Colors.white70)),
+                                  ...availableStarts.map((startD) {
+                                    return ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: startD == 1 ? const Color(0xFFE65100) : const Color(0xFF7B1FA2),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        minimumSize: Size.zero,
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pop(ctx);
+                                        leaveVillage(loc, startD);
+                                      },
+                                      child: Text('Krok $startD', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                    );
+                                  }),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
             ],
           ),
-          Text(currentBonus, style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _itemCardExpanded(String label, EquipmentItem item, String statText) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1B1E26),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white10),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
-            Text(item.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-            Text(statText, style: const TextStyle(fontSize: 10, color: Colors.amber)),
-          ],
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator(color: Color(0xFFFF8A65))));
+    }
+
+    final activeLocation = shinobiLocations.firstWhere((l) => l.id == currentSelectedLocationId);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0C0807),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF140D0B),
+              border: Border.symmetric(vertical: BorderSide(color: Color(0xFF2E1911), width: 1.5)),
+            ),
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: AppBar(
+                title: Text(inVillage ? 'Konohagakure (Baza)' : '${activeLocation.name} (Krok $raidDepth)'),
+                centerTitle: true,
+                backgroundColor: const Color(0xFF1A100B),
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Text('🏠', style: TextStyle(fontSize: 20)),
+                  tooltip: 'Menu Startowe',
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const StartMenuScreen()),
+                    );
+                  },
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.help_outline, color: Color(0xFFFFB74D)),
+                    tooltip: 'Pomoc',
+                    onPressed: () => showHelpDialog(context),
+                  ),
+                ],
+              ),
+              body: Column(
+                children: [
+                  _buildTopHeroPanel(),
+                  Expanded(
+                    child: inVillage ? _buildVillageView() : _buildExplorationView(activeLocation),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -1750,169 +2994,481 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
   Widget _buildTopHeroPanel() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFF15181F),
+        color: const Color(0xFF1B1310),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: const Color(0xFF3E2723), width: 1.4),
       ),
       child: Column(
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _itemCardExpanded('Broń', currentWeapon, 'Atak: +${currentWeapon.effectiveStat}'),
-              const SizedBox(width: 6),
-              _itemCardExpanded('Pancerz', currentArmor, 'Obrona: +${currentArmor.effectiveStat}'),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              _itemCardExpanded('Głowa', currentHelmet, 'Atak: +${currentHelmet.effectiveStat}'),
-              const SizedBox(width: 6),
-              _itemCardExpanded('Buty', currentBoots, 'Obrona: +${currentBoots.effectiveStat}'),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              _itemCardExpanded('Talizman', currentTrinket, 'Moc Jutsu: +${currentTrinket.effectiveStat}%'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVillageGrid() {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
-      childAspectRatio: 2.1,
-      children: [
-        _menuTile('🎖️ Kamienie Milowe', 'Pasy i stałe premie', _showMilestonesDialog),
-        _menuTile('📜 Bingo Book', 'Księga Gończych', _showBingoBookDialog),
-        _menuTile('🎒 Plecak Ekwipunku', '${inventory.length} przedmiotów', _showInventoryDialog),
-        _menuTile('🔨 Kowal Konohy', 'Ulepszanie rynsztunku', _showBlacksmithDialog),
-        _menuTile('⛩️ Egzaminy Ninja', 'Awanse w randze', _showExamDialog),
-        _menuTile('🗺️ Wybór Strefy', zones.firstWhere((z) => z.id == currentZoneId).name, _showZoneSelectDialog),
-        _menuTile('🏥 Szpital Konohy', 'Pełne leczenie (15 Ryo)', () {
-          setState(() {
-            if (ryo >= 15) {
-              ryo -= 15;
-              hp = maxHp;
-              chakra = maxChakra;
-              adventureLogs.insert(0, '🏥 Zostałeś w pełni uleczony w Szpitalu Konohy.');
-              _saveGameData();
-            }
-          });
-        }),
-      ],
-    );
-  }
-
-  Widget _menuTile(String title, String subtitle, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1C202A),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-            const SizedBox(height: 2),
-            Text(subtitle, style: const TextStyle(fontSize: 10, color: Colors.white54), overflow: TextOverflow.ellipsis),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Shinobi Lootr - $currentRank (Lvl $level)'),
-        backgroundColor: const Color(0xFF15181F),
-        actions: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Text('💰 $ryo Ryo', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
-            ),
-          )
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            _buildTopHeroPanel(),
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF15181F),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white10),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Text('❤️ HP: $hp / $maxHp', style: const TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
-                  Text('🌀 CP: $chakra / ${maxChakra + milestoneBonusMaxCp}', style: const TextStyle(color: Colors.lightBlueAccent, fontWeight: FontWeight.bold)),
-                  Text('🗡️ Atk: $totalAttack', style: const TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold)),
-                  Text('🛡️ Def: $totalDefense', style: const TextStyle(color: Colors.blueGrey, fontWeight: FontWeight.bold)),
-                  Text('✨ +$totalJutsuPower%', style: const TextStyle(color: Colors.purpleAccent, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            _buildVillageGrid(),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _stepForwardInZone,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE65100),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+              Expanded(
+                flex: 6,
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        _itemCardExpanded('Broń', currentWeapon, 'Atak: +$totalAttack'),
+                        const SizedBox(width: 5),
+                        _itemCardExpanded('Pancerz', currentArmor, 'Obr: +${currentArmor.effectiveStat}'),
+                      ],
                     ),
-                    icon: const Icon(Icons.explore),
-                    label: Text('Idź w głąb strefy (Głębokość: $currentZoneDepth)'),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        _itemCardExpanded('Głowa', currentHelmet, 'Obr: +${currentHelmet.effectiveStat}'),
+                        const SizedBox(width: 5),
+                        _itemCardExpanded('Buty', currentBoots, 'Obr: +${currentBoots.effectiveStat}'),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        _itemCardExpanded('Talizman', currentTrinket, 'Moc: +${currentTrinket.effectiveStat}'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 5,
+                child: InkWell(
+                  onTap: _showStatsDialog,
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF140E0C),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Profil Ninja (ℹ️):', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                            Text('Lvl $level', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: rankColor)),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(ninjaRank, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: rankColor)),
+                        const Divider(color: Colors.white12, height: 10),
+                        _statRowMini('EXP', '$ninjaExp / $expForNextLevel', const Color(0xFF80D8FF)),
+                        _statRowMini('HP', '$hp/$maxHp', const Color(0xFF69F0AE)),
+                        _statRowMini('CP', '$chakra/$maxChakra', const Color(0xFF40C4FF)),
+                        _statRowMini('Ryo', '$ryo', const Color(0xFFFFD54F)),
+                      ],
+                    ),
                   ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _openEquipmentStashDialog,
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF140D0A),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFFFB74D).withAlpha(120), width: 1.2),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Text('📦', style: TextStyle(fontSize: 16)),
+                        SizedBox(width: 6),
+                        Text('Plecak Rynsztunku', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFFFB74D))),
+                      ],
+                    ),
+                    Text('${equipmentStash.length} / 10 slotów', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: equipmentStash.length >= 10 ? const Color(0xFFFF5252) : const Color(0xFF69F0AE))),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVillageView() {
+    final totalItemsInBag = bag.values.fold(0, (a, b) => a + b);
+
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE65100),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: _openLocationSelectionModal,
+              icon: const Text('🌲', style: TextStyle(fontSize: 22)),
+              label: const Text('Wyrusz w Las (Wybierz Strefę)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: GridView.count(
+              crossAxisCount: 2,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              childAspectRatio: 1.45,
+              children: [
+                _villageHubCard(
+                  title: 'Biuro Misji',
+                  subtitle: activeMissionIndex != null ? 'Aktywna misja!' : 'Egzaminy i zlecenia',
+                  icon: '📜',
+                  color: const Color(0xFF5D4037),
+                  onTap: _openVillageMissionsDialog,
+                ),
+                _villageHubCard(
+                  title: 'Prowiant i Zapas',
+                  subtitle: '$totalItemsInBag mikstur i zasobów',
+                  icon: '🎒',
+                  color: const Color(0xFF00695C),
+                  onTap: _openBagDialog,
+                ),
+                _villageHubCard(
+                  title: 'Zwoje Jutsu',
+                  subtitle: '${equippedJutsu.length}/3 aktywnych technik',
+                  icon: '🌀',
+                  color: const Color(0xFF1565C0),
+                  onTap: _openScrollsDialog,
+                ),
+                _villageHubCard(
+                  title: 'Lochy Wioski',
+                  subtitle: 'Legendarne Bossy',
+                  icon: '🏛️',
+                  color: const Color(0xFF7B1FA2),
+                  onTap: _openDungeonsDialog,
+                ),
+                _villageHubCard(
+                  title: 'Zbrojmistrz',
+                  subtitle: 'Ulepszanie rynsztunku',
+                  icon: '🔨',
+                  color: const Color(0xFFBF360C),
+                  onTap: _openBlacksmithDialog,
+                ),
+                _villageHubCard(
+                  title: 'Szpital Konohy',
+                  subtitle: 'Medyk i witalność',
+                  icon: '🩺',
+                  color: const Color(0xFF1B5E20),
+                  onTap: _openMedicDialog,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Container(
-              height: 160,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF15181F),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.white10),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _villageHubCard({required String title, required String subtitle, required String icon, required Color color, required VoidCallback onTap}) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: color.withAlpha(50),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withAlpha(140), width: 1.2),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                children: [
+                  Text(icon, style: const TextStyle(fontSize: 22)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                ],
               ),
-              child: ListView.builder(
-                itemCount: adventureLogs.length,
-                itemBuilder: (context, idx) => Text(
-                  adventureLogs[idx],
-                  style: const TextStyle(fontSize: 12, height: 1.4),
+              const SizedBox(height: 6),
+              Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: Colors.white70)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExplorationView(ShinobiLocation loc) {
+    final activeMission = activeMissionIndex != null ? allMissionsPool[activeMissionIndex!] : null;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2A1711), Color(0xFF160D0A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE65100).withAlpha(120), width: 1.2),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(loc.icon, style: const TextStyle(fontSize: 30)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(loc.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFFFB74D))),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(color: const Color(0xFFE65100).withAlpha(160), borderRadius: BorderRadius.circular(6)),
+                                child: Text('Głębokość: $raidDepth', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(loc.description, style: const TextStyle(fontSize: 11, color: Colors.white60), maxLines: 2),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (activeMission != null && activeMission.locationId == loc.id) ...[
+                  const Divider(color: Colors.white12, height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('🎯 Misja: ${activeMission.title}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF80D8FF))),
+                      Text('$currentMissionKills / ${activeMission.requiredCount}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF69F0AE))),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: currentMissionKills / activeMission.requiredCount,
+                      backgroundColor: Colors.white10,
+                      color: const Color(0xFF69F0AE),
+                      minHeight: 6,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          const Spacer(),
+
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Text('📜 Dziennik Zdarzeń (3 ost.):', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white60)),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            height: 64,
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF100C0A),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: ListView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: log.take(3).length,
+              itemBuilder: (context, index) {
+                final entry = log[index];
+                final isFirst = index == 0;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 1.0),
+                  child: Text(
+                    entry,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: isFirst ? 11 : 10,
+                      fontWeight: isFirst ? FontWeight.bold : FontWeight.normal,
+                      color: isFirst ? const Color(0xFFFFCC80) : Colors.white60,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF00695C),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: _openBagDialog,
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('🎒 Prowiant', softWrap: false, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
                 ),
               ),
+              const SizedBox(width: 6),
+              Expanded(
+                flex: 5,
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE65100),
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: proceedExploration,
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('Idź naprzód 🌲', softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                flex: 3,
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: hasEscapeScroll ? const Color(0xFF1B5E20) : const Color(0xFF263238),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () {
+                      if (!hasEscapeScroll) {
+                        showActionBlockedMessage('🔒 Brak Zwoju Powrotu! Musisz go znaleźć w terenie.');
+                        return;
+                      }
+                      returnToVillage();
+                    },
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        hasEscapeScroll ? '📜 Zwój (Użyj)' : '🔒 Zablokowane',
+                        softWrap: false,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: hasEscapeScroll ? Colors.white : Colors.white38,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+        ],
+      ),
+    );
+  }
+
+  Widget _statRowMini(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1.5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+          Text(value, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color)),
+        ],
+      ),
+    );
+  }
+
+  Widget _itemCardExpanded(String slot, NinjaGear item, String statText) {
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showItemDetailsDialog(slot, item),
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+            decoration: BoxDecoration(
+              color: const Color(0xFF140D0A),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: item.borderColor, width: item.borderWidth),
             ),
-          ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Text(item.icon, style: const TextStyle(fontSize: 12)),
+                          const SizedBox(width: 3),
+                          Expanded(
+                            child: Text(slot, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: item.borderColor)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (item.isBossSet)
+                      const Text('🔥', style: TextStyle(fontSize: 8))
+                    else if (item.isSoulbound)
+                      const Text('🈴', style: TextStyle(fontSize: 8)),
+                  ],
+                ),
+                const SizedBox(height: 1),
+                Text(item.displayName, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: item.borderColor)),
+                Text(statText, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 9, color: Colors.white70)),
+              ],
+            ),
+          ),
         ),
       ),
     );
