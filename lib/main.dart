@@ -1552,7 +1552,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                   addExperience(payoutExp);
                                   _saveGameData();
                                   Navigator.pop(ctx);
-                                  addLog('🎖️ Ukończono: ${m.title}! +$payoutRyo Ryo, +$expGained EXP ${isRepeat ? "(Powtórzenie)" : ""}');
+                                  addLog('🎖️ Ukończono: ${m.title}! +$payoutRyo Ryo, +$payoutExp EXP ${isRepeat ? "(Powtórzenie)" : ""}');
+                                  
                                 },
                                 child: const Text('Odbierz Nagrodę! 🎁', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                               )
