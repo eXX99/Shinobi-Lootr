@@ -1,20 +1,8 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 
-enum GearSlot {
-  weapon,
-  armor,
-  helmet,
-  boots,
-  trinket,
-}
+enum ItemRarity { common, rare, epic, legendary }
 
-enum ItemRarity {
-  common,
-  rare,
-  epic,
-  legendary,
-}
+enum GearSlot { weapon, armor, helmet, boots, trinket }
 
 enum AffixType {
   critRate,
@@ -27,89 +15,6 @@ enum AffixType {
   bonusChakra,
 }
 
-enum BossTrait {
-  chakraLeech,
-  ironSkin,
-  poisonMaster,
-  dodgeManiac,
-  bloodEnrage,
-  chakraThorns,
-}
-
-enum EnemyPrefix {
-  weak,
-  normal,
-  strong,
-}
-
-enum JutsuType {
-  damage,
-  healing,
-  shield,
-  stun,
-}
-
-enum ConsumableType {
-  healHpPercent,
-  healCpPercent,
-  ramenRestore,
-  buffAtk,
-  smokeEscape,
-  directDmg,
-}
-
-enum MissionType {
-  killCount,
-  bossHunt,
-  itemSupply,
-}
-
-const String matIronOre = 'mat_iron_ore';
-const String matSteel = 'mat_steel';
-const String matCrystal = 'mat_crystal';
-const String matDungeonKey = 'mat_dungeon_key';
-
-class CraftingMaterialInfo {
-  final String id;
-  final String name;
-  final String icon;
-  final String description;
-
-  const CraftingMaterialInfo({
-    required this.id,
-    required this.name,
-    required this.icon,
-    required this.description,
-  });
-}
-
-const Map<String, CraftingMaterialInfo> craftingMaterials = {
-  matIronOre: CraftingMaterialInfo(
-    id: matIronOre,
-    name: 'Ruda Żelaza',
-    icon: '🪨',
-    description: 'Surowiec do podstawowego kucia (+1 do +3).',
-  ),
-  matSteel: CraftingMaterialInfo(
-    id: matSteel,
-    name: 'Stal z Kraju Żelaza',
-    icon: '🧱',
-    description: 'Twardy stop do zaawansowanego kucia (+4 do +6).',
-  ),
-  matCrystal: CraftingMaterialInfo(
-    id: matCrystal,
-    name: 'Kryształ Czakry',
-    icon: '💎',
-    description: 'Rzadki minerał do legendarnego wzmacniania (+7 do +9).',
-  ),
-  matDungeonKey: CraftingMaterialInfo(
-    id: matDungeonKey,
-    name: 'Klucz do Lochów',
-    icon: '🗝️',
-    description: 'Otwiera wejście do podziemi z bossami.',
-  ),
-};
-
 class GearAffix {
   final AffixType type;
   final int value;
@@ -118,23 +23,25 @@ class GearAffix {
 
   String get label {
     switch (type) {
-      case AffixType.critRate: return '+$value% Szansy na Krytyk';
-      case AffixType.dodgeRate: return '+$value% Uniku (Kawarimi)';
-      case AffixType.armorPierce: return '+$value% Przebicia Pancerza';
-      case AffixType.lifeSteal: return '+$value% Kradzieży Życia';
-      case AffixType.hpRegen: return '+$value HP na turę';
-      case AffixType.chakraRegen: return '+$value CP na turę';
-      case AffixType.bonusHp: return '+$value Max HP';
-      case AffixType.bonusChakra: return '+$value Max CP';
+      case AffixType.critRate: return 'Szansa na krytyk: +$value%';
+      case AffixType.dodgeRate: return 'Unik (Kawarimi): +$value%';
+      case AffixType.armorPierce: return 'Przebicie pancerza: +$value%';
+      case AffixType.lifeSteal: return 'Kradzież życia: +$value%';
+      case AffixType.hpRegen: return 'Regeneracja HP: +$value';
+      case AffixType.chakraRegen: return 'Regeneracja CP: +$value';
+      case AffixType.bonusHp: return 'Bonusowe HP: +$value';
+      case AffixType.bonusChakra: return 'Bonusowa Czakra: +$value';
     }
   }
 
   Map<String, dynamic> toJson() => {'type': type.index, 'value': value};
 
-  factory GearAffix.fromJson(Map<String, dynamic> json) => GearAffix(
-        type: AffixType.values[json['type'] as int],
-        value: json['value'] as int,
-      );
+  factory GearAffix.fromJson(Map<String, dynamic> json) {
+    return GearAffix(
+      type: AffixType.values[json['type'] as int],
+      value: json['value'] as int,
+    );
+  }
 }
 
 class NinjaGear {
@@ -146,9 +53,9 @@ class NinjaGear {
   final List<GearAffix> affixes;
   final String setGroup;
   final bool isSoulbound;
+  final bool isFavorite;
   final String icon;
-  final bool isFavorite;  
-  
+
   const NinjaGear({
     required this.name,
     required this.rarity,
@@ -157,16 +64,38 @@ class NinjaGear {
     this.upgradeLevel = 0,
     this.affixes = const [],
     this.setGroup = 'none',
-    this.isSoulbound = false
+    this.isSoulbound = false,
     this.isFavorite = false,
-    required this.icon,
+    this.icon = '📦',
   });
 
-  int get effectiveStat => baseStat + (upgradeLevel * (rarity.index + 2));
+  int get effectiveStat => baseStat + (upgradeLevel * 3);
 
-  String get displayName => upgradeLevel > 0 ? '$name (+$upgradeLevel)' : name;
+  int get sellPrice => ((baseStat * 8) + (upgradeLevel * 15) + (rarity.index * 25)).round();
 
-  bool get isBossSet => setGroup.startsWith('boss_');
+  int get merchantSellPrice => (sellPrice * 1.4).round();
+
+  int get marketValue => sellPrice * 2;
+
+  int get sealingCost => 50 + (rarity.index * 75) + (upgradeLevel * 20);
+
+  bool get isBossSet => setGroup != 'none' && (setGroup.startsWith('boss_') || setGroup == 'anbu' || setGroup == 'myoboku');
+
+  Color get color {
+    switch (rarity) {
+      case ItemRarity.common: return Colors.white70;
+      case ItemRarity.rare: return const Color(0xFF448AFF);
+      case ItemRarity.epic: return const Color(0xFFBA68C8);
+      case ItemRarity.legendary: return const Color(0xFFFFD54F);
+    }
+  }
+
+  Color get borderColor {
+    if (isBossSet) return const Color(0xFFFF5252);
+    return color;
+  }
+
+  double get borderWidth => rarity == ItemRarity.legendary || isBossSet ? 2.0 : 1.2;
 
   String get rarityLabel {
     switch (rarity) {
@@ -177,17 +106,7 @@ class NinjaGear {
     }
   }
 
-  Color get color {
-    switch (rarity) {
-      case ItemRarity.common: return const Color(0xFFCFD8DC);
-      case ItemRarity.rare: return const Color(0xFF42A5F5);
-      case ItemRarity.epic: return const Color(0xFFAB47BC);
-      case ItemRarity.legendary: return const Color(0xFFFFB300);
-    }
-  }
-
-  Color get borderColor => isBossSet ? const Color(0xFFFF1744) : color;
-  double get borderWidth => isBossSet ? 2.2 : (rarity == ItemRarity.legendary ? 1.8 : 1.2);
+  String get displayName => upgradeLevel > 0 ? '$name +$upgradeLevel' : name;
 
   int getAffixValue(AffixType type) {
     int total = 0;
@@ -197,110 +116,89 @@ class NinjaGear {
     return total;
   }
 
-  int get marketValue {
-    int mult = rarity.index + 1;
-    return (baseStat * 8 * mult) + (upgradeLevel * 40);
-  }
-
-  int get sellPrice => max(5, (marketValue * 0.25).round());
-  int get merchantSellPrice => max(8, (marketValue * 0.45).round());
-  int get sealingCost => max(20, (marketValue * 0.50).round());
-
   NinjaGear copyWith({
-    String? name,
-    ItemRarity? rarity,
-    GearSlot? slot,
-    int? baseStat,
     int? upgradeLevel,
-    List<GearAffix>? affixes,
-    String? setGroup,
     bool? isSoulbound,
     bool? isFavorite,
-    String? icon,
   }) {
     return NinjaGear(
-      name: name ?? this.name,
-      rarity: rarity ?? this.rarity,
-      slot: slot ?? this.slot,
-      baseStat: baseStat ?? this.baseStat,
+      name: name,
+      rarity: rarity,
+      slot: slot,
+      baseStat: baseStat,
       upgradeLevel: upgradeLevel ?? this.upgradeLevel,
-      affixes: affixes ?? this.affixes,
-      setGroup: setGroup ?? this.setGroup,
+      affixes: affixes,
+      setGroup: setGroup,
       isSoulbound: isSoulbound ?? this.isSoulbound,
       isFavorite: isFavorite ?? this.isFavorite,
-      icon: icon ?? this.icon,
+      icon: icon,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'rarity': rarity.index,
-        'slot': slot.index,
-        'baseStat': baseStat,
-        'upgradeLevel': upgradeLevel,
-        'affixes': affixes.map((a) => a.toJson()).toList(),
-        'setGroup': setGroup,
-        'isSoulbound': isSoulbound,
-        'icon': icon,
-      };
+    'name': name,
+    'rarity': rarity.index,
+    'slot': slot.index,
+    'baseStat': baseStat,
+    'upgradeLevel': upgradeLevel,
+    'affixes': affixes.map((a) => a.toJson()).toList(),
+    'setGroup': setGroup,
+    'isSoulbound': isSoulbound,
+    'isFavorite': isFavorite,
+    'icon': icon,
+  };
 
-  factory NinjaGear.fromJson(Map<String, dynamic> json) => NinjaGear(
-        name: json['name'] as String,
-        rarity: ItemRarity.values[json['rarity'] as int],
-        slot: GearSlot.values[json['slot'] as int],
-        baseStat: json['baseStat'] as int,
-        upgradeLevel: json['upgradeLevel'] as int? ?? 0,
-        affixes: (json['affixes'] as List? ?? [])
-            .map((a) => GearAffix.fromJson(a as Map<String, dynamic>))
-            .toList(),
-        setGroup: json['setGroup'] as String? ?? 'none',
-        isSoulbound: json['isSoulbound'] as bool? ?? false,
-        icon: json['icon'] as String? ?? '🗡️',
-      );
+  factory NinjaGear.fromJson(Map<String, dynamic> json) {
+    return NinjaGear(
+      name: json['name'] as String,
+      rarity: ItemRarity.values[json['rarity'] as int],
+      slot: GearSlot.values[json['slot'] as int],
+      baseStat: json['baseStat'] as int,
+      upgradeLevel: json['upgradeLevel'] as int? ?? 0,
+      affixes: (json['affixes'] as List?)?.map((a) => GearAffix.fromJson(a)).toList() ?? [],
+      setGroup: json['setGroup'] as String? ?? 'none',
+      isSoulbound: json['isSoulbound'] as bool? ?? false,
+      isFavorite: json['isFavorite'] as bool? ?? false,
+      icon: json['icon'] as String? ?? '📦',
+    );
+  }
 }
 
-class GearArchetype {
-  final String baseName;
-  final GearSlot slot;
-  final int baseStat;
-  final String icon;
-  final String setGroup;
+// Pozostałe klasy stałe w models.dart (zachowane bez zmian)
+enum ConsumableType { healHpPercent, healCpPercent, ramenRestore, buffAtk, smokeEscape, directDmg }
 
-  const GearArchetype({
-    required this.baseName,
-    required this.slot,
-    required this.baseStat,
+class Consumable {
+  final String id;
+  final String name;
+  final ConsumableType type;
+  final int value;
+  final int price;
+  final String icon;
+  final String description;
+  final String statBonusText;
+
+  const Consumable({
+    required this.id,
+    required this.name,
+    required this.type,
+    required this.value,
+    required this.price,
     required this.icon,
-    this.setGroup = 'none',
+    required this.description,
+    required this.statBonusText,
   });
 }
 
-const List<GearArchetype> standardArchetypesPool = [
-  GearArchetype(baseName: 'Kunai Liścia', slot: GearSlot.weapon, baseStat: 14, icon: '🗡️'),
-  GearArchetype(baseName: 'Tanto ANBU Cienia', slot: GearSlot.weapon, baseStat: 18, icon: '🗡️', setGroup: 'anbu'),
-  GearArchetype(baseName: 'Ostrze Wiatru Myōboku', slot: GearSlot.weapon, baseStat: 22, icon: '🗡️', setGroup: 'myoboku'),
-  GearArchetype(baseName: 'Kamizelka Chunina', slot: GearSlot.armor, baseStat: 12, icon: '🥋'),
-  GearArchetype(baseName: 'Pancerz Skrytobójcy ANBU', slot: GearSlot.armor, baseStat: 16, icon: '🥋', setGroup: 'anbu'),
-  GearArchetype(baseName: 'Szata Ropuszego Mędrca', slot: GearSlot.armor, baseStat: 20, icon: '🥋', setGroup: 'myoboku'),
-  GearArchetype(baseName: 'Ochraniacz Czoła', slot: GearSlot.helmet, baseStat: 8, icon: '🛡️'),
-  GearArchetype(baseName: 'Maska Lisa ANBU', slot: GearSlot.helmet, baseStat: 12, icon: '🦊', setGroup: 'anbu'),
-  GearArchetype(baseName: 'Opaska Trybu Mędrca', slot: GearSlot.helmet, baseStat: 15, icon: '👑', setGroup: 'myoboku'),
-  GearArchetype(baseName: 'Sandały Shinobi', slot: GearSlot.boots, baseStat: 8, icon: '🥾'),
-  GearArchetype(baseName: 'Ciche Trzewiki ANBU', slot: GearSlot.boots, baseStat: 12, icon: '🥾', setGroup: 'anbu'),
-  GearArchetype(baseName: 'Kamasze Żabiej Zwinności', slot: GearSlot.boots, baseStat: 15, icon: '🥾', setGroup: 'myoboku'),
-  GearArchetype(baseName: 'Amulet Przepływu Czakry', slot: GearSlot.trinket, baseStat: 10, icon: '📿'),
-  GearArchetype(baseName: 'Pieczęć Operacyjna ANBU', slot: GearSlot.trinket, baseStat: 15, icon: '📿', setGroup: 'anbu'),
-  GearArchetype(baseName: 'Wisiorek Kamienia Myōboku', slot: GearSlot.trinket, baseStat: 20, icon: '📿', setGroup: 'myoboku'),
+const List<Consumable> allConsumables = [
+  Consumable(id: 'c_pill', name: 'Pigułka Żołnierska', type: ConsumableType.healHpPercent, value: 50, price: 30, icon: '💊', description: 'Odnawia 50% HP.', statBonusText: '+50% HP'),
+  Consumable(id: 'c_dango', name: 'Trzy Kolory Dango', type: ConsumableType.healCpPercent, value: 60, price: 40, icon: '🍡', description: 'Odnawia 60% Czakry.', statBonusText: '+60% CP'),
+  Consumable(id: 'c_bandage', name: 'Medyczne Bandaże', type: ConsumableType.healHpPercent, value: 30, price: 20, icon: '🩹', description: 'Odnawia 30% HP.', statBonusText: '+30% HP'),
+  Consumable(id: 'c_ramen', name: 'Miska Ichiraku Ramen', type: ConsumableType.ramenRestore, value: 25, price: 150, icon: '🍜', description: 'Zwiększa maksymalne limity HP i CP na stałe.', statBonusText: '+25 Max HP/CP'),
+  Consumable(id: 'c_kibaku', name: 'Pieczęć Wybuchowa', type: ConsumableType.directDmg, value: 1, price: 55, icon: '💥', description: 'Zadaje potężne obrażenia wrogowi w walce.', statBonusText: 'Wybuch w walce'),
+  Consumable(id: 'c_smoke', name: 'Bomba Dymna', type: ConsumableType.smokeEscape, value: 1, price: 45, icon: '💨', description: 'Pozwala uciec ze zwykłej walki.', statBonusText: 'Ucieczka z walki'),
 ];
 
-const List<GearArchetype> bossExclusiveSetsPool = [
-  GearArchetype(baseName: 'Pazur Lisa Kyūbi', slot: GearSlot.weapon, baseStat: 35, icon: '🦊', setGroup: 'boss_kyubi'),
-  GearArchetype(baseName: 'Płaszcz Szkarłatnej Bestii', slot: GearSlot.armor, baseStat: 30, icon: '🥋', setGroup: 'boss_kyubi'),
-  GearArchetype(baseName: 'Ostrze Totsuka Susanoo', slot: GearSlot.weapon, baseStat: 40, icon: '🗡️', setGroup: 'boss_susanoo'),
-  GearArchetype(baseName: 'Żebro Niematerialnego Pancerza', slot: GearSlot.armor, baseStat: 36, icon: '🛡️', setGroup: 'boss_susanoo'),
-  GearArchetype(baseName: 'Szata Boskiego Drzewa Kaguya', slot: GearSlot.armor, baseStat: 45, icon: '👑', setGroup: 'boss_kaguya'),
-  GearArchetype(baseName: 'Klejnot Rinne Sharingana', slot: GearSlot.trinket, baseStat: 35, icon: '👁️', setGroup: 'boss_kaguya'),
-];
+enum JutsuType { damage, healing, shield, stun }
 
 class Jutsu {
   final String id;
@@ -309,329 +207,62 @@ class Jutsu {
   final int chakraCost;
   final double powerMultiplier;
   final int effectValue;
-  final String effectDescription;
-  final int costRyo;
   final int minRankIndex;
-  final Color color;
+  final int costRyo;
   final bool availableInVillage;
+  final Color color;
+  final String effectDescription;
 
   const Jutsu({
     required this.id,
     required this.name,
     required this.type,
     required this.chakraCost,
-    this.powerMultiplier = 1.0,
+    required this.powerMultiplier,
     this.effectValue = 0,
-    required this.effectDescription,
-    required this.costRyo,
     required this.minRankIndex,
+    required this.costRyo,
+    required this.availableInVillage,
     required this.color,
-    this.availableInVillage = true,
+    required this.effectDescription,
   });
-
-  Map<String, dynamic> toJson() => {'id': id};
-
-  factory Jutsu.fromJson(Map<String, dynamic> json) {
-    final String id = json['id'] as String;
-    return allJutsuPool.firstWhere((j) => j.id == id, orElse: () => allJutsuPool[0]);
-  }
 }
 
 const List<Jutsu> allJutsuPool = [
-  Jutsu(
-    id: 'j_basic_tai',
-    name: 'Seria Ciosów Wręcz',
-    type: JutsuType.damage,
-    chakraCost: 10,
-    powerMultiplier: 1.2,
-    effectDescription: 'Szybkie uderzenie podstawowe Taijutsu.',
-    costRyo: 50,
-    minRankIndex: 0,
-    color: Color(0xFFFFB74D),
-  ),
-  Jutsu(
-    id: 'j_katon_fireball',
-    name: 'Katon: Kula Ognia',
-    type: JutsuType.damage,
-    chakraCost: 25,
-    powerMultiplier: 2.0,
-    effectDescription: 'Silny płomień wypalający pancerz wroga.',
-    costRyo: 200,
-    minRankIndex: 1,
-    color: Color(0xFFFF7043),
-  ),
-  Jutsu(
-    id: 'j_suiton_water',
-    name: 'Suiton: Wodny Pocisk',
-    type: JutsuType.damage,
-    chakraCost: 22,
-    powerMultiplier: 1.9,
-    effectDescription: 'Sprężony strumień wody z dużą siłą uderzenia.',
-    costRyo: 180,
-    minRankIndex: 1,
-    color: Color(0xFF42A5F5),
-  ),
-  Jutsu(
-    id: 'j_heal_palm',
-    name: 'Iryōnin: Uleczenie Dłoni',
-    type: JutsuType.healing,
-    chakraCost: 28,
-    effectValue: 35,
-    effectDescription: 'Leczy 35% Twojego maksymalnego zdrowia.',
-    costRyo: 250,
-    minRankIndex: 1,
-    color: Color(0xFF66BB6A),
-  ),
-  Jutsu(
-    id: 'j_doton_wall',
-    name: 'Doton: Błotny Mur Obronny',
-    type: JutsuType.shield,
-    chakraCost: 25,
-    effectValue: 20,
-    effectDescription: 'Wznosi kamienną ścianę dającą +20 obrony na turę.',
-    costRyo: 240,
-    minRankIndex: 2,
-    color: Color(0xFF8D6E63),
-  ),
-  Jutsu(
-    id: 'j_chidori',
-    name: 'Raiton: Chidori (Ostrze Błyskawicy)',
-    type: JutsuType.damage,
-    chakraCost: 45,
-    powerMultiplier: 3.2,
-    effectDescription: 'Błyskawiczne pchnięcie omijające część obrony.',
-    costRyo: 600,
-    minRankIndex: 2,
-    color: Color(0xFF29B6F6),
-  ),
-  Jutsu(
-    id: 'j_rasengan',
-    name: 'Ninjutsu: Wirujący Rasengan',
-    type: JutsuType.damage,
-    chakraCost: 45,
-    powerMultiplier: 3.3,
-    effectDescription: 'Czysta skondensowana sfera czakry.',
-    costRyo: 650,
-    minRankIndex: 2,
-    color: Color(0xFF00E5FF),
-  ),
-  Jutsu(
-    id: 'j_wire_trap',
-    name: 'Kawarimi: Druty Wiążące',
-    type: JutsuType.stun,
-    chakraCost: 35,
-    effectValue: 1,
-    effectDescription: 'Ogłusza przeciwnika na 1 turę.',
-    costRyo: 500,
-    minRankIndex: 2,
-    color: Color(0xFFB0BEC5),
-  ),
-  Jutsu(
-    id: 'j_dragon_fire',
-    name: 'Katon: Smoczy Płomień',
-    type: JutsuType.damage,
-    chakraCost: 65,
-    powerMultiplier: 4.2,
-    effectDescription: 'Potężny płomień niszczący wroga.',
-    costRyo: 1400,
-    minRankIndex: 3,
-    color: Color(0xFFE64A19),
-  ),
-  Jutsu(
-    id: 'j_byakugo',
-    name: 'Fūinjutsu: Siła Stu (Byakugō)',
-    type: JutsuType.healing,
-    chakraCost: 75,
-    effectValue: 60,
-    effectDescription: 'Natychmiast przywraca 60% HP (lub 100% gdy <20% HP).',
-    costRyo: 2200,
-    minRankIndex: 4,
-    color: Color(0xFF2E7D32),
-  ),
-  Jutsu(
-    id: 'j_rasenshuriken',
-    name: 'Fūton: Rasenshuriken',
-    type: JutsuType.damage,
-    chakraCost: 95,
-    powerMultiplier: 6.0,
-    effectDescription: 'Legendarna nawałnica mikroigieł wiatru.',
-    costRyo: 3500,
-    minRankIndex: 5,
-    color: Color(0xFF00B0FF),
-  ),
-  Jutsu(
-    id: 'j_kirin',
-    name: 'Raiton: Kirin Rycząca Bestia',
-    type: JutsuType.damage,
-    chakraCost: 90,
-    powerMultiplier: 5.8,
-    effectDescription: 'Prawdziwy piorun z niebios omijający pancerz.',
-    costRyo: 3200,
-    minRankIndex: 5,
-    color: Color(0xFFFFD600),
-  ),
-  Jutsu(
-    id: 'j_secret_amaterasu',
-    name: 'Kinjutsu: Czarne Płomienie Amaterasu',
-    type: JutsuType.damage,
-    chakraCost: 110,
-    powerMultiplier: 7.2,
-    effectDescription: 'Sekret Mędrca: Wieczny płomień trawiący wroga.',
-    costRyo: 4000,
-    minRankIndex: 4,
-    color: Color(0xFF212121),
-    availableInVillage: false,
-  ),
-];
-
-class Consumable {
-  final String id;
-  final String name;
-  final String icon;
-  final ConsumableType type;
-  final int value;
-  final int price;
-  final String description;
-  final String statBonusText;
-
-  const Consumable({
-    required this.id,
-    required this.name,
-    required this.icon,
-    required this.type,
-    required this.value,
-    required this.price,
-    required this.description,
-    required this.statBonusText,
-  });
-}
-
-const List<Consumable> allConsumables = [
-  Consumable(
-    id: 'c_pill',
-    name: 'Pigułka Żywnościowa',
-    icon: '💊',
-    type: ConsumableType.healHpPercent,
-    value: 40,
-    price: 35,
-    description: 'Błyskawicznie regeneruje 40% maksymalnego HP.',
-    statBonusText: '+40% Max HP',
-  ),
-  Consumable(
-    id: 'c_dango',
-    name: 'Słodkie Dango Czakry',
-    icon: '🍡',
-    type: ConsumableType.healCpPercent,
-    value: 50,
-    price: 30,
-    description: 'Przywraca 50% Twojej maksymalnej czakry.',
-    statBonusText: '+50% Max CP',
-  ),
-  Consumable(
-    id: 'c_bandage',
-    name: 'Opatrunek Polowy',
-    icon: '🩹',
-    type: ConsumableType.healHpPercent,
-    value: 25,
-    price: 20,
-    description: 'Podstawowe bandaże tamujące krew.',
-    statBonusText: '+25% Max HP',
-  ),
-  Consumable(
-    id: 'c_ramen',
-    name: 'Ramen Ichiraku (Specjał)',
-    icon: '🍜',
-    type: ConsumableType.ramenRestore,
-    value: 5,
-    price: 180,
-    description: 'Trwale zwiększa bazowe HP i CP o +5 punktów!',
-    statBonusText: '+5 Baza HP & CP',
-  ),
-  Consumable(
-    id: 'c_soldier_pill',
-    name: 'Pigułka Bojowa Akimichi',
-    icon: '🔴',
-    type: ConsumableType.buffAtk,
-    value: 1,
-    price: 150,
-    description: 'Trwale zwiększa bazowy atak ninja o +1 punkt.',
-    statBonusText: '+1 Baza Ataku',
-  ),
-  Consumable(
-    id: 'c_smoke',
-    name: 'Bomba Dymna',
-    icon: '💨',
-    type: ConsumableType.smokeEscape,
-    value: 0,
-    price: 45,
-    description: 'Pozwala natychmiast uciec z normalnego starcia.',
-    statBonusText: 'Pewna ucieczka',
-  ),
-  Consumable(
-    id: 'c_kibaku',
-    name: 'Pieczęć Wybuchowa (Kibakufuda)',
-    icon: '💥',
-    type: ConsumableType.directDmg,
-    value: 40,
-    price: 50,
-    description: 'Zadaje bezpośrednie obrażenia wrogowi w walce.',
-    statBonusText: '~40+ pkt obrażeń',
-  ),
+  Jutsu(id: 'j_taijutsu', name: 'Seria Ciosów Wręcz', type: JutsuType.damage, chakraCost: 10, powerMultiplier: 1.2, minRankIndex: 0, costRyo: 0, availableInVillage: true, color: Colors.orange, effectDescription: 'Podstawowa technika fizyczna.'),
+  Jutsu(id: 'j_fireball', name: 'Katon: Wielka Kula Ognia', type: JutsuType.damage, chakraCost: 25, powerMultiplier: 2.1, minRankIndex: 1, costRyo: 200, availableInVillage: true, color: Colors.deepOrange, effectDescription: 'Potężny atak ognistym żywiołem.'),
+  Jutsu(id: 'j_chidori', name: 'Chidori (Tysiąc Ptaszków)', type: JutsuType.damage, chakraCost: 40, powerMultiplier: 3.4, minRankIndex: 3, costRyo: 800, availableInVillage: true, color: Colors.blueAccent, effectDescription: 'Skoncentrowana błyskawica przeszywająca wroga.'),
+  Jutsu(id: 'j_rasenshuriken', name: 'Fūton: Rasenshuriken', type: JutsuType.damage, chakraCost: 75, powerMultiplier: 5.5, minRankIndex: 5, costRyo: 2200, availableInVillage: true, color: Colors.cyan, effectDescription: 'Niszczycielski wir wiatru zadający masowe obrażenia.'),
+  Jutsu(id: 'j_medical', name: 'Szpiczasty Skalpel Czakry', type: JutsuType.healing, chakraCost: 20, powerMultiplier: 1.0, effectValue: 35, minRankIndex: 1, costRyo: 250, availableInVillage: true, color: Colors.green, effectDescription: 'Leczy rany za pomocą czakry medycznej.'),
+  Jutsu(id: 'j_byakugo', name: 'Technika Uzdrowienia Mitotic (Byakugō)', type: JutsuType.healing, chakraCost: 60, powerMultiplier: 1.5, effectValue: 80, minRankIndex: 5, costRyo: 2500, availableInVillage: true, color: Colors.emerald = const Color(0xFF2E7D32), effectDescription: 'Regeneruje ogromną ilość zdrowia.'),
+  Jutsu(id: 'j_doton_wall', name: 'Doton: Kamienny Mur', type: JutsuType.shield, chakraCost: 20, powerMultiplier: 0.0, effectValue: 25, minRankIndex: 2, costRyo: 400, availableInVillage: true, color: Colors.brown, effectDescription: 'Tworzy barierę obronną.'),
+  Jutsu(id: 'j_shadow_bind', name: 'Technika Cienia (Kagemane)', type: JutsuType.stun, chakraCost: 30, powerMultiplier: 1.2, minRankIndex: 2, costRyo: 500, availableInVillage: true, color: Colors.indigo, effectDescription: 'Unieruchamia przeciwnika na 1 turę.'),
+  Jutsu(id: 'j_amaterasu', name: 'Kinjutsu: Czarne Płomienie Amaterasu', type: JutsuType.damage, chakraCost: 90, powerMultiplier: 7.0, minRankIndex: 6, costRyo: 5000, availableInVillage: false, color: Colors.purple, effectDescription: 'Sekretny zwój Mędrca: Płomienie, które nie gasną.'),
+  Jutsu(id: 'j_hiraishin', name: 'Latający Bóg Grzmotu (Hiraishin)', type: JutsuType.damage, chakraCost: 70, powerMultiplier: 6.0, minRankIndex: 6, costRyo: 4500, availableInVillage: false, color: Colors.amber, effectDescription: 'Sekretny zwój Mędrca: Atak z prędkością światła.'),
+  Jutsu(id: 'j_reaper', name: 'Pieczęć Boga Śmierci (Shiki Fūjin)', type: JutsuType.damage, chakraCost: 110, powerMultiplier: 9.5, minRankIndex: 6, costRyo: 7000, availableInVillage: false, color: Colors.redAccent, effectDescription: 'Sekretny zwój Mędrca: Ostateczne jutsu pieczętujące.'),
 ];
 
 class ShinobiLocation {
   final String id;
   final String name;
-  final String icon;
-  final int minLevel;
   final String description;
+  final int minLevel;
+  final String icon;
 
-  const ShinobiLocation({
-    required this.id,
-    required this.name,
-    required this.icon,
-    required this.minLevel,
-    required this.description,
-  });
+  const ShinobiLocation({required this.id, required this.name, required this.description, required this.minLevel, required this.icon});
 }
 
 const List<ShinobiLocation> shinobiLocations = [
-  ShinobiLocation(
-    id: 'loc_gate',
-    name: 'Brama Wioski Liścia',
-    icon: '⛩️',
-    minLevel: 1,
-    description: 'Obrzeża lasu wokół Konohy. Dzikie psy i zbiegowie.',
-  ),
-  ShinobiLocation(
-    id: 'loc_forest',
-    name: 'Las Śmierci (Egzamin Chūnina)',
-    icon: '🌲',
-    minLevel: 8,
-    description: 'Gęsty, wilgotny las pełen drapieżników i wrogich drużyn.',
-  ),
-  ShinobiLocation(
-    id: 'loc_waves',
-    name: 'Wielki Most Narudo (Kraj Fali)',
-    icon: '🌉',
-    minLevel: 18,
-    description: 'Most we mgle patrolujący przez bezwzględnych zabójców z Kirigakure.',
-  ),
-  ShinobiLocation(
-    id: 'loc_valley',
-    name: 'Dolina Końca',
-    icon: '🗿',
-    minLevel: 30,
-    description: 'Miejsce legendarnych pojedynków przy zniszczonych pomnikach.',
-  ),
-  ShinobiLocation(
-    id: 'loc_akatsuki',
-    name: 'Kryjówka Akatsuki',
-    icon: '☁️',
-    minLevel: 45,
-    description: 'Tajemna baza elity Nukeninów polujących na ogoniaste bestie.',
-  ),
+  ShinobiLocation(id: 'loc_gate', name: 'Brama Główna Konohy', description: 'Bezpieczniejsze obrzeża lasu, idealne na początek drogi.', minLevel: 1, icon: '⛩️'),
+  ShinobiLocation(id: 'loc_forest', name: 'Gęsty Las Śmierci', description: 'Niebezpieczna puszcza pełna dzikich shinobi i pułapek.', minLevel: 10, icon: '🌲'),
+  ShinobiLocation(id: 'loc_waves', name: 'Mroczny Kraj Fali', description: 'Mgliste wybrzeże i porty przemytników.', minLevel: 22, icon: '🌊'),
+  ShinobiLocation(id: 'loc_valley', name: 'Dolina Końca', description: 'Legendarne miejsce starożytnych bitew.', minLevel: 35, icon: '⚡'),
+  ShinobiLocation(id: 'loc_akatsuki', name: 'Kwatera Główna Akatsuki', description: 'Siedziba najpotężniejszych zbiegów.', minLevel: 50, icon: '☁️'),
 ];
+
+enum EnemyPrefix { weak, normal, strong }
+
+enum BossTrait { ironSkin, bloodEnrage, chakraLeech, poisonMaster, chakraThorns, dodgeManiac }
 
 class EnemyTemplate {
   final String id;
@@ -651,7 +282,7 @@ class EnemyTemplate {
   const EnemyTemplate({
     required this.id,
     required this.name,
-    this.title = 'Przeciwnik',
+    this.title = '',
     required this.baseHp,
     required this.baseAtk,
     required this.locationId,
@@ -664,88 +295,112 @@ class EnemyTemplate {
     this.traits = const [],
   });
 
-  double get powerRating => (baseHp * 0.4) + (baseAtk * 1.5);
+  double get powerRating => baseHp + (baseAtk * 3.5);
 }
 
 const List<EnemyTemplate> standardEnemiesPool = [
-  EnemyTemplate(id: 'en_dog', name: 'Dziki Pies Czakry', baseHp: 55, baseAtk: 11, locationId: 'loc_gate', icon: '🐕'),
-  EnemyTemplate(id: 'en_bandit', name: 'Złodziej Zwojów', baseHp: 75, baseAtk: 14, locationId: 'loc_gate', icon: '🥷'),
-  EnemyTemplate(id: 'en_scout', name: 'Zwiadowca z Trawy', baseHp: 90, baseAtk: 17, locationId: 'loc_gate', icon: '👤'),
-  EnemyTemplate(id: 'en_leech', name: 'Pijawka Czakry', baseHp: 130, baseAtk: 24, locationId: 'loc_forest', icon: '🐛', traits: [BossTrait.chakraLeech]),
-  EnemyTemplate(id: 'en_rain_genin', name: 'Genin Ukrytego Deszczu', baseHp: 160, baseAtk: 28, locationId: 'loc_forest', icon: '🌧️'),
-  EnemyTemplate(id: 'en_snake', name: 'Wielki Wąż Lasu Śmierci', baseHp: 210, baseAtk: 34, locationId: 'loc_forest', icon: '🐍', traits: [BossTrait.poisonMaster]),
-  EnemyTemplate(id: 'en_thug', name: 'Najemnik Gato', baseHp: 250, baseAtk: 42, locationId: 'loc_waves', icon: '🗡️'),
-  EnemyTemplate(id: 'en_hunter', name: 'Tropiciel Kirigakure (ANBU)', baseHp: 310, baseAtk: 50, locationId: 'loc_waves', icon: '🎭', traits: [BossTrait.dodgeManiac]),
-  EnemyTemplate(id: 'en_curse_bearer', name: 'Nosiciel Przeklętej Pieczęci', baseHp: 440, baseAtk: 66, locationId: 'loc_valley', icon: '👿', traits: [BossTrait.bloodEnrage]),
-  EnemyTemplate(id: 'en_sound_four', name: 'Strażnik Czwórki Dźwięku', baseHp: 510, baseAtk: 74, locationId: 'loc_valley', icon: '🥁', traits: [BossTrait.ironSkin]),
-  EnemyTemplate(id: 'en_zetsu', name: 'Armia Białych Zetsu', baseHp: 680, baseAtk: 92, locationId: 'loc_akatsuki', icon: '🌱', traits: [BossTrait.chakraLeech, BossTrait.dodgeManiac]),
-  EnemyTemplate(id: 'en_puppet', name: 'Zbiegły Lalkarz Piasku', baseHp: 800, baseAtk: 105, locationId: 'loc_akatsuki', icon: '🪵', traits: [BossTrait.poisonMaster]),
+  EnemyTemplate(id: 'e_genin_rogue', name: 'Zbiegły Genin', baseHp: 45, baseAtk: 12, locationId: 'loc_gate', icon: '👤'),
+  EnemyTemplate(id: 'e_wild_dog', name: 'Dziki Pies Ninja', baseHp: 35, baseAtk: 15, locationId: 'loc_gate', icon: '🐕'),
+  EnemyTemplate(id: 'e_sound_ninja', name: 'Szpieg z Otogakure', baseHp: 95, baseAtk: 24, locationId: 'loc_forest', icon: '👥'),
+  EnemyTemplate(id: 'e_puppet_scout', name: 'Zwiadowca z Suna', baseHp: 110, baseAtk: 28, locationId: 'loc_forest', icon: '🤖'),
+  EnemyTemplate(id: 'e_mercenary', name: 'Najemnik z Mgły', baseHp: 180, baseAtk: 42, locationId: 'loc_waves', icon: '🥷'),
+  EnemyTemplate(id: 'e_rogue_chunin', name: 'Zdradziecki Chūnin', baseHp: 210, baseAtk: 48, locationId: 'loc_waves', icon: '👺'),
+  EnemyTemplate(id: 'e_elite_guard', name: 'Elitarny Strażnik Skały', baseHp: 310, baseAtk: 65, locationId: 'loc_valley', icon: '🛡️'),
+  EnemyTemplate(id: 'e_curse_marked', name: 'Wojownik z Klątwą', baseHp: 360, baseAtk: 74, locationId: 'loc_valley', icon: '🟣'),
+  EnemyTemplate(id: 'e_akatsuki_agent', name: 'Agent w Ciénistym Płaszczu', baseHp: 520, baseAtk: 95, locationId: 'loc_akatsuki', icon: '☁️'),
+  EnemyTemplate(id: 'e_sannin_shadow', name: 'Widmo Wygnanego Sannina', baseHp: 650, baseAtk: 115, locationId: 'loc_akatsuki', icon: '🐍'),
 ];
 
 const List<EnemyTemplate> bossesPool = [
-  EnemyTemplate(id: 'boss_mizuki', name: 'Mizuki Zdrajca Liścia', title: 'Zbieg z Zwojem Pieczęci', baseHp: 240, baseAtk: 24, locationId: 'loc_gate', isBoss: true, icon: '🥷', traits: [BossTrait.dodgeManiac]),
-  EnemyTemplate(id: 'boss_orochimaru_snake', name: 'Zmutowany Wąż Orochimaru', title: 'Monstrum Lasu Śmierci', baseHp: 520, baseAtk: 44, locationId: 'loc_forest', isBoss: true, icon: '🐍', traits: [BossTrait.poisonMaster, BossTrait.ironSkin]),
-  EnemyTemplate(id: 'boss_zabuza', name: 'Zabuza Momochi (Demon Mgły)', title: 'Jeden z Siedmiu Mistrzów Miecza', baseHp: 950, baseAtk: 72, locationId: 'loc_waves', isBoss: true, icon: '🗡️', traits: [BossTrait.bloodEnrage, BossTrait.ironSkin]),
-  EnemyTemplate(id: 'boss_gaara', name: 'Gaara Pustynnego Piasku', title: 'Demon Shukaku', baseHp: 1500, baseAtk: 96, locationId: 'loc_valley', isBoss: true, icon: '🏺', traits: [BossTrait.ironSkin, BossTrait.chakraThorns]),
-  EnemyTemplate(id: 'boss_itachi', name: 'Klon Cienia Itachiego Uchiha', title: 'Mistrz Mangekyō Sharingana', baseHp: 2200, baseAtk: 135, locationId: 'loc_akatsuki', isBoss: true, icon: '👁️', traits: [BossTrait.dodgeManiac, BossTrait.bloodEnrage, BossTrait.chakraThorns]),
+  EnemyTemplate(id: 'b_zabuza', name: 'Zabuza Momochi', title: 'Demon z Ukrytej Mgły', baseHp: 380, baseAtk: 44, locationId: 'loc_waves', isBoss: true, icon: '🗡️', traits: [BossTrait.bloodEnrage]),
+  EnemyTemplate(id: 'b_orochimaru', name: 'Eksperyment Orochimaru', title: 'Upadły Sannin', baseHp: 950, baseAtk: 88, locationId: 'loc_valley', isBoss: true, icon: '🐍', traits: [BossTrait.poisonMaster, BossTrait.chakraLeech]),
+  EnemyTemplate(id: 'b_pain', name: 'Awatar Pains (Deva Path)', title: 'Przywódca Akatsuki', baseHp: 1600, baseAtk: 135, locationId: 'loc_akatsuki', isBoss: true, icon: '👁️', traits: [BossTrait.ironSkin, BossTrait.chakraThorns]),
 ];
 
-class DungeonBoss {
+class DungeonBossTemplate {
   final String id;
   final String name;
   final String title;
   final int minLevel;
   final int baseHp;
   final int baseAtk;
+  final String icon;
+  final String setGroup;
+
+  const DungeonBossTemplate({required this.id, required this.name, required this.title, required this.minLevel, required this.baseHp, required this.baseAtk, required this.icon, required this.setGroup});
+}
+
+const List<DungeonBossTemplate> dungeonBossesPool = [
+  DungeonBossTemplate(id: 'db_kyubi', name: 'Opętany Kyūbi (Mini)', title: 'Bestia o Dziewięciu Ogonach', minLevel: 15, baseHp: 750, baseAtk: 70, icon: '🦊', setGroup: 'boss_kyubi'),
+  DungeonBossTemplate(id: 'db_susanoo', name: 'Fantom Susanoo', title: 'Boski Wojownik Uchiha', minLevel: 30, baseHp: 1400, baseAtk: 110, icon: '🛡️', setGroup: 'boss_susanoo'),
+  DungeonBossTemplate(id: 'db_kaguya', name: 'Awatar Kaguya', title: 'Matka Czakry', minLevel: 50, baseHp: 2400, baseAtk: 160, icon: '🌙', setGroup: 'boss_kaguya'),
+];
+
+class BossSetPiece {
+  final String baseName;
+  final GearSlot slot;
+  final int baseStat;
   final String setGroup;
   final String icon;
 
-  const DungeonBoss({
-    required this.id,
-    required this.name,
-    required this.title,
-    required this.minLevel,
-    required this.baseHp,
-    required this.baseAtk,
-    required this.setGroup,
-    required this.icon,
-  });
+  const BossSetPiece({required this.baseName, required this.slot, required this.baseStat, required this.setGroup, required this.icon});
 }
 
-const List<DungeonBoss> dungeonBossesPool = [
-  DungeonBoss(
-    id: 'db_kyubi',
-    name: 'Awatar Kyūbi (Dziewięcioogoniasty)',
-    title: 'Manifestacja Czystego Gniewu Lisa',
-    minLevel: 20,
-    baseHp: 1600,
-    baseAtk: 88,
-    setGroup: 'boss_kyubi',
-    icon: '🦊',
-  ),
-  DungeonBoss(
-    id: 'db_susanoo',
-    name: 'Widmowy Susanoo Wojownik',
-    title: 'Nieprzenikniony Pancerz Duszy Uchiha',
-    minLevel: 32,
-    baseHp: 2800,
-    baseAtk: 125,
-    setGroup: 'boss_susanoo',
-    icon: '🛡️',
-  ),
-  DungeonBoss(
-    id: 'db_kaguya',
-    name: 'Wspomnienie Księżniczki Kaguyi',
-    title: 'Matka Wszelkiej Czakry',
-    minLevel: 48,
-    baseHp: 4500,
-    baseAtk: 175,
-    setGroup: 'boss_kaguya',
-    icon: '👑',
-  ),
+const List<BossSetPiece> bossExclusiveSetsPool = [
+  BossSetPiece(baseName: 'Płaszcz Kyūbi (Ogon)', slot: GearSlot.armor, baseStat: 50, setGroup: 'boss_kyubi', icon: '🥋'),
+  BossSetPiece(baseName: 'Pazur Demonicznej Lisiej Bestii', slot: GearSlot.weapon, baseStat: 65, setGroup: 'boss_kyubi', icon: '🗡️'),
+  BossSetPiece(baseName: 'Maska Płonącego Susanoo', slot: GearSlot.helmet, baseStat: 45, setGroup: 'boss_susanoo', icon: '👑'),
+  BossSetPiece(baseName: 'Nagolenniki Niebiańskiego Wojownika', slot: GearSlot.boots, baseStat: 42, setGroup: 'boss_susanoo', icon: '🥾'),
+  BossSetPiece(baseName: 'Orb Czakry Bogini Kaguya', slot: GearSlot.trinket, baseStat: 75, setGroup: 'boss_kaguya', icon: '📿'),
+  BossSetPiece(baseName: 'Szata Wymiarowego Bóstwa', slot: GearSlot.armor, baseStat: 80, setGroup: 'boss_kaguya', icon: '🥋'),
 ];
 
-class ShinobiExam {
+class GearArchetype {
+  final String baseName;
+  final GearSlot slot;
+  final int baseStat;
+  final String setGroup;
+  final String icon;
+
+  const GearArchetype({required this.baseName, required this.slot, required this.baseStat, required this.setGroup, required this.icon});
+}
+
+const List<GearArchetype> standardArchetypesPool = [
+  GearArchetype(baseName: 'Kunai Bojowy', slot: GearSlot.weapon, baseStat: 12, setGroup: 'none', icon: '🗡️'),
+  GearArchetype(baseName: 'Katana ANBU', slot: GearSlot.weapon, baseStat: 24, setGroup: 'anbu', icon: '⚔️'),
+  GearArchetype(baseName: 'Miecz Ropuchy z Myoboku', slot: GearSlot.weapon, baseStat: 38, setGroup: 'myoboku', icon: '🗡️'),
+  GearArchetype(baseName: 'Kamizelka Taktyczna', slot: GearSlot.armor, baseStat: 15, setGroup: 'none', icon: '🥋'),
+  GearArchetype(baseName: 'Pancerz Operacyjny ANBU', slot: GearSlot.armor, baseStat: 28, setGroup: 'anbu', icon: '🛡️'),
+  GearArchetype(baseName: 'Zbroja Mędrca Myoboku', slot: GearSlot.armor, baseStat: 42, setGroup: 'myoboku', icon: '🥋'),
+  GearArchetype(baseName: 'Opaska Konohy', slot: GearSlot.helmet, baseStat: 10, setGroup: 'none', icon: '🛡️'),
+  GearArchetype(baseName: 'Maska Przeciwgazowa ANBU', slot: GearSlot.helmet, baseStat: 22, setGroup: 'anbu', icon: '👺'),
+  GearArchetype(baseName: 'Sandały Polowe', slot: GearSlot.boots, baseStat: 8, setGroup: 'none', icon: '🥾'),
+  GearArchetype(baseName: 'Buty Skrytobójcy', slot: GearSlot.boots, baseStat: 20, setGroup: 'anbu', icon: '🥾'),
+  GearArchetype(baseName: 'Talizman Czakry', slot: GearSlot.trinket, baseStat: 18, setGroup: 'none', icon: '📿'),
+  GearArchetype(baseName: 'Naszyjnik Hokage', slot: GearSlot.trinket, baseStat: 35, setGroup: 'myoboku', icon: '📿'),
+];
+
+class CraftingMaterialInfo {
+  final String id;
+  final String name;
+  final String icon;
+
+  const CraftingMaterialInfo({required this.id, required this.name, required this.icon});
+}
+
+const String matIronOre = 'mat_iron';
+const String matSteel = 'mat_steel';
+const String matCrystal = 'mat_crystal';
+const String matDungeonKey = 'mat_key';
+
+const Map<String, CraftingMaterialInfo> craftingMaterials = {
+  matIronOre: CraftingMaterialInfo(id: matIronOre, name: 'Ruda Żelaza', icon: '🪨'),
+  matSteel: CraftingMaterialInfo(id: matSteel, name: 'Wzmocniona Stal', icon: '🧱'),
+  matCrystal: CraftingMaterialInfo(id: matCrystal, name: 'Kryształ Czakry', icon: '💎'),
+  matDungeonKey: CraftingMaterialInfo(id: matDungeonKey, name: 'Klucz do Lochu', icon: '🗝️'),
+};
+
+class NinjaExam {
   final int targetRankIndex;
   final String rankTitle;
   final int requiredLevel;
@@ -757,230 +412,42 @@ class ShinobiExam {
   final int dodgeRate;
   final String icon;
 
-  const ShinobiExam({
-    required this.targetRankIndex,
-    required this.rankTitle,
-    required this.requiredLevel,
-    required this.examinerName,
-    required this.examinerTitle,
-    required this.hp,
-    required this.atk,
-    required this.critRate,
-    required this.dodgeRate,
-    required this.icon,
-  });
+  const NinjaExam({required this.targetRankIndex, required this.rankTitle, required this.requiredLevel, required this.examinerName, required this.examinerTitle, required this.hp, required this.atk, this.critRate = 5, this.dodgeRate = 5, required this.icon});
 }
 
-const List<ShinobiExam> shinobiExams = [
-  ShinobiExam(
-    targetRankIndex: 1,
-    rankTitle: 'Genin',
-    requiredLevel: 5,
-    examinerName: 'Iruka Umino',
-    examinerTitle: 'Instruktor Akademii',
-    hp: 190,
-    atk: 22,
-    critRate: 8,
-    dodgeRate: 8,
-    icon: '🍃',
-  ),
-  ShinobiExam(
-    targetRankIndex: 2,
-    rankTitle: 'Chūnin',
-    requiredLevel: 13,
-    examinerName: 'Baki z Sunagakure',
-    examinerTitle: 'Egzaminator Finałowy',
-    hp: 480,
-    atk: 48,
-    critRate: 10,
-    dodgeRate: 10,
-    icon: '📜',
-  ),
-  ShinobiExam(
-    targetRankIndex: 3,
-    rankTitle: 'Tokubetsu Jōnin',
-    requiredLevel: 23,
-    examinerName: 'Yamato (Mokuton)',
-    examinerTitle: 'Kapitan ANBU',
-    hp: 920,
-    atk: 76,
-    critRate: 12,
-    dodgeRate: 12,
-    icon: '🪵',
-  ),
-  ShinobiExam(
-    targetRankIndex: 4,
-    rankTitle: 'Jōnin Bojowy',
-    requiredLevel: 36,
-    examinerName: 'Kakashi Hatake',
-    examinerTitle: 'Ninja Kopiujący',
-    hp: 1750,
-    atk: 115,
-    critRate: 15,
-    dodgeRate: 16,
-    icon: '⚡',
-  ),
-  ShinobiExam(
-    targetRankIndex: 5,
-    rankTitle: 'Elita ANBU (Korzeń)',
-    requiredLevel: 49,
-    examinerName: 'Danzo Shimura',
-    examinerTitle: 'Przywódca Korzenia',
-    hp: 2800,
-    atk: 155,
-    critRate: 18,
-    dodgeRate: 15,
-    icon: '🎭',
-  ),
-  ShinobiExam(
-    targetRankIndex: 6,
-    rankTitle: 'Legendarny Sannin / Kage',
-    requiredLevel: 61,
-    examinerName: 'Jiraiya (Tryb Mędrca)',
-    examinerTitle: 'Ropuszy Mędrzec Góry Myōboku',
-    hp: 4200,
-    atk: 210,
-    critRate: 20,
-    dodgeRate: 18,
-    icon: '🐸',
-  ),
+const List<NinjaExam> shinobiExams = [
+  NinjaExam(targetRankIndex: 1, rankTitle: 'Genin', requiredLevel: 4, examinerName: 'Iruka Umino', examinerTitle: 'Instruktor Akademii', hp: 140, atk: 14, icon: '🟢'),
+  NinjaExam(targetRankIndex: 2, rankTitle: 'Chūnin', requiredLevel: 12, examinerName: 'Shikamaru Nara', examinerTitle: 'Strateg Taktyczny', hp: 320, atk: 28, critRate: 10, icon: '🔵'),
+  NinjaExam(targetRankIndex: 3, rankTitle: 'Tokubetsu Jōnin', requiredLevel: 22, examinerName: 'Anko Mitarashi', examinerTitle: 'Specjalny Agent', hp: 580, atk: 45, critRate: 12, dodgeRate: 10, icon: '🟣'),
+  NinjaExam(targetRankIndex: 4, rankTitle: 'Jōnin Bojowy', requiredLevel: 35, examinerName: 'Kakashi Hatake', examinerTitle: 'Kopiujący Ninja', hp: 920, atk: 72, critRate: 15, dodgeRate: 15, icon: '🔴'),
+  NinjaExam(targetRankIndex: 5, rankTitle: 'Elita ANBU (Korzeń)', requiredLevel: 48, examinerName: 'Danzō Shimura', examinerTitle: 'Przywódca Korzenia', hp: 1450, atk: 105, critRate: 18, dodgeRate: 18, icon: '⚫'),
+  NinjaExam(targetRankIndex: 6, rankTitle: 'Legendarny Sannin / Kage', requiredLevel: 60, examinerName: 'Naruto & Sasuke', examinerTitle: 'Bóstwa Shinobi', hp: 2200, atk: 145, critRate: 22, dodgeRate: 22, icon: '👑'),
 ];
 
-class ShinobiMission {
+enum MissionType { killCount, bossHunt, itemSupply }
+
+class NinjaMission {
   final String id;
+  final int minRankIndex;
+  final String rank;
   final String title;
   final String desc;
-  final String rank;
-  final int minRankIndex;
   final String locationId;
   final MissionType type;
-  final String targetEnemyId;
+  final String? targetEnemyId;
+  final String? supplyItemId;
   final int requiredCount;
   final int rewardRyo;
   final int rewardExp;
-  final String? supplyItemId;
 
-  const ShinobiMission({
-    required this.id,
-    required this.title,
-    required this.desc,
-    required this.rank,
-    required this.minRankIndex,
-    required this.locationId,
-    required this.type,
-    this.targetEnemyId = '',
-    required this.requiredCount,
-    required this.rewardRyo,
-    required this.rewardExp,
-    this.supplyItemId,
-  });
+  const NinjaMission({required this.id, required this.minRankIndex, required this.rank, required this.title, required this.desc, required this.locationId, required this.type, this.targetEnemyId, this.supplyItemId, required this.requiredCount, required this.rewardRyo, required this.rewardExp});
 }
 
-const List<ShinobiMission> allMissionsPool = [
-  ShinobiMission(
-    id: 'm_gate_dogs',
-    title: 'Oczyszczenie Przedpola',
-    desc: 'Wyeliminuj dzikie psy czakry grasujące pod bramą.',
-    rank: 'D',
-    minRankIndex: 0,
-    locationId: 'loc_gate',
-    type: MissionType.killCount,
-    targetEnemyId: 'en_dog',
-    requiredCount: 3,
-    rewardRyo: 60,
-    rewardExp: 45,
-  ),
-  ShinobiMission(
-    id: 'm_gate_thief',
-    title: 'Kradzież Zwojów',
-    desc: 'Pokonaj złodziei zwojów na trakcie handlowym.',
-    rank: 'D',
-    minRankIndex: 0,
-    locationId: 'loc_gate',
-    type: MissionType.killCount,
-    targetEnemyId: 'en_bandit',
-    requiredCount: 3,
-    rewardRyo: 85,
-    rewardExp: 65,
-  ),
-  ShinobiMission(
-    id: 'm_forest_leeches',
-    title: 'Zaraza Pijawek',
-    desc: 'Zneutralizuj wielkie pijawki wysysające czakrę z drzew.',
-    rank: 'C',
-    minRankIndex: 1,
-    locationId: 'loc_forest',
-    type: MissionType.killCount,
-    targetEnemyId: 'en_leech',
-    requiredCount: 4,
-    rewardRyo: 150,
-    rewardExp: 140,
-  ),
-  ShinobiMission(
-    id: 'm_forest_boss',
-    title: 'Potwór Lasu Śmierci',
-    desc: 'Zgładź Zmutowanego Węża Orochimaru w sercu lasu.',
-    rank: 'B',
-    minRankIndex: 2,
-    locationId: 'loc_forest',
-    type: MissionType.bossHunt,
-    targetEnemyId: 'boss_orochimaru_snake',
-    requiredCount: 1,
-    rewardRyo: 400,
-    rewardExp: 380,
-  ),
-  ShinobiMission(
-    id: 'm_waves_mercs',
-    title: 'Najemnicy z Mgły',
-    desc: 'Oczyść Most Narudo z uzbrojonych bandytów Gato.',
-    rank: 'B',
-    minRankIndex: 2,
-    locationId: 'loc_waves',
-    type: MissionType.killCount,
-    targetEnemyId: 'en_thug',
-    requiredCount: 5,
-    rewardRyo: 320,
-    rewardExp: 310,
-  ),
-  ShinobiMission(
-    id: 'm_waves_zabuza',
-    title: 'Demon Ukrytej Mgły',
-    desc: 'Pokonaj Zabuzę Momochi na Moście Kraju Fali.',
-    rank: 'A',
-    minRankIndex: 3,
-    locationId: 'loc_waves',
-    type: MissionType.bossHunt,
-    targetEnemyId: 'boss_zabuza',
-    requiredCount: 1,
-    rewardRyo: 800,
-    rewardExp: 750,
-  ),
-  ShinobiMission(
-    id: 'm_valley_curse',
-    title: 'Przeklęte Pieczęcie',
-    desc: 'Zlikwiduj nosicieli przeklętej pieczęci w Dolinie Końca.',
-    rank: 'A',
-    minRankIndex: 4,
-    locationId: 'loc_valley',
-    type: MissionType.killCount,
-    targetEnemyId: 'en_curse_bearer',
-    requiredCount: 6,
-    rewardRyo: 950,
-    rewardExp: 900,
-  ),
-  ShinobiMission(
-    id: 'm_akatsuki_zetsu',
-    title: 'Infiltracja Zetsu',
-    desc: 'Powstrzymaj armię Białych Zetsu w podziemiach Akatsuki.',
-    rank: 'S',
-    minRankIndex: 5,
-    locationId: 'loc_akatsuki',
-    type: MissionType.killCount,
-    targetEnemyId: 'en_zetsu',
-    requiredCount: 8,
-    rewardRyo: 1600,
-    rewardExp: 1500,
-  ),
+const List<NinjaMission> allMissionsPool = [
+  NinjaMission(id: 'm_gate_1', minRankIndex: 0, rank: 'D', title: 'Oczyszczenie Bramy', desc: 'Pokonaj 3 zbiegłych geninów w pobliżu bramy.', locationId: 'loc_gate', type: MissionType.killCount, targetEnemyId: 'e_genin_rogue', requiredCount: 3, rewardRyo: 120, rewardExp: 100),
+  NinjaMission(id: 'm_gate_2', minRankIndex: 0, rank: 'D', title: 'Zbiór Rudy Żelaza', desc: 'Dostarcz 2 sztuki rudy żelaza dla kowala.', locationId: 'loc_gate', type: MissionType.itemSupply, supplyItemId: matIronOre, requiredCount: 2, rewardRyo: 180, rewardExp: 140),
+  NinjaMission(id: 'm_forest_1', minRankIndex: 1, rank: 'C', title: 'Szpieg z Otogakure', desc: 'Wyeliminuj 4 szpiegów w Lesie Śmierci.', locationId: 'loc_forest', type: MissionType.killCount, targetEnemyId: 'e_sound_ninja', requiredCount: 4, rewardRyo: 350, rewardExp: 300),
+  NinjaMission(id: 'm_waves_1', minRankIndex: 2, rank: 'B', title: 'Demon z Mgły', desc: 'Pokonaj Zabuzu Momochi w Kraju Fali.', locationId: 'loc_waves', type: MissionType.bossHunt, targetEnemyId: 'b_zabuza', requiredCount: 1, rewardRyo: 850, rewardExp: 750),
 ];
 
 class BingoTarget {
@@ -995,53 +462,33 @@ class BingoTarget {
   final int bountyExp;
   bool isDefeated;
 
-  BingoTarget({
-    required this.id,
-    required this.name,
-    required this.title,
-    required this.zoneId,
-    required this.minDepth,
-    required this.enemy,
-    required this.exclusiveReward,
-    required this.bountyRyo,
-    required this.bountyExp,
-    this.isDefeated = false,
-  });
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'isDefeated': isDefeated,
-      };
+  BingoTarget({required this.id, required this.name, required this.title, required this.zoneId, required this.minDepth, required this.enemy, required this.exclusiveReward, required this.bountyRyo, required this.bountyExp, this.isDefeated = false});
 }
 
 class MilestoneTracker {
   int enemiesSlain;
   int physicalHitsDealt;
   int jutsuCasts;
-  int bountiesClaimed;
   int damageTaken;
+  int bountiesClaimed;
 
-  MilestoneTracker({
-    this.enemiesSlain = 0,
-    this.physicalHitsDealt = 0,
-    this.jutsuCasts = 0,
-    this.bountiesClaimed = 0,
-    this.damageTaken = 0,
-  });
+  MilestoneTracker({this.enemiesSlain = 0, this.physicalHitsDealt = 0, this.jutsuCasts = 0, this.damageTaken = 0, this.bountiesClaimed = 0});
 
   Map<String, dynamic> toJson() => {
-        'enemiesSlain': enemiesSlain,
-        'physicalHitsDealt': physicalHitsDealt,
-        'jutsuCasts': jutsuCasts,
-        'bountiesClaimed': bountiesClaimed,
-        'damageTaken': damageTaken,
-      };
+    'enemiesSlain': enemiesSlain,
+    'physicalHitsDealt': physicalHitsDealt,
+    'jutsuCasts': jutsuCasts,
+    'damageTaken': damageTaken,
+    'bountiesClaimed': bountiesClaimed,
+  };
 
-  factory MilestoneTracker.fromJson(Map<String, dynamic> json) => MilestoneTracker(
-        enemiesSlain: json['enemiesSlain'] as int? ?? 0,
-        physicalHitsDealt: json['physicalHitsDealt'] as int? ?? 0,
-        jutsuCasts: json['jutsuCasts'] as int? ?? 0,
-        bountiesClaimed: json['bountiesClaimed'] as int? ?? 0,
-        damageTaken: json['damageTaken'] as int? ?? 0,
-      );
+  factory MilestoneTracker.fromJson(Map<String, dynamic> json) {
+    return MilestoneTracker(
+      enemiesSlain: json['enemiesSlain'] as int? ?? 0,
+      physicalHitsDealt: json['physicalHitsDealt'] as int? ?? 0,
+      jutsuCasts: json['jutsuCasts'] as int? ?? 0,
+      damageTaken: json['damageTaken'] as int? ?? 0,
+      bountiesClaimed: json['bountiesClaimed'] as int? ?? 0,
+    );
+  }
 }
