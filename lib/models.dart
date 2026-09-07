@@ -147,7 +147,8 @@ class NinjaGear {
   final String setGroup;
   final bool isSoulbound;
   final String icon;
-
+  final bool isFavorite;  
+  
   const NinjaGear({
     required this.name,
     required this.rarity,
@@ -156,7 +157,8 @@ class NinjaGear {
     this.upgradeLevel = 0,
     this.affixes = const [],
     this.setGroup = 'none',
-    this.isSoulbound = false,
+    this.isSoulbound = false
+    this.isFavorite = false,
     required this.icon,
   });
 
@@ -213,6 +215,7 @@ class NinjaGear {
     List<GearAffix>? affixes,
     String? setGroup,
     bool? isSoulbound,
+    bool? isFavorite,
     String? icon,
   }) {
     return NinjaGear(
@@ -224,6 +227,7 @@ class NinjaGear {
       affixes: affixes ?? this.affixes,
       setGroup: setGroup ?? this.setGroup,
       isSoulbound: isSoulbound ?? this.isSoulbound,
+      isFavorite: isFavorite ?? this.isFavorite,
       icon: icon ?? this.icon,
     );
   }
