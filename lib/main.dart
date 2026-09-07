@@ -1596,41 +1596,30 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                               Text(gear.icon, style: const TextStyle(fontSize: 22)),
                               const SizedBox(width: 8),
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
-                                        if (gear.isFavorite) ...[
-                                          const SizedBox(width: 4),
-                                          const Text('❤️', style: TextStyle(fontSize: 11)),
-                                        ],
-                                      ],
-                                    ),
-                                    Text('Moc: +${gear.effectiveStat}', style: const TextStyle(fontSize: 9, color: Colors.white70)),
-                                  ],
-                                ),
-                              ),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4)),
-                                onPressed: () {
-                                  if (equipmentStash.length >= 10) {
-                                    showActionBlockedMessage('🎒 Plecak rynsztunku jest pełny (max 10)!');
-                                    return;
-                                  }
-                                  setState(() {
-                                    villageStash.removeAt(index);
-                                    equipmentStash.add(gear);
-                                  });
-                                  _saveGameData();
-                                  setVillageStashState(() {});
-                                  addLog('📦 Wyjęto [${gear.displayName}] ze skrzyni wioski do plecaka.');
-                                },
-                                child: const Text('Weź', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
-                              ),
-                            ],
-                          ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Expanded(
+            child: Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
+          ),
+          if (gear.isSoulbound) ...[
+            const SizedBox(width: 2),
+            const Text('🈴', style: TextStyle(fontSize: 10)),
+          ],
+          if (gear.isFavorite) ...[
+            const SizedBox(width: 2),
+            const Text('❤️', style: TextStyle(fontSize: 10)),
+          ],
+        ],
+      ),
+      const SizedBox(height: 2),
+      Text('Moc: +${gear.effectiveStat} | Złom: ${gear.sellPrice}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 9, color: Colors.white70)),
+    ],
+  ),
+),
+
                         );
                       }),
                     const Divider(color: Colors.white12),
@@ -1734,23 +1723,30 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                     Row(
                                       children: [
                                         Expanded(
-                                          child: Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
-                                        ),
-                                        if (gear.isSoulbound) ...[
-                                          const SizedBox(width: 2),
-                                          const Text('🈴', style: TextStyle(fontSize: 10)),
-                                        ],
-                                        if (gear.isFavorite) ...[
-                                          const SizedBox(width: 2),
-                                          const Text('❤️', style: TextStyle(fontSize: 10)),
-                                        ],
-                                      ],
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text('Moc: +${gear.effectiveStat} | Złom: ${gear.sellPrice}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 9, color: Colors.white70)),
-                                  ],
-                                ),
-                              ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Expanded(
+            child: Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
+          ),
+          if (gear.isSoulbound) ...[
+            const SizedBox(width: 2),
+            const Text('🈴', style: TextStyle(fontSize: 10)),
+          ],
+          if (gear.isFavorite) ...[
+            const SizedBox(width: 2),
+            const Text('❤️', style: TextStyle(fontSize: 10)),
+          ],
+        ],
+      ),
+      const SizedBox(height: 2),
+      Text('Moc: +${gear.effectiveStat} | Złom: ${gear.sellPrice}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 9, color: Colors.white70)),
+    ],
+  ),
+),
+
                               IconButton(
                                 constraints: const BoxConstraints(),
                                 padding: const EdgeInsets.symmetric(horizontal: 2),
