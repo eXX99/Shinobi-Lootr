@@ -2135,7 +2135,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
               applyTurnRegen();
               _saveGameData();
-
+            }
 
             void executeJutsu(Jutsu jutsu) {
               if (chakra < jutsu.chakraCost) {
