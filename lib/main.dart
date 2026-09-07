@@ -1727,34 +1727,37 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                             children: [
                               Text(gear.icon, style: const TextStyle(fontSize: 22)),
                               const SizedBox(width: 8),
-                              Expanded(
+                                                            Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
                                       children: [
-                                        Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                        Expanded(
+                                          child: Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                        ),
                                         if (gear.isSoulbound) ...[
-                                          const SizedBox(width: 4),
-                                          const Text('🈴', style: TextStyle(fontSize: 11)),
+                                          const SizedBox(width: 2),
+                                          const Text('🈴', style: TextStyle(fontSize: 10)),
                                         ],
                                         if (gear.isFavorite) ...[
-                                          const SizedBox(width: 4),
-                                          const Text('❤️', style: TextStyle(fontSize: 11)),
+                                          const SizedBox(width: 2),
+                                          const Text('❤️', style: TextStyle(fontSize: 10)),
                                         ],
                                       ],
                                     ),
-                                    Text('Moc: +${gear.effectiveStat} | Złom: ${gear.sellPrice} Ryo', style: const TextStyle(fontSize: 9, color: Colors.white70)),
+                                    const SizedBox(height: 2),
+                                    Text('Moc: +${gear.effectiveStat} | Złom: ${gear.sellPrice}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 9, color: Colors.white70)),
                                   ],
                                 ),
                               ),
                               IconButton(
                                 constraints: const BoxConstraints(),
-                                padding: const EdgeInsets.symmetric(horizontal: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 2),
                                 icon: Icon(
                                   gear.isFavorite ? Icons.favorite : Icons.favorite_border,
                                   color: gear.isFavorite ? Colors.redAccent : Colors.grey,
-                                  size: 18,
+                                  size: 16,
                                 ),
                                 onPressed: () {
                                   setState(() {
