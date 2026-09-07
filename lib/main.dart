@@ -2454,6 +2454,82 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               }
             }
 
+            // DEKLARACJA _onBattleVictory PRZED WYWOŁANIAMI
+            void onBattleVictory() {
+              Navigator.pop(ctx);
+              setState(() => milestones.enemiesSlain++);
+
+              if (isExamFight) {
+                setState(() => passedRankIndex = examTargetRank!);
+                addExperience(400);
+                addLog('🏆 ZDANO EGZAMIN na rangę: $ninjaRank!');
+                return;
+              }
+
+              if (bounty != null) {
+                setState(() {
+                  bounty.isDefeated = true;
+                  milestones.bountiesClaimed++;
+                  ryo += bounty.bountyRyo;
+                  equipmentStash.add(bounty.exclusiveReward);
+                });
+                addExperience(bounty.bountyExp);
+                addLog('🏆 Zlecenie Bingo wykonane: ${bounty.name}! (+${bounty.bountyRyo} Ryo)');
+                addLog('🎁 Zdobyto dedykowany rynsztunek: ${bounty.exclusiveReward.displayName}!');
+                _saveGameData();
+                return;
+              }
+
+              int locLvl = shinobiLocations.firstWhere((l) => l.id == currentSelectedLocationId, orElse: () => shinobiLocations[0]).minLevel;
+              int levelDiff = level - locLvl;
+              double penaltyMult = 1.0;
+              if (levelDiff >= 7) {
+                penaltyMult = 0.15;
+              } else if (levelDiff >= 4) {
+                penaltyMult = 0.50;
+              }
+
+              double pr = template.powerRating;
+              double prefixMult = forcePrefix == EnemyPrefix.weak ? 0.8 : (forcePrefix == EnemyPrefix.strong ? 1.5 : 1.0);
+
+              int rawExp = (pr * 0.28 * prefixMult).round();
+              int rawRyo = (pr * 0.18 * prefixMult).round();
+              if (template.isBoss) {
+                rawExp = (rawExp * 1.8).round();
+                rawRyo = (rawRyo * 1.6).round();
+              }
+
+              int rewardRyo = max(1, (rawRyo * penaltyMult).round());
+              int expGained = max(1, (rawExp * penaltyMult).round());
+
+              setState(() {
+                ryo += rewardRyo;
+                if (activeMissionIndex != null) {
+                  final activeMission = allMissionsPool[activeMissionIndex!];
+                  if (activeMission.type == MissionType.killCount && activeMission.targetEnemyId == template.id) {
+                    currentMissionKills++;
+                  } else if (activeMission.type == MissionType.bossHunt && activeMission.targetEnemyId == template.id) {
+                    currentMissionKills = 1;
+                  }
+                }
+              });
+              addExperience(expGained);
+
+              String penaltyMsg = penaltyMult < 1.0 ? ' (Kara za strefę -${((1.0 - penaltyMult) * 100).round()}%)' : '';
+              addLog('🏆 Pokonano $prefixTitle${template.name}! +$rewardRyo Ryo, +$expGained EXP$penaltyMsg.');
+
+              bool shouldDropLoot = template.isBoss;
+              if (!shouldDropLoot) {
+                int chance = forcePrefix == EnemyPrefix.strong ? 35 : 18;
+                if (penaltyMult < 0.20) chance = (chance * 0.3).round();
+                shouldDropLoot = _rng.nextInt(100) < chance;
+              }
+
+              if (shouldDropLoot) {
+                _findLoot(guaranteedBossDrop: template.isBoss, dungeonBossSetGroup: dungeonBossSetGroup);
+              }
+            }
+
             void enemyTurn() {
               if (enemyHp <= 0) return;
               if (frozenTurns > 0) {
@@ -2561,7 +2637,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                 }
 
                 if (enemyHp <= 0) {
-                  _onBattleVictory();
+                  onBattleVictory();
                   return;
                 } else {
                   enemyTurn();
@@ -2627,85 +2703,10 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               }
 
               if (enemyHp <= 0) {
-                _onBattleVictory();
+                onBattleVictory();
               } else {
                 enemyTurn();
                 setBattleState(() {});
-              }
-            }
-
-            void _onBattleVictory() {
-              Navigator.pop(ctx);
-              setState(() => milestones.enemiesSlain++);
-
-              if (isExamFight) {
-                setState(() => passedRankIndex = examTargetRank!);
-                addExperience(400);
-                addLog('🏆 ZDANO EGZAMIN na rangę: $ninjaRank!');
-                return;
-              }
-
-              if (bounty != null) {
-                setState(() {
-                  bounty.isDefeated = true;
-                  milestones.bountiesClaimed++;
-                  ryo += bounty.bountyRyo;
-                  equipmentStash.add(bounty.exclusiveReward);
-                });
-                addExperience(bounty.bountyExp);
-                addLog('🏆 Zlecenie Bingo wykonane: ${bounty.name}! (+${bounty.bountyRyo} Ryo)');
-                addLog('🎁 Zdobyto dedykowany rynsztunek: ${bounty.exclusiveReward.displayName}!');
-                _saveGameData();
-                return;
-              }
-
-              int locLvl = shinobiLocations.firstWhere((l) => l.id == currentSelectedLocationId, orElse: () => shinobiLocations[0]).minLevel;
-              int levelDiff = level - locLvl;
-              double penaltyMult = 1.0;
-              if (levelDiff >= 7) {
-                penaltyMult = 0.15;
-              } else if (levelDiff >= 4) {
-                penaltyMult = 0.50;
-              }
-
-              double pr = template.powerRating;
-              double prefixMult = forcePrefix == EnemyPrefix.weak ? 0.8 : (forcePrefix == EnemyPrefix.strong ? 1.5 : 1.0);
-
-              int rawExp = (pr * 0.28 * prefixMult).round();
-              int rawRyo = (pr * 0.18 * prefixMult).round();
-              if (template.isBoss) {
-                rawExp = (rawExp * 1.8).round();
-                rawRyo = (rawRyo * 1.6).round();
-              }
-
-              int rewardRyo = max(1, (rawRyo * penaltyMult).round());
-              int expGained = max(1, (rawExp * penaltyMult).round());
-
-              setState(() {
-                ryo += rewardRyo;
-                if (activeMissionIndex != null) {
-                  final activeMission = allMissionsPool[activeMissionIndex!];
-                  if (activeMission.type == MissionType.killCount && activeMission.targetEnemyId == template.id) {
-                    currentMissionKills++;
-                  } else if (activeMission.type == MissionType.bossHunt && activeMission.targetEnemyId == template.id) {
-                    currentMissionKills = 1;
-                  }
-                }
-              });
-              addExperience(expGained);
-
-              String penaltyMsg = penaltyMult < 1.0 ? ' (Kara za strefę -${((1.0 - penaltyMult) * 100).round()}%)' : '';
-              addLog('🏆 Pokonano $prefixTitle${template.name}! +$rewardRyo Ryo, +$expGained EXP$penaltyMsg.');
-
-              bool shouldDropLoot = template.isBoss;
-              if (!shouldDropLoot) {
-                int chance = forcePrefix == EnemyPrefix.strong ? 35 : 18;
-                if (penaltyMult < 0.20) chance = (chance * 0.3).round();
-                shouldDropLoot = _rng.nextInt(100) < chance;
-              }
-
-              if (shouldDropLoot) {
-                _findLoot(guaranteedBossDrop: template.isBoss, dungeonBossSetGroup: dungeonBossSetGroup);
               }
             }
 
@@ -2749,7 +2750,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               }
 
               if (enemyHp <= 0) {
-                _onBattleVictory();
+                onBattleVictory();
               } else {
                 enemyTurn();
                 setBattleState(() {});
@@ -2775,7 +2776,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   enemyHp = max(0, enemyHp - dmg);
                   appendBattleLog('💥 Pieczęć Wybuchowa zadaje $dmg obrażeń!');
                   if (enemyHp <= 0) {
-                    _onBattleVictory();
+                    onBattleVictory();
                   } else {
                     enemyTurn();
                     setBattleState(() {});
