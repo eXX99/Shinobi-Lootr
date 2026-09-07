@@ -10,7 +10,7 @@ const NinjaGear defaultStarterWeapon = NinjaGear(name: 'Podstawowy Kunai', rarit
 const NinjaGear defaultStarterArmor = NinjaGear(name: 'Szata Treningowa Genina', rarity: ItemRarity.common, slot: GearSlot.armor, baseStat: 4, isSoulbound: true, icon: '🥋');
 const NinjaGear defaultStarterHelmet = NinjaGear(name: 'Ochraniacz Protektor', rarity: ItemRarity.common, slot: GearSlot.helmet, baseStat: 3, isSoulbound: true, icon: '🛡️');
 const NinjaGear defaultStarterBoots = NinjaGear(name: 'Sandały Shinobi', rarity: ItemRarity.common, slot: GearSlot.boots, baseStat: 3, isSoulbound: true, icon: '🥾');
-const NinjaGear defaultStarterTrinket = NinjaGear(name: 'Amulet Konohy', rarity: ItemRarity.common, slot: GearSlot.trinket, baseStat: 3, isSoulbound: true, icon: '📿');
+const NinjaGear defaultStarterTrinket = NinjaGear(name: 'Amulet Konohy', rarity: ItemRarity.common, slot: GearSlot.trinket, baseStat: 10, isSoulbound: true, icon: '📿');
 
 void showHelpDialog(BuildContext context) {
   showDialog(
@@ -48,6 +48,8 @@ void showHelpDialog(BuildContext context) {
               _helpSection('🈴 Śmierć i Pieczęcie', 'Porażka w walce oznacza utratę niezabezpieczonego sprzętu. Szukaj Mistrza Fūinjutsu w terenie, by oznaczyć rynsztunek pieczęcią (🈴).'),
               const Divider(color: Colors.white12),
               _helpSection('🌲 Głębokość Rajdu & Checkpointy', 'Co 50 kroków odblokowujesz skrót, pozwalający zacząć kolejny rajd od głębszego poziomu lasu!'),
+              const Divider(color: Colors.white12),
+              _helpSection('🎖️ Kamienie Milowe & Bingo Book', 'Zdobywaj stałe premie do całego konta i poluj na niebezpiecznych zbiegów z unikalnym łupem.'),
             ],
           ),
         ),
@@ -295,6 +297,9 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
   NinjaGear currentBoots = defaultStarterBoots;
   NinjaGear currentTrinket = defaultStarterTrinket;
 
+  MilestoneTracker milestones = MilestoneTracker();
+  late List<BingoTarget> bingoTargets;
+
   final List<String> log = ['Witaj w Konohagakure! Wybierz strefę w menu, aby rozpocząć rajd.'];
 
   static const int softCapLevel = 65;
@@ -366,11 +371,11 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     return total;
   }
 
-  int get maxHp => baseMaxHp + sumAffix(AffixType.bonusHp);
-  int get maxChakra => baseMaxChakra + sumAffix(AffixType.bonusChakra);
+  int get maxHp => baseMaxHp + sumAffix(AffixType.bonusHp) + (passedRankIndex >= 1 ? 30 : 0);
+  int get maxChakra => baseMaxChakra + sumAffix(AffixType.bonusChakra) + milestoneBonusMaxCp;
 
-  int get totalCritRate => sumAffix(AffixType.critRate) + (activeSetCounts['boss_kyubi'] != null && activeSetCounts['boss_kyubi']! >= 4 ? 25 : 0);
-  int get totalDodgeRate => sumAffix(AffixType.dodgeRate) + (activeSetCounts['boss_susanoo'] != null && activeSetCounts['boss_susanoo']! >= 2 ? 10 : 0);
+  int get totalCritRate => sumAffix(AffixType.critRate) + beltBonusCrit + (activeSetCounts['boss_kyubi'] != null && activeSetCounts['boss_kyubi']! >= 4 ? 25 : 0);
+  int get totalDodgeRate => min(40, sumAffix(AffixType.dodgeRate) + milestoneBonusDodge + beltBonusDodge + (activeSetCounts['boss_susanoo'] != null && activeSetCounts['boss_susanoo']! >= 2 ? 10 : 0));
   int get totalArmorPierce => sumAffix(AffixType.armorPierce) + (activeSetCounts['boss_susanoo'] != null && activeSetCounts['boss_susanoo']! >= 4 ? 20 : 0);
   int get totalLifeSteal => sumAffix(AffixType.lifeSteal) + (activeSetCounts['boss_kyubi'] != null && activeSetCounts['boss_kyubi']! >= 2 ? 12 : 0);
   int get totalHpRegen => sumAffix(AffixType.hpRegen) + (activeSetCounts['boss_kyubi'] != null && activeSetCounts['boss_kyubi']! >= 4 ? 15 : 0);
@@ -409,17 +414,193 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     return bonus;
   }
 
-  int get totalAttack => currentWeapon.effectiveStat + currentTrinket.effectiveStat + bonusAtk + setBonusAtk + level;
-  int get totalDefense => currentArmor.effectiveStat + currentHelmet.effectiveStat + currentBoots.effectiveStat + setBonusDef;
+  // NOWY PODZIAŁ STATYSTYK:
+  // Broń (Atak) + Głowa (Atak)
+  int get totalAttack =>
+      currentWeapon.effectiveStat +
+      currentHelmet.effectiveStat +
+      bonusAtk +
+      setBonusAtk +
+      milestoneBonusAtk +
+      beltBonusAtk +
+      level;
+
+  // Pancerz (Obrona) + Buty (Obrona)
+  int get totalDefense =>
+      currentArmor.effectiveStat +
+      currentBoots.effectiveStat +
+      setBonusDef +
+      milestoneBonusDef +
+      beltBonusDef;
+
+  // Talizman (Moc Jutsu w %)
+  int get totalJutsuPower => currentTrinket.effectiveStat + beltBonusJutsuPower;
+
+  // Premie z Kamieni Milowych
+  int get milestoneBonusAtk => (milestones.physicalHitsDealt ~/ 40) * 2;
+  int get milestoneBonusDef => (milestones.damageTaken ~/ 120) * 2;
+  int get milestoneBonusDodge => min(15, (milestones.enemiesSlain ~/ 25) * 2);
+  int get milestoneBonusMaxCp => (milestones.jutsuCasts ~/ 20) * 5;
+
+  // Premie z Pasów Rangowych
+  int get beltBonusAtk => (level >= 10 ? 5 : 0) + (milestones.bountiesClaimed >= 3 ? 10 : 0);
+  int get beltBonusDef => (level >= 10 ? 5 : 0);
+  int get beltBonusJutsuPower => (passedRankIndex >= 2 ? 5 : 0) + (passedRankIndex >= 6 ? 15 : 0);
+  int get beltBonusDodge => (milestones.bountiesClaimed >= 3 ? 5 : 0);
+  int get beltBonusCrit => (passedRankIndex >= 6 ? 10 : 0);
 
   @override
   void initState() {
     super.initState();
+    _initBingoBook();
     if (widget.isNewGame) {
       setState(() => isLoading = false);
     } else {
       _loadGameData();
     }
+  }
+
+  void _initBingoBook() {
+    bingoTargets = [
+      BingoTarget(
+        id: 'nukenin_1',
+        name: 'Mei Ukryty Cień',
+        title: 'Zbiegły Zwiadowca Liścia',
+        zoneId: 'loc_gate',
+        minDepth: 25,
+        enemy: const EnemyTemplate(
+          id: 'e_mei',
+          name: 'Mei Ukryty Cień',
+          baseHp: 260,
+          baseAtk: 25,
+          locationId: 'loc_gate',
+          isBoss: true,
+          icon: '👤',
+          dodgeRate: 20,
+          traits: [BossTrait.dodgeManiac],
+        ),
+        exclusiveReward: const NinjaGear(
+          name: 'Ciche Kamasze Mglistego Widma',
+          rarity: ItemRarity.epic,
+          slot: GearSlot.boots,
+          baseStat: 26,
+          isSoulbound: true,
+          icon: '🥾',
+        ),
+        bountyRyo: 400,
+        bountyExp: 300,
+      ),
+      BingoTarget(
+        id: 'nukenin_2',
+        name: 'Juzo Żelaznoręki',
+        title: 'Przemytnik Broni z Iwa',
+        zoneId: 'loc_forest',
+        minDepth: 50,
+        enemy: const EnemyTemplate(
+          id: 'e_juzo',
+          name: 'Juzo Żelaznoręki',
+          baseHp: 460,
+          baseAtk: 36,
+          locationId: 'loc_forest',
+          isBoss: true,
+          icon: '🛡️',
+          flatBlock: 10,
+          traits: [BossTrait.ironSkin, BossTrait.poisonMaster],
+        ),
+        exclusiveReward: const NinjaGear(
+          name: 'Żelazna Kolczuga Przemytnika',
+          rarity: ItemRarity.epic,
+          slot: GearSlot.armor,
+          baseStat: 38,
+          isSoulbound: true,
+          icon: '🥋',
+        ),
+        bountyRyo: 750,
+        bountyExp: 550,
+      ),
+      BingoTarget(
+        id: 'nukenin_3',
+        name: 'Ryōgo „Krwawa Brzytwa”',
+        title: 'Rzeźnik z Kraju Fali',
+        zoneId: 'loc_waves',
+        minDepth: 50,
+        enemy: const EnemyTemplate(
+          id: 'e_ryogo',
+          name: 'Ryōgo „Krwawa Brzytwa”',
+          baseHp: 640,
+          baseAtk: 52,
+          locationId: 'loc_waves',
+          isBoss: true,
+          icon: '🗡️',
+          critRate: 15,
+          traits: [BossTrait.bloodEnrage, BossTrait.dodgeManiac],
+        ),
+        exclusiveReward: const NinjaGear(
+          name: 'Ząbkowany Sztylet Krwawej Brzytwy',
+          rarity: ItemRarity.legendary,
+          slot: GearSlot.weapon,
+          baseStat: 56,
+          isSoulbound: true,
+          icon: '🗡️',
+        ),
+        bountyRyo: 1200,
+        bountyExp: 900,
+      ),
+      BingoTarget(
+        id: 'nukenin_4',
+        name: 'Gurenko Ognisty Pająk',
+        title: 'Zdrajca z Doliny Końca',
+        zoneId: 'loc_valley',
+        minDepth: 75,
+        enemy: const EnemyTemplate(
+          id: 'e_gurenko',
+          name: 'Gurenko Ognisty Pająk',
+          baseHp: 820,
+          baseAtk: 60,
+          locationId: 'loc_valley',
+          isBoss: true,
+          icon: '🕸️',
+          traits: [BossTrait.chakraLeech, BossTrait.chakraThorns],
+        ),
+        exclusiveReward: const NinjaGear(
+          name: 'Ognisty Kokon Gurenko',
+          rarity: ItemRarity.legendary,
+          slot: GearSlot.trinket,
+          baseStat: 45,
+          isSoulbound: true,
+          icon: '📿',
+        ),
+        bountyRyo: 1800,
+        bountyExp: 1400,
+      ),
+      BingoTarget(
+        id: 'nukenin_5',
+        name: 'Kenshin Upadły Mistrz Miecza',
+        title: 'Egzekutor Cienia',
+        zoneId: 'loc_akatsuki',
+        minDepth: 100,
+        enemy: const EnemyTemplate(
+          id: 'e_kenshin',
+          name: 'Kenshin Upadły Mistrz Miecza',
+          baseHp: 1250,
+          baseAtk: 84,
+          locationId: 'loc_akatsuki',
+          isBoss: true,
+          icon: '👺',
+          traits: [BossTrait.ironSkin, BossTrait.bloodEnrage, BossTrait.chakraLeech],
+        ),
+        exclusiveReward: const NinjaGear(
+          name: 'Pęknięta Maska Skrytobójcy',
+          rarity: ItemRarity.legendary,
+          slot: GearSlot.helmet,
+          baseStat: 52,
+          isSoulbound: true,
+          icon: '👑',
+        ),
+        bountyRyo: 2800,
+        bountyExp: 2200,
+      ),
+    ];
   }
 
   Future<void> _loadGameData() async {
@@ -441,6 +622,19 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       dungeonCooldownTimestamp = prefs.getInt('dungeonCooldownTimestamp') ?? 0;
       hasEscapeScroll = prefs.getBool('hasEscapeScroll') ?? false;
       raidDepth = prefs.getInt('raidDepth') ?? 0;
+
+      final mStr = prefs.getString('milestones');
+      if (mStr != null) {
+        milestones = MilestoneTracker.fromJson(jsonDecode(mStr));
+      }
+
+      final bStates = prefs.getString('bingo_states');
+      if (bStates != null) {
+        final Map<String, dynamic> map = jsonDecode(bStates);
+        for (var t in bingoTargets) {
+          if (map.containsKey(t.id)) t.isDefeated = map[t.id] as bool;
+        }
+      }
 
       final depthsJson = prefs.getString('maxReachedDepths');
       if (depthsJson != null) maxReachedDepths = Map<String, int>.from(jsonDecode(depthsJson));
@@ -487,6 +681,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       if (equippedIds != null && equippedIds.isNotEmpty) {
         equippedJutsu = allJutsuPool.where((j) => equippedIds.contains(j.id)).toList();
       }
+
+      chakra = min(chakra, maxChakra);
       isLoading = false;
     });
   }
@@ -507,6 +703,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     await prefs.setBool('hasEscapeScroll', hasEscapeScroll);
     await prefs.setInt('raidDepth', raidDepth);
     await prefs.setString('maxReachedDepths', jsonEncode(maxReachedDepths));
+    await prefs.setString('milestones', jsonEncode(milestones.toJson()));
+    await prefs.setString('bingo_states', jsonEncode({for (var b in bingoTargets) b.id: b.isDefeated}));
 
     if (activeMissionIndex != null) {
       await prefs.setInt('activeMissionIndex', activeMissionIndex!);
@@ -697,6 +895,19 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     if (totalChakraRegen > 0) chakra = min(maxChakra, chakra + totalChakraRegen);
 
     final loc = shinobiLocations.firstWhere((l) => l.id == currentSelectedLocationId);
+
+    // Szansa na wytropienie zbiega z Bingo Book
+    final availableBounties = bingoTargets
+        .where((b) => !b.isDefeated && b.zoneId == currentSelectedLocationId && raidDepth >= b.minDepth)
+        .toList();
+
+    if (availableBounties.isNotEmpty && _rng.nextInt(100) < 25) {
+      final target = availableBounties[_rng.nextInt(availableBounties.length)];
+      addLog('⚠️ Czujesz złowrogą czakrę! Zbieg z Bingo Book: ${target.name} atakuje!');
+      _startBattleWithEnemy(target.enemy, bounty: target);
+      return;
+    }
+
     final roll = _rng.nextInt(100);
 
     if (roll < 20) {
@@ -1553,7 +1764,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                   _saveGameData();
                                   Navigator.pop(ctx);
                                   addLog('🎖️ Ukończono: ${m.title}! +$payoutRyo Ryo, +$payoutExp EXP ${isRepeat ? "(Powtórzenie)" : ""}');
-                                  
                                 },
                                 child: const Text('Odbierz Nagrodę! 🎁', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                               )
@@ -1940,6 +2150,151 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     );
   }
 
+  void _showMilestonesDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF191311),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFFFB74D), width: 1.2)),
+        title: const Row(
+          children: [
+            Text('🎖️ ', style: TextStyle(fontSize: 22)),
+            Expanded(child: Text('Dojo Kamieni Milowych', style: TextStyle(color: Color(0xFFFFB74D), fontSize: 16, fontWeight: FontWeight.bold))),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('🥋 PASY RANGOWE (STAŁE PREMIE)', style: TextStyle(color: Color(0xFFFFB74D), fontWeight: FontWeight.bold, fontSize: 12)),
+                const SizedBox(height: 6),
+                _beltStatusTile('Biały Pas Nowicjusza', 'Początek drogi', '+30 Max HP', true),
+                _beltStatusTile('Zielony Pas Genina', 'Poziom 10+', '+5 Atak, +5 Obrona', level >= 10),
+                _beltStatusTile('Niebieski Pas Chūnina', 'Ranga Chūnin+', '+5% Mocy Jutsu', passedRankIndex >= 2),
+                _beltStatusTile('Czarny Pas Jōnina', '3 zlecenia Bingo i 100 głębokości', '+10 Atak, +5% Kawarimi', milestones.bountiesClaimed >= 3 && raidDepth >= 100),
+                _beltStatusTile('Szkarłatny Pas Sannina', 'Ranga Sannin/Kage', '+10% Krytyk, +15% Mocy Jutsu', passedRankIndex >= 6),
+                const Divider(color: Colors.white12, height: 20),
+                const Text('📊 POSTĘPY KAMIENI MILOWYCH', style: TextStyle(color: Color(0xFFFFB74D), fontWeight: FontWeight.bold, fontSize: 12)),
+                const SizedBox(height: 6),
+                _milestoneStatusTile('Pokonani wrogowie', '${milestones.enemiesSlain}', '+$milestoneBonusDodge% Kawarimi'),
+                _milestoneStatusTile('Ciosy fizyczne', '${milestones.physicalHitsDealt}', '+$milestoneBonusAtk Ataku'),
+                _milestoneStatusTile('Rzucone Jutsu', '${milestones.jutsuCasts}', '+$milestoneBonusMaxCp Max CP'),
+                _milestoneStatusTile('Przyjęte obrażenia', '${milestones.damageTaken}', '+$milestoneBonusDef Obrony'),
+                _milestoneStatusTile('Zbiegowie z Bingo Book', '${milestones.bountiesClaimed}/5', 'Dedykowane łupy w grze'),
+              ],
+            ),
+          ),
+        ),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zamknij', style: TextStyle(color: Colors.grey)))],
+      ),
+    );
+  }
+
+  Widget _beltStatusTile(String title, String req, String bonus, bool isUnlocked) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: isUnlocked ? const Color(0xFF1B5E20).withAlpha(80) : const Color(0xFF140D0B),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: isUnlocked ? const Color(0xFF69F0AE) : Colors.white12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isUnlocked ? Colors.white : Colors.white38)),
+              Text(req, style: const TextStyle(fontSize: 9, color: Colors.grey)),
+            ],
+          ),
+          Text(bonus, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isUnlocked ? const Color(0xFF69F0AE) : Colors.grey)),
+        ],
+      ),
+    );
+  }
+
+  Widget _milestoneStatusTile(String label, String progress, String bonus) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('$label ($progress)', style: const TextStyle(fontSize: 11, color: Colors.white70)),
+          Text(bonus, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFFFD54F))),
+        ],
+      ),
+    );
+  }
+
+  void _showBingoBookDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF191311),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFFF5252), width: 1.2)),
+        title: const Row(
+          children: [
+            Text('📜 ', style: TextStyle(fontSize: 22)),
+            Expanded(child: Text('Księga Gończych (Bingo Book)', style: TextStyle(color: Color(0xFFFF5252), fontSize: 16, fontWeight: FontWeight.bold))),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: bingoTargets.map((b) {
+                final loc = shinobiLocations.firstWhere((l) => l.id == b.zoneId, orElse: () => shinobiLocations[0]);
+                return Container(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: b.isDefeated ? Colors.black38 : const Color(0xFF261414),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: b.isDefeated ? Colors.grey : const Color(0xFFFF5252).withAlpha(140)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            b.name,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: b.isDefeated ? Colors.grey : const Color(0xFFFF8A80),
+                              decoration: b.isDefeated ? TextDecoration.lineThrough : null,
+                            ),
+                          ),
+                          Text(
+                            b.isDefeated ? 'POKONANY' : 'POSZUKIWANY',
+                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: b.isDefeated ? Colors.grey : const Color(0xFF69F0AE)),
+                          ),
+                        ],
+                      ),
+                      Text(b.title, style: const TextStyle(fontSize: 10, color: Colors.white70)),
+                      const SizedBox(height: 2),
+                      Text('Strefa: ${loc.name} (Głębokość ${b.minDepth}+)', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
+                      Text('Nagroda: ${b.bountyRyo} Ryo | Drop: ${b.exclusiveReward.displayName}', style: const TextStyle(fontSize: 10, color: Color(0xFF80D8FF))),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zamknij', style: TextStyle(color: Colors.grey)))],
+      ),
+    );
+  }
+
   void _showStatsDialog() {
     showDialog(
       context: context,
@@ -1966,8 +2321,9 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               _statPopupRow('Punkty Życia (HP)', '$hp / $maxHp (Baza: $baseMaxHp, Rynsztunek: +${sumAffix(AffixType.bonusHp)})', const Color(0xFF69F0AE)),
               _statPopupRow('Czakra (CP)', '$chakra / $maxChakra (Baza: $baseMaxChakra, Rynsztunek: +${sumAffix(AffixType.bonusChakra)})', const Color(0xFF40C4FF)),
               const Divider(color: Colors.white12),
-              _statPopupRow('Łączny Atak', '$totalAttack (Rynsztunek + Lvl $level)', const Color(0xFFFF8A65)),
-              _statPopupRow('Łączna Obrona', '$totalDefense', const Color(0xFFB0BEC5)),
+              _statPopupRow('Łączny Atak', '$totalAttack (Broń + Głowa + Lvl $level)', const Color(0xFFFF8A65)),
+              _statPopupRow('Łączna Obrona', '$totalDefense (Pancerz + Buty)', const Color(0xFFB0BEC5)),
+              _statPopupRow('Moc Jutsu (Talizman)', '+$totalJutsuPower%', const Color(0xFFBA68C8)),
               _statPopupRow('Szansa na Krytyk', '$totalCritRate%', const Color(0xFFFF5252)),
               _statPopupRow('Unik (Kawarimi)', '$totalDodgeRate%', const Color(0xFFFFD54F)),
               _statPopupRow('Przebicie Pancerza', '$totalArmorPierce%', const Color(0xFFBA68C8)),
@@ -1995,18 +2351,25 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     );
   }
 
-  void _startBattleWithEnemy(EnemyTemplate template, {EnemyPrefix forcePrefix = EnemyPrefix.normal, bool isExamFight = false, int? examTargetRank, String? dungeonBossSetGroup}) {
+  void _startBattleWithEnemy(
+    EnemyTemplate template, {
+    EnemyPrefix forcePrefix = EnemyPrefix.normal,
+    bool isExamFight = false,
+    int? examTargetRank,
+    String? dungeonBossSetGroup,
+    BingoTarget? bounty,
+  }) {
     double hpMult = 1.0;
     double atkMult = 1.0;
     String prefixTitle = '';
     Color prefixColor = const Color(0xFFFFA726);
 
     int enemyCrit = template.critRate;
-    int enemyDodge = template.dodgeRate;
+    int enemyDodge = template.dodgeRate + (template.traits.contains(BossTrait.dodgeManiac) ? 20 : 0);
     int enemyPierce = template.armorPierce;
     int enemyBlock = template.flatBlock;
 
-    if (!template.isBoss && !isExamFight) {
+    if (!template.isBoss && !isExamFight && bounty == null) {
       switch (forcePrefix) {
         case EnemyPrefix.weak:
           hpMult = 0.85;
@@ -2043,7 +2406,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       int minExamHp = (totalAttack * 4).round();
       scaledHp = max(template.baseHp + (level * 28), minExamHp);
       scaledAtk = max(template.baseAtk + (level * 2), (totalDefense * 0.7).round() + 6);
-    } else if (template.isBoss) {
+    } else if (template.isBoss || bounty != null) {
       scaledHp = (template.baseHp * (1.0 + (level * 0.08) + depthHpBonus)).round();
       scaledAtk = (template.baseAtk * (1.0 + (level * 0.05) + depthAtkBonus)).round();
     } else {
@@ -2055,7 +2418,13 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     final int enemyBaseAtk = (scaledAtk * atkMult).round();
     int enemyHp = enemyMaxHp;
 
-    String initialMsg = isExamFight ? '🥋 EGZAMIN: Egzaminator ${template.name} atakuje!' : (template.isBoss ? '⚠️ BOSS: Pojawia się ${template.name}!' : 'Z cienia atakuje $prefixTitle${template.name} (Krok $raidDepth)!');
+    String initialMsg = isExamFight
+        ? '🥋 EGZAMIN: Egzaminator ${template.name} atakuje!'
+        : (bounty != null
+            ? '⚠️ BINGO BOOK: Zbieg ${template.name} naciera!'
+            : (template.isBoss
+                ? '⚠️ BOSS: Pojawia się ${template.name}!'
+                : 'Z cienia atakuje $prefixTitle${template.name} (Krok $raidDepth)!'));
     List<String> battleLogHistory = [initialMsg];
     int frozenTurns = 0;
     int shieldBonusDef = 0;
@@ -2105,12 +2474,20 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               bool isEnemyCrit = _rng.nextInt(100) < enemyCrit;
               double eCritMult = isEnemyCrit ? 1.5 : 1.0;
 
+              // Cecha: Szał Krwi (Blood Enrage)
+              double enrageBonus = 1.0;
+              if (template.traits.contains(BossTrait.bloodEnrage) && (enemyHp / enemyMaxHp) <= 0.35) {
+                enrageBonus = 1.5;
+                appendBattleLog('🩸 ${template.name} wpada w SZAŁ KRWI! Obrażenia +50%!');
+              }
+
               int effectivePlayerDef = ((totalDefense + shieldBonusDef) * (100 - enemyPierce) / 100).round();
-              final rawDmg = ((enemyBaseAtk + _rng.nextInt(4)) * eCritMult).round();
+              final rawDmg = (((enemyBaseAtk * enrageBonus) + _rng.nextInt(4)) * eCritMult).round();
               final dmg = max(2, rawDmg - (effectivePlayerDef ~/ 2));
 
               setState(() {
                 hp = max(0, hp - dmg);
+                milestones.damageTaken += dmg;
               });
 
               if (isEnemyCrit) {
@@ -2119,8 +2496,24 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                 appendBattleLog('${template.name} zadaje Ci $dmg obrażeń.');
               }
 
-                            shieldBonusDef = 0;
+              // Cecha: Pijawka Czakry
+              if (template.traits.contains(BossTrait.chakraLeech)) {
+                final leech = min(chakra, 10);
+                chakra -= leech;
+                enemyHp = min(enemyMaxHp, enemyHp + leech);
+                appendBattleLog('🌀 Pijawka Czakry wysysa $leech CP i uzdrawia wroga!');
+              }
 
+              // Cecha: Mistrz Trucizn
+              if (template.traits.contains(BossTrait.poisonMaster)) {
+                final poisonDmg = max(2, (maxHp * 0.04).round());
+                setState(() => hp = max(0, hp - poisonDmg));
+                appendBattleLog('🧪 Trucizna wypala Twoje żyły! -$poisonDmg HP.');
+              }
+
+              shieldBonusDef = 0;
+
+              // SPRAWDZENIE ŚMIERCI PRZED REGENERACJĄ
               if (hp <= 0) {
                 _saveGameData();
                 Navigator.pop(ctx);
@@ -2146,9 +2539,9 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
               setState(() {
                 chakra -= jutsu.chakraCost;
+                milestones.jutsuCasts++;
               });
 
-              // Obsługa czystego leczenia
               if (jutsu.type == JutsuType.healing) {
                 int healPercent = jutsu.effectValue;
                 if (jutsu.id == 'j_byakugo' && hp < (maxHp * 0.2)) {
@@ -2159,23 +2552,24 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   hp = min(maxHp, hp + healAmount);
                 });
                 appendBattleLog('💚 ${jutsu.name}: Przywrócono $healAmount HP (+$healPercent%)!');
-                
+
                 if (jutsu.powerMultiplier > 0) {
-                  // Leczenie połączone z uderzeniem skalpelem
-                  final dealt = max(2, ((totalAttack * jutsu.powerMultiplier) - enemyBlock).round());
+                  double jutsuScaling = jutsu.powerMultiplier * (1.0 + (totalJutsuPower / 100.0));
+                  final dealt = max(2, ((totalAttack * jutsuScaling) - enemyBlock).round());
                   enemyHp = max(0, enemyHp - dealt);
                   appendBattleLog('🗡️ Skalpel czakry zadał $dealt obrażeń!');
                 }
 
                 if (enemyHp <= 0) {
-                  // Pokonany skalpelem
+                  _onBattleVictory();
+                  return;
                 } else {
                   enemyTurn();
                   setBattleState(() {});
                   return;
                 }
               } else if (jutsu.type == JutsuType.shield) {
-                shieldBonusDef = jutsu.effectValue;
+                shieldBonusDef = (jutsu.effectValue * (1.0 + (totalJutsuPower / 100.0))).round();
                 appendBattleLog('🛡️ Doton wzmocnił Twoją obronę o +$shieldBonusDef!');
               } else if (jutsu.type == JutsuType.stun) {
                 frozenTurns = 1;
@@ -2193,10 +2587,31 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                 bool isPlayerCrit = _rng.nextInt(100) < totalCritRate;
                 double pCritMult = isPlayerCrit ? 1.5 : 1.0;
 
-                final dealt = ((((totalAttack * jutsu.powerMultiplier) + _rng.nextInt(4)) * pCritMult).round() - enemyBlock);
+                // Mnożnik Mocy Jutsu z Talizmanu
+                double jutsuScaling = jutsu.powerMultiplier * (1.0 + (totalJutsuPower / 100.0));
+                double traitReduction = 1.0;
+                if (template.traits.contains(BossTrait.ironSkin) && jutsu.chakraCost <= 20) {
+                  traitReduction = 0.6;
+                  appendBattleLog('🛡️ Żelazna Skóra tłumi atak wręcz!');
+                }
+
+                final dealt = ((((totalAttack * jutsuScaling * traitReduction) + _rng.nextInt(4)) * pCritMult).round() - enemyBlock);
                 final finalDealt = max(2, dealt);
 
                 enemyHp = max(0, enemyHp - finalDealt);
+
+                // Cecha: Ciernie Czakry
+                if (template.traits.contains(BossTrait.chakraThorns)) {
+                  final reflect = max(2, (finalDealt * 0.15).round());
+                  setState(() => hp = max(0, hp - reflect));
+                  appendBattleLog('⚡ Ciernie Czakry odbijają $reflect obrażeń w Ciebie!');
+                  if (hp <= 0) {
+                    _saveGameData();
+                    Navigator.pop(ctx);
+                    returnToVillage(fallenInBattle: true);
+                    return;
+                  }
+                }
 
                 if (totalLifeSteal > 0) {
                   int healed = max(1, (finalDealt * totalLifeSteal / 100).round());
@@ -2212,65 +2627,129 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               }
 
               if (enemyHp <= 0) {
-                Navigator.pop(ctx);
+                _onBattleVictory();
+              } else {
+                enemyTurn();
+                setBattleState(() {});
+              }
+            }
 
-                if (isExamFight) {
-                  setState(() => passedRankIndex = examTargetRank!);
-                  addExperience(400);
-                  addLog('🏆 ZDANO EGZAMIN na rangę: $ninjaRank!');
+            void _onBattleVictory() {
+              Navigator.pop(ctx);
+              setState(() => milestones.enemiesSlain++);
+
+              if (isExamFight) {
+                setState(() => passedRankIndex = examTargetRank!);
+                addExperience(400);
+                addLog('🏆 ZDANO EGZAMIN na rangę: $ninjaRank!');
+                return;
+              }
+
+              if (bounty != null) {
+                setState(() {
+                  bounty.isDefeated = true;
+                  milestones.bountiesClaimed++;
+                  ryo += bounty.bountyRyo;
+                  equipmentStash.add(bounty.exclusiveReward);
+                });
+                addExperience(bounty.bountyExp);
+                addLog('🏆 Zlecenie Bingo wykonane: ${bounty.name}! (+${bounty.bountyRyo} Ryo)');
+                addLog('🎁 Zdobyto dedykowany rynsztunek: ${bounty.exclusiveReward.displayName}!');
+                _saveGameData();
+                return;
+              }
+
+              int locLvl = shinobiLocations.firstWhere((l) => l.id == currentSelectedLocationId, orElse: () => shinobiLocations[0]).minLevel;
+              int levelDiff = level - locLvl;
+              double penaltyMult = 1.0;
+              if (levelDiff >= 7) {
+                penaltyMult = 0.15;
+              } else if (levelDiff >= 4) {
+                penaltyMult = 0.50;
+              }
+
+              double pr = template.powerRating;
+              double prefixMult = forcePrefix == EnemyPrefix.weak ? 0.8 : (forcePrefix == EnemyPrefix.strong ? 1.5 : 1.0);
+
+              int rawExp = (pr * 0.28 * prefixMult).round();
+              int rawRyo = (pr * 0.18 * prefixMult).round();
+              if (template.isBoss) {
+                rawExp = (rawExp * 1.8).round();
+                rawRyo = (rawRyo * 1.6).round();
+              }
+
+              int rewardRyo = max(1, (rawRyo * penaltyMult).round());
+              int expGained = max(1, (rawExp * penaltyMult).round());
+
+              setState(() {
+                ryo += rewardRyo;
+                if (activeMissionIndex != null) {
+                  final activeMission = allMissionsPool[activeMissionIndex!];
+                  if (activeMission.type == MissionType.killCount && activeMission.targetEnemyId == template.id) {
+                    currentMissionKills++;
+                  } else if (activeMission.type == MissionType.bossHunt && activeMission.targetEnemyId == template.id) {
+                    currentMissionKills = 1;
+                  }
+                }
+              });
+              addExperience(expGained);
+
+              String penaltyMsg = penaltyMult < 1.0 ? ' (Kara za strefę -${((1.0 - penaltyMult) * 100).round()}%)' : '';
+              addLog('🏆 Pokonano $prefixTitle${template.name}! +$rewardRyo Ryo, +$expGained EXP$penaltyMsg.');
+
+              bool shouldDropLoot = template.isBoss;
+              if (!shouldDropLoot) {
+                int chance = forcePrefix == EnemyPrefix.strong ? 35 : 18;
+                if (penaltyMult < 0.20) chance = (chance * 0.3).round();
+                shouldDropLoot = _rng.nextInt(100) < chance;
+              }
+
+              if (shouldDropLoot) {
+                _findLoot(guaranteedBossDrop: template.isBoss, dungeonBossSetGroup: dungeonBossSetGroup);
+              }
+            }
+
+            void executeBasicAttack() {
+              setState(() => milestones.physicalHitsDealt++);
+
+              if (_rng.nextInt(100) < enemyDodge) {
+                appendBattleLog('🪵 Wróg wykonał Kawarimi i uniknął ciosu!');
+                enemyTurn();
+                setBattleState(() {});
+                return;
+              }
+
+              bool isPlayerCrit = _rng.nextInt(100) < totalCritRate;
+              double pCritMult = isPlayerCrit ? 1.5 : 1.0;
+              double ironSkinFactor = template.traits.contains(BossTrait.ironSkin) ? 0.5 : 1.0;
+
+              final dealt = max(
+                2,
+                ((((totalAttack * ironSkinFactor) + _rng.nextInt(4)) * pCritMult).round() - enemyBlock),
+              );
+
+              enemyHp = max(0, enemyHp - dealt);
+
+              if (template.traits.contains(BossTrait.chakraThorns)) {
+                final reflect = max(2, (dealt * 0.15).round());
+                setState(() => hp = max(0, hp - reflect));
+                appendBattleLog('⚡ Ciernie Czakry odbijają $reflect obrażeń!');
+                if (hp <= 0) {
+                  _saveGameData();
+                  Navigator.pop(ctx);
+                  returnToVillage(fallenInBattle: true);
                   return;
                 }
+              }
 
-                int locLvl = shinobiLocations.firstWhere((l) => l.id == currentSelectedLocationId, orElse: () => shinobiLocations[0]).minLevel;
-                
-                int levelDiff = level - locLvl;
-                double penaltyMult = 1.0;
-                if (levelDiff >= 7) {
-                  penaltyMult = 0.15;
-                } else if (levelDiff >= 4) {
-                  penaltyMult = 0.50;
-                }
+              if (isPlayerCrit) {
+                appendBattleLog('💥 KRYTYK! Zwykły cios zadał $dealt obrażeń!');
+              } else {
+                appendBattleLog('🗡️ Zwykły atak zadał $dealt obrażeń.');
+              }
 
-                // Dynamiczny przelicznik nagród na bazie siły potwora (Power Rating)
-                double pr = template.powerRating;
-                double prefixMult = forcePrefix == EnemyPrefix.weak ? 0.8 : (forcePrefix == EnemyPrefix.strong ? 1.5 : 1.0);
-                
-                int rawExp = (pr * 0.28 * prefixMult).round();
-                int rawRyo = (pr * 0.18 * prefixMult).round();
-                if (template.isBoss) {
-                  rawExp = (rawExp * 1.8).round();
-                  rawRyo = (rawRyo * 1.6).round();
-                }
-
-                int rewardRyo = max(1, (rawRyo * penaltyMult).round());
-                int expGained = max(1, (rawExp * penaltyMult).round());
-
-                setState(() {
-                  ryo += rewardRyo;
-                  if (activeMissionIndex != null) {
-                    final activeMission = allMissionsPool[activeMissionIndex!];
-                    if (activeMission.type == MissionType.killCount && activeMission.targetEnemyId == template.id) {
-                      currentMissionKills++;
-                    } else if (activeMission.type == MissionType.bossHunt && activeMission.targetEnemyId == template.id) {
-                      currentMissionKills = 1;
-                    }
-                  }
-                });
-                addExperience(expGained);
-                
-                String penaltyMsg = penaltyMult < 1.0 ? ' (Kara za strefę -${((1.0 - penaltyMult) * 100).round()}%)' : '';
-                addLog('🏆 Pokonano $prefixTitle${template.name}! +$rewardRyo Ryo, +$expGained EXP$penaltyMsg.');
-
-                bool shouldDropLoot = template.isBoss;
-                if (!shouldDropLoot) {
-                  int chance = forcePrefix == EnemyPrefix.strong ? 35 : 18;
-                  if (penaltyMult < 0.20) chance = (chance * 0.3).round();
-                  shouldDropLoot = _rng.nextInt(100) < chance;
-                }
-
-                if (shouldDropLoot) {
-                  _findLoot(guaranteedBossDrop: template.isBoss, dungeonBossSetGroup: dungeonBossSetGroup);
-                }
+              if (enemyHp <= 0) {
+                _onBattleVictory();
               } else {
                 enemyTurn();
                 setBattleState(() {});
@@ -2279,8 +2758,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
 
             void useBattleItem(Consumable item) {
               if (item.type == ConsumableType.smokeEscape) {
-                if (template.isBoss || isExamFight) {
-                  appendBattleLog('Bomba dymna nie działa na bossów!');
+                if (template.isBoss || isExamFight || bounty != null) {
+                  appendBattleLog('Bomba dymna nie działa na bossów i zbiegów!');
                   setBattleState(() {});
                   return;
                 }
@@ -2296,11 +2775,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   enemyHp = max(0, enemyHp - dmg);
                   appendBattleLog('💥 Pieczęć Wybuchowa zadaje $dmg obrażeń!');
                   if (enemyHp <= 0) {
-                    Navigator.pop(ctx);
-                    addLog('🏆 Wróg rozerwany eksplozją Pieczęci!');
-                    if (template.isBoss || _rng.nextInt(100) < 20) {
-                      _findLoot(guaranteedBossDrop: template.isBoss, dungeonBossSetGroup: dungeonBossSetGroup);
-                    }
+                    _onBattleVictory();
                   } else {
                     enemyTurn();
                     setBattleState(() {});
@@ -2398,21 +2873,33 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   ),
                   const Spacer(),
                   Row(
-                    children: equippedJutsu.map((jutsu) {
-                      return Expanded(
+                    children: [
+                      Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
                           child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: jutsu.color.withAlpha(120),
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                            ),
-                            onPressed: () => executeJutsu(jutsu),
-                            child: Text(jutsu.name, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF455A64), padding: const EdgeInsets.symmetric(vertical: 10)),
+                            onPressed: executeBasicAttack,
+                            child: const Text('Atak Wręcz', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                           ),
                         ),
-                      );
-                    }).toList(),
+                      ),
+                      ...equippedJutsu.map((jutsu) {
+                        return Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: jutsu.color.withAlpha(120),
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                              ),
+                              onPressed: () => executeJutsu(jutsu),
+                              child: Text(jutsu.name, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -2435,7 +2922,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
                           onPressed: () {
-                            if (template.isBoss || isExamFight) {
+                            if (template.isBoss || isExamFight || bounty != null) {
                               appendBattleLog('Nie można uciec z tej walki!');
                               setBattleState(() {});
                               return;
@@ -2701,7 +3188,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               ),
             ),
             const SizedBox(height: 12),
-
             if (isBetter) ...[
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -3012,23 +3498,23 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   children: [
                     Row(
                       children: [
-                        _itemCardExpanded('Broń', currentWeapon, 'Atak: +$totalAttack'),
+                        _itemCardExpanded('Broń', currentWeapon, 'Atak: +${currentWeapon.effectiveStat}'),
                         const SizedBox(width: 5),
-                        _itemCardExpanded('Pancerz', currentArmor, 'Obr: +${currentArmor.effectiveStat}'),
+                        _itemCardExpanded('Pancerz', currentArmor, 'Obrona: +${currentArmor.effectiveStat}'),
                       ],
                     ),
                     const SizedBox(height: 5),
                     Row(
                       children: [
-                        _itemCardExpanded('Głowa', currentHelmet, 'Obr: +${currentHelmet.effectiveStat}'),
+                        _itemCardExpanded('Głowa', currentHelmet, 'Atak: +${currentHelmet.effectiveStat}'),
                         const SizedBox(width: 5),
-                        _itemCardExpanded('Buty', currentBoots, 'Obr: +${currentBoots.effectiveStat}'),
+                        _itemCardExpanded('Buty', currentBoots, 'Obrona: +${currentBoots.effectiveStat}'),
                       ],
                     ),
                     const SizedBox(height: 5),
                     Row(
                       children: [
-                        _itemCardExpanded('Talizman', currentTrinket, 'Moc: +${currentTrinket.effectiveStat}'),
+                        _itemCardExpanded('Talizman', currentTrinket, 'Moc: +${currentTrinket.effectiveStat}%'),
                       ],
                     ),
                   ],
@@ -3135,9 +3621,23 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               childAspectRatio: 1.45,
               children: [
                 _villageHubCard(
+                  title: 'Kamienie Milowe',
+                  subtitle: 'Pasy i stałe premie',
+                  icon: '🎖️',
+                  color: const Color(0xFFB8860B),
+                  onTap: _showMilestonesDialog,
+                ),
+                _villageHubCard(
+                  title: 'Bingo Book',
+                  subtitle: '${milestones.bountiesClaimed}/5 zbiegów',
+                  icon: '📜',
+                  color: const Color(0xFF8B0000),
+                  onTap: _showBingoBookDialog,
+                ),
+                _villageHubCard(
                   title: 'Biuro Misji',
                   subtitle: activeMissionIndex != null ? 'Aktywna misja!' : 'Egzaminy i zlecenia',
-                  icon: '📜',
+                  icon: '⛩️',
                   color: const Color(0xFF5D4037),
                   onTap: _openVillageMissionsDialog,
                 ),
@@ -3290,9 +3790,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               ],
             ),
           ),
-
           const Spacer(),
-
           const Align(
             alignment: Alignment.centerLeft,
             child: Text('📜 Dziennik Zdarzeń (3 ost.):', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white60)),
@@ -3330,9 +3828,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
               },
             ),
           ),
-
           const SizedBox(height: 10),
-
           Row(
             children: [
               Expanded(
