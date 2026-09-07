@@ -2119,11 +2119,10 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                 appendBattleLog('${template.name} zadaje Ci $dmg obrażeń.');
               }
 
-              shieldBonusDef = 0; // Tarcza zużywa się po ataku wroga
-              applyTurnRegen();
-              _saveGameData();
+                            shieldBonusDef = 0;
 
               if (hp <= 0) {
+                _saveGameData();
                 Navigator.pop(ctx);
                 if (isExamFight) {
                   setState(() => hp = 1);
@@ -2131,8 +2130,12 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                 } else {
                   returnToVillage(fallenInBattle: true);
                 }
+                return;
               }
-            }
+
+              applyTurnRegen();
+              _saveGameData();
+
 
             void executeJutsu(Jutsu jutsu) {
               if (chakra < jutsu.chakraCost) {
