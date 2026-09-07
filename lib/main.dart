@@ -284,6 +284,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
   Map<String, int> sealedBag = {};
   Map<String, int> craftingBag = {matIronOre: 2, matDungeonKey: 1};
   List<NinjaGear> equipmentStash = [];
+  List<NinjaGear> villageStash = []; // Skrzynia depozytowa w wiosce (zapobiegająca utracie przy śmierci)
 
   int vitalTrainingCount = 0;
   int dungeonCooldownTimestamp = 0;
@@ -674,6 +675,12 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
         equipmentStash = decodedList.map((item) => NinjaGear.fromJson(item)).toList();
       }
 
+      final villageStashJson = prefs.getString('villageStash');
+      if (villageStashJson != null) {
+        final List decodedList = jsonDecode(villageStashJson);
+        villageStash = decodedList.map((item) => NinjaGear.fromJson(item)).toList();
+      }
+
       final weaponStr = prefs.getString('currentWeapon');
       if (weaponStr != null) currentWeapon = NinjaGear.fromJson(jsonDecode(weaponStr));
 
@@ -735,6 +742,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     await prefs.setString('sealedBag', jsonEncode(sealedBag));
     await prefs.setString('craftingBag', jsonEncode(craftingBag));
     await prefs.setString('equipmentStash', jsonEncode(equipmentStash.map((i) => i.toJson()).toList()));
+    await prefs.setString('villageStash', jsonEncode(villageStash.map((i) => i.toJson()).toList()));
     await prefs.setString('currentWeapon', jsonEncode(currentWeapon.toJson()));
     await prefs.setString('currentArmor', jsonEncode(currentArmor.toJson()));
     await prefs.setString('currentHelmet', jsonEncode(currentHelmet.toJson()));
@@ -809,8 +817,6 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
   void returnToVillage({bool fallenInBattle = false}) {
     setState(() {
       inVillage = true;
-      hp = maxHp;
-      chakra = maxChakra;
       hasEscapeScroll = false;
       raidDepth = 0;
 
@@ -823,6 +829,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
         equipmentStash.clear();
         bag.clear();
       }
+      hp = maxHp;
+      chakra = maxChakra;
     });
 
     if (fallenInBattle) {
@@ -1532,6 +1540,132 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
     );
   }
 
+  void _openVillageStashDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setVillageStashState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF191716),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFF81C784), width: 1.2)),
+            title: Row(
+              children: [
+                const Text('🏦 ', style: TextStyle(fontSize: 22)),
+                Expanded(child: Text('Skrzynia Depozytowa Wioski (${villageStash.length})', style: const TextStyle(color: Color(0xFF81C784), fontSize: 15, fontWeight: FontWeight.bold))),
+                Text('💰 $ryo Ryo', style: const TextStyle(fontSize: 12, color: Color(0xFFFFD54F), fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Przedmioty w skrzyni wioski są w 100% bezpieczne przed śmiercią w terenie.', style: TextStyle(fontSize: 11, color: Colors.white60)),
+                    const SizedBox(height: 10),
+                    if (villageStash.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Text('Skrzynia w wiosce jest pusta.', style: TextStyle(fontSize: 12, color: Colors.white54)),
+                      )
+                    else
+                      ...villageStash.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final gear = entry.value;
+                        String slotName = gear.slot == GearSlot.weapon ? 'Broń' : (gear.slot == GearSlot.armor ? 'Pancerz' : (gear.slot == GearSlot.helmet ? 'Głowa' : (gear.slot == GearSlot.boots ? 'Buty' : 'Talizman')));
+
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF141211),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: gear.borderColor, width: gear.borderWidth),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(gear.icon, style: const TextStyle(fontSize: 22)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                    Text('Moc: +${gear.effectiveStat}', style: const TextStyle(fontSize: 9, color: Colors.white70)),
+                                  ],
+                                ),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4)),
+                                onPressed: () {
+                                  if (equipmentStash.length >= 10) {
+                                    showActionBlockedMessage('🎒 Plecak rynsztunku jest pełny (max 10)!');
+                                    return;
+                                  }
+                                  setState(() {
+                                    villageStash.removeAt(index);
+                                    equipmentStash.add(gear);
+                                  });
+                                  _saveGameData();
+                                  setVillageStashState(() {});
+                                  addLog('📦 Wyjęto [${gear.displayName}] ze skrzyni wioski do plecaka.');
+                                },
+                                child: const Text('Weź', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    const Divider(color: Colors.white12),
+                    const Text('Przenieś z plecaka podróżnego do skrzyni:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFFFB74D))),
+                    const SizedBox(height: 6),
+                    if (equipmentStash.isEmpty)
+                      const Text('Plecak podróżny jest pusty.', style: TextStyle(fontSize: 11, color: Colors.grey))
+                    else
+                      ...equipmentStash.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final gear = entry.value;
+                        String slotName = gear.slot == GearSlot.weapon ? 'Broń' : (gear.slot == GearSlot.armor ? 'Pancerz' : (gear.slot == GearSlot.helmet ? 'Głowa' : (gear.slot == GearSlot.boots ? 'Buty' : 'Talizman')));
+
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 2),
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(color: const Color(0xFF141211), borderRadius: BorderRadius.circular(6)),
+                          child: Row(
+                            children: [
+                              Text(gear.icon, style: const TextStyle(fontSize: 18)),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 10, fontWeight: FontWeight.bold)),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF37474F), padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2)),
+                                onPressed: () {
+                                  setState(() {
+                                    equipmentStash.removeAt(index);
+                                    villageStash.add(gear);
+                                  });
+                                  _saveGameData();
+                                  setVillageStashState(() {});
+                                  addLog('🏦 Schowano [${gear.displayName}] do skrzyni depozytowej w wiosce.');
+                                },
+                                child: const Text('Schowaj', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                  ],
+                ),
+              ),
+            ),
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zamknij', style: TextStyle(color: Colors.grey)))],
+          );
+        },
+      ),
+    );
+  }
+
   void _openEquipmentStashDialog() {
     showDialog(
       context: context,
@@ -1840,7 +1974,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                         ),
                                     ],
                                   ),
-                                  subtitle: Text('${m.desc}\\nNagroda: $displayRyo Ryo | +$displayExp EXP', style: const TextStyle(fontSize: 10, color: Colors.white60)),
+                                  subtitle: Text('${m.desc}\nNagroda: $displayRyo Ryo | +$displayExp EXP', style: const TextStyle(fontSize: 10, color: Colors.white60)),
                                   trailing: isUnlocked
                                       ? ElevatedButton(
                                           style: ElevatedButton.styleFrom(
@@ -1916,7 +2050,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(jutsu.name, style: TextStyle(fontSize: 13, color: jutsu.color, fontWeight: FontWeight.bold)),
-                    subtitle: Text('Koszt: ${jutsu.chakraCost} CP | ${jutsu.type == JutsuType.healing ? "Leczenie: +${jutsu.effectValue}% HP" : "Moc: x${jutsu.powerMultiplier}"}\\n${jutsu.effectDescription}', style: const TextStyle(fontSize: 11, color: Colors.white60)),
+                    subtitle: Text('Koszt: ${jutsu.chakraCost} CP | ${jutsu.type == JutsuType.healing ? "Leczenie: +${jutsu.effectValue}% HP" : "Moc: x${jutsu.powerMultiplier}"}\n${jutsu.effectDescription}', style: const TextStyle(fontSize: 11, color: Colors.white60)),
                     trailing: isKnown
                         ? ElevatedButton(
                             style: ElevatedButton.styleFrom(
@@ -2996,7 +3130,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       case GearSlot.weapon: currentGear = currentWeapon; break;
       case GearSlot.armor: currentGear = currentArmor; break;
       case GearSlot.helmet: currentGear = currentHelmet; break;
-      case GearSlot.boots: currentBoots = currentBoots; break;
+      case GearSlot.boots: currentGear = currentBoots; break;
       case GearSlot.trinket: currentGear = currentTrinket; break;
     }
 
@@ -3228,6 +3362,11 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE65100), padding: const EdgeInsets.symmetric(vertical: 12)),
                   onPressed: () {
                     setState(() {
+                      if (equipmentStash.length < 10) {
+                        equipmentStash.add(currentGear);
+                      } else {
+                        addLog('⚠️ Plecak pełny! Stary przedmiot [${currentGear.displayName}] uległ zniszczeniu.');
+                      }
                       switch (slot) {
                         case GearSlot.weapon: currentWeapon = newGear; break;
                         case GearSlot.armor: currentArmor = newGear; break;
@@ -3238,7 +3377,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     });
                     _saveGameData();
                     Navigator.pop(ctx);
-                    addLog('✨ Założono: ${newGear.displayName}!');
+                    addLog('✨ Założono: ${newGear.displayName}! Stary przedmiot trafił do plecaka.');
                   },
                   child: const Text('Zamień ⭐', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                 ),
@@ -3250,6 +3389,11 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   TextButton(
                     onPressed: () {
                       setState(() {
+                        if (equipmentStash.length < 10) {
+                          equipmentStash.add(currentGear);
+                        } else {
+                          addLog('⚠️ Plecak pełny! Stary przedmiot [${currentGear.displayName}] uległ zniszczeniu.');
+                        }
                         switch (slot) {
                           case GearSlot.weapon: currentWeapon = newGear; break;
                           case GearSlot.armor: currentArmor = newGear; break;
@@ -3260,7 +3404,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                       });
                       _saveGameData();
                       Navigator.pop(ctx);
-                      addLog('✨ Założono: ${newGear.displayName}!');
+                      addLog('✨ Założono: ${newGear.displayName}! Stary przedmiot trafił do plecaka.');
                     },
                     child: const Text('Zamień mimo to', style: TextStyle(color: Colors.grey)),
                   ),
@@ -3569,33 +3713,70 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
             ],
           ),
           const SizedBox(height: 6),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _openEquipmentStashDialog,
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF140D0A),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFFFB74D).withAlpha(120), width: 1.2),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Row(
-                      children: [
-                        Text('📦', style: TextStyle(fontSize: 16)),
-                        SizedBox(width: 6),
-                        Text('Plecak Rynsztunku', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFFFB74D))),
-                      ],
+          Row(
+            children: [
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _openEquipmentStashDialog,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF140D0A),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFFFB74D).withAlpha(120), width: 1.2),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Row(
+                            children: [
+                              Text('📦', style: TextStyle(fontSize: 14)),
+                              SizedBox(width: 4),
+                              Text('Plecak', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFFFB74D))),
+                            ],
+                          ),
+                          Text('${equipmentStash.length}/10', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: equipmentStash.length >= 10 ? const Color(0xFFFF5252) : const Color(0xFF69F0AE))),
+                        ],
+                      ),
                     ),
-                    Text('${equipmentStash.length} / 10 slotów', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: equipmentStash.length >= 10 ? const Color(0xFFFF5252) : const Color(0xFF69F0AE))),
-                  ],
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _openVillageStashDialog,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF140D0A),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF81C784).withAlpha(120), width: 1.2),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Row(
+                            children: [
+                              Text('🏦', style: TextStyle(fontSize: 14)),
+                              SizedBox(width: 4),
+                              Text('Skrzynia', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF81C784))),
+                            ],
+                          ),
+                          Text('${villageStash.length}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF81C784))),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
