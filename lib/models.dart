@@ -79,8 +79,10 @@ class NinjaGear {
 
   int get sealingCost => 50 + (rarity.index * 75) + (upgradeLevel * 20);
 
-  bool get isBossSet => setGroup != 'none' && (setGroup.startsWith('boss_') || setGroup == 'anbu' || setGroup == 'myoboku');
+  bool get isFactionSet => setGroup == 'anbu' || setGroup == 'myoboku';
 
+  bool get isBossSet => setGroup.startsWith('boss_');
+  
   Color get color {
     switch (rarity) {
       case ItemRarity.common: return Colors.white70;
@@ -91,12 +93,13 @@ class NinjaGear {
   }
 
   Color get borderColor {
-    if (isBossSet) return const Color(0xFFFF5252);
-    return color;
+  if (isBossSet) return const Color(0xFFFF5252);
+  if (isFactionSet) return const Color(0xFF29B6F6);
+  return color;
   }
 
-  double get borderWidth => rarity == ItemRarity.legendary || isBossSet ? 2.0 : 1.2;
-
+  double get borderWidth => rarity == ItemRarity.legendary || isBossSet || isFactionSet ? 2.0 : 1.2;
+ 
   String get rarityLabel {
     switch (rarity) {
       case ItemRarity.common: return 'Zwykły';
