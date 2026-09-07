@@ -45,7 +45,7 @@ void showHelpDialog(BuildContext context) {
               const Divider(color: Colors.white12),
               _helpSection('📜 Zwój Powrotu (Extraction)', 'Podczas rajdu szukaj Zwoju Powrotu, aby bezpiecznie ewakuować się do Wioski ze zdobyczami.'),
               const Divider(color: Colors.white12),
-              _helpSection('🈴 Śmierć i Pieczęcie', 'Porażka w walce oznacza utratę niezabezpieczonego sprzętu. Szukaj Mistrza Fūinjutsu w terenie, by oznaczyć rynsztunek pieczęcią (🈴).'),
+              _helpSection('🈴 Śmierć i Pieczęcie', 'Porażka w walce oznacza utratę niezabezpieczonego sprzętu. Szukaj Mistrza Fūinjutsu w terenie, by oznaczyć rynsztunek pieczęcią (🈴) lub oznacz go jako ulubiony (❤️).'),
               const Divider(color: Colors.white12),
               _helpSection('🌲 Głębokość Rajdu & Checkpointy', 'Co 50 kroków odblokowujesz skrót, pozwalający zacząć kolejny rajd od głębszego poziomu lasu!'),
               const Divider(color: Colors.white12),
@@ -284,7 +284,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
   Map<String, int> sealedBag = {};
   Map<String, int> craftingBag = {matIronOre: 2, matDungeonKey: 1};
   List<NinjaGear> equipmentStash = [];
-  List<NinjaGear> villageStash = []; // Skrzynia depozytowa w wiosce (zapobiegająca utracie przy śmierci)
+  List<NinjaGear> villageStash = [];
 
   int vitalTrainingCount = 0;
   int dungeonCooldownTimestamp = 0;
@@ -707,6 +707,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       }
 
       chakra = min(chakra, maxChakra);
+      hp = min(hp, maxHp);
       isLoading = false;
     });
   }
@@ -821,11 +822,11 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       raidDepth = 0;
 
       if (fallenInBattle) {
-        if (!currentWeapon.isSoulbound) currentWeapon = defaultStarterWeapon;
-        if (!currentArmor.isSoulbound) currentArmor = defaultStarterArmor;
-        if (!currentHelmet.isSoulbound) currentHelmet = defaultStarterHelmet;
-        if (!currentBoots.isSoulbound) currentBoots = defaultStarterBoots;
-        if (!currentTrinket.isSoulbound) currentTrinket = defaultStarterTrinket;
+        if (!currentWeapon.isSoulbound && !currentWeapon.isFavorite) currentWeapon = defaultStarterWeapon;
+        if (!currentArmor.isSoulbound && !currentArmor.isFavorite) currentArmor = defaultStarterArmor;
+        if (!currentHelmet.isSoulbound && !currentHelmet.isFavorite) currentHelmet = defaultStarterHelmet;
+        if (!currentBoots.isSoulbound && !currentBoots.isFavorite) currentBoots = defaultStarterBoots;
+        if (!currentTrinket.isSoulbound && !currentTrinket.isFavorite) currentTrinket = defaultStarterTrinket;
         equipmentStash.clear();
         bag.clear();
       }
@@ -1051,6 +1052,10 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                           const SizedBox(width: 4),
                                           const Text('🈴', style: TextStyle(fontSize: 11)),
                                         ],
+                                        if (gear.isFavorite) ...[
+                                          const SizedBox(width: 4),
+                                          const Text('❤️', style: TextStyle(fontSize: 11)),
+                                        ],
                                       ],
                                     ),
                                     Text('Oferta skupu: $premiumPrice Ryo', style: const TextStyle(fontSize: 10, color: Color(0xFFFFD54F))),
@@ -1063,7 +1068,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                   backgroundColor: const Color(0xFF00695C), 
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4)
                                 ),
-                                onPressed: () {
+                                onPressed: gear.isFavorite ? null : () {
                                   setState(() {
                                     ryo += premiumPrice;
                                     equipmentStash.remove(gear);
@@ -1466,6 +1471,10 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                       const SizedBox(width: 4),
                                       const Text('🈴', style: TextStyle(fontSize: 11)),
                                     ],
+                                    if (gear.isFavorite) ...[
+                                      const SizedBox(width: 4),
+                                      const Text('❤️', style: TextStyle(fontSize: 11)),
+                                    ],
                                   ],
                                 ),
                                 Text('Moc: +${gear.effectiveStat}', style: const TextStyle(fontSize: 11, color: Color(0xFF69F0AE), fontWeight: FontWeight.bold)),
@@ -1590,7 +1599,15 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                    Row(
+                                      children: [
+                                        Text('$slotName: ${gear.displayName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: gear.borderColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                                        if (gear.isFavorite) ...[
+                                          const SizedBox(width: 4),
+                                          const Text('❤️', style: TextStyle(fontSize: 11)),
+                                        ],
+                                      ],
+                                    ),
                                     Text('Moc: +${gear.effectiveStat}', style: const TextStyle(fontSize: 9, color: Colors.white70)),
                                   ],
                                 ),
@@ -1721,11 +1738,31 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                                           const SizedBox(width: 4),
                                           const Text('🈴', style: TextStyle(fontSize: 11)),
                                         ],
+                                        if (gear.isFavorite) ...[
+                                          const SizedBox(width: 4),
+                                          const Text('❤️', style: TextStyle(fontSize: 11)),
+                                        ],
                                       ],
                                     ),
                                     Text('Moc: +${gear.effectiveStat} | Złom: ${gear.sellPrice} Ryo', style: const TextStyle(fontSize: 9, color: Colors.white70)),
                                   ],
                                 ),
+                              ),
+                              IconButton(
+                                constraints: const BoxConstraints(),
+                                padding: const EdgeInsets.symmetric(horizontal: 4),
+                                icon: Icon(
+                                  gear.isFavorite ? Icons.favorite : Icons.favorite_border,
+                                  color: gear.isFavorite ? Colors.redAccent : Colors.grey,
+                                  size: 18,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    equipmentStash[index] = gear.copyWith(isFavorite: !gear.isFavorite);
+                                  });
+                                  _saveGameData();
+                                  setStashState(() {});
+                                },
                               ),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C), padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4)),
@@ -1749,8 +1786,13 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                               ),
                               const SizedBox(width: 4),
                               ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB71C1C), padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4)),
-                                onPressed: () {
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: gear.isFavorite ? Colors.grey[800] : const Color(0xFFB71C1C), 
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                ),
+                                onPressed: gear.isFavorite ? () {
+                                  showActionBlockedMessage('🔒 Ten przedmiot jest oznaczony jako ulubiony!');
+                                } : () {
                                   final price = gear.sellPrice;
                                   setState(() {
                                     ryo += price;
@@ -3204,6 +3246,7 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
       affixes: generatedAffixes,
       setGroup: chosen.setGroup,
       isSoulbound: false,
+      isFavorite: false,
       icon: chosen.icon,
     );
   }
@@ -3457,6 +3500,10 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                   if (gear.isSoulbound) ...[
                     const SizedBox(width: 6),
                     const Text('🈴', style: TextStyle(fontSize: 15)),
+                  ],
+                  if (gear.isFavorite) ...[
+                    const SizedBox(width: 6),
+                    const Text('❤️', style: TextStyle(fontSize: 15)),
                   ],
                 ],
               ),
@@ -4146,6 +4193,8 @@ class _ShinobiScreenState extends State<ShinobiScreen> {
                     ),
                     if (item.isBossSet)
                       const Text('🔥', style: TextStyle(fontSize: 8))
+                    else if (item.isFavorite)
+                      const Text('❤️', style: TextStyle(fontSize: 8))
                     else if (item.isSoulbound)
                       const Text('🈴', style: TextStyle(fontSize: 8)),
                   ],
