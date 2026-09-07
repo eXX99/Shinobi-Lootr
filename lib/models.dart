@@ -14,12 +14,12 @@ enum ItemRarity {
 }
 
 enum BossTrait {
-  chakraLeech, // Kradnie CP gracza i leczy wroga
-  ironSkin, // Ignoruje 40% obrażeń fizycznych
-  poisonMaster, // Nakłada periodyczne obrażenia
-  dodgeManiac, // +20% szansy na unik
-  bloodEnrage, // Poniżej 35% HP zadaje +50% obrażeń
-  chakraThorns, // Odbija część obrażeń
+  chakraLeech,
+  ironSkin,
+  poisonMaster,
+  dodgeManiac,
+  bloodEnrage,
+  chakraThorns,
 }
 
 enum JutsuRank {
