@@ -27,6 +27,13 @@ enum EnemyPrefix {
   strong,
 }
 
+enum JutsuType {
+  damage,
+  healing,
+  shield,
+  stun,
+}
+
 class GearAffix {
   final AffixType type;
   final int value;
@@ -282,9 +289,12 @@ class EnemyTemplate {
     this.armorPierce = 0,
     this.flatBlock = 0,
   });
+
+  double get powerRating {
+    return (baseHp * 0.6) + (baseAtk * 2.8) + ((critRate + dodgeRate + armorPierce + flatBlock) * 1.5);
+  }
 }
 
-// 4 Zwykłych Przeciwników na każdą z 5 stref (łącznie 20)
 final List<EnemyTemplate> standardEnemiesPool = [
   // ⛩️ Brama (Lvl 1+)
   const EnemyTemplate(id: 'en_dog', name: 'Dziki Ninja-Pies', title: 'Agresywny Ogar', baseHp: 38, baseAtk: 9, locationId: 'loc_gate', icon: '🐕', dodgeRate: 8),
@@ -317,7 +327,6 @@ final List<EnemyTemplate> standardEnemiesPool = [
   const EnemyTemplate(id: 'en_deidara_clone', name: 'Eksplodujący Klon Deidary', title: 'Żywa Bomba Gliniasta', baseHp: 230, baseAtk: 40, locationId: 'loc_akatsuki', icon: '💣', critRate: 20, armorPierce: 25),
 ];
 
-// Po 1 Bossie na każdą strefę
 final List<EnemyTemplate> bossesPool = [
   const EnemyTemplate(id: 'boss_mizuki', name: 'Mizuki', title: 'Zdrajca Liścia', baseHp: 95, baseAtk: 15, locationId: 'loc_gate', isBoss: true, icon: '📜', critRate: 8, dodgeRate: 6, armorPierce: 5),
   const EnemyTemplate(id: 'boss_dosu', name: 'Dosu Kinuta', title: 'Genin Ukrytego Dźwięku', baseHp: 135, baseAtk: 19, locationId: 'loc_forest', isBoss: true, icon: '🦻', critRate: 14, dodgeRate: 10, armorPierce: 8),
@@ -436,6 +445,10 @@ class Jutsu {
   final String effectDescription;
   final int costRyo;
   final Color color;
+  final int minRankIndex;
+  final bool availableInVillage;
+  final JutsuType type;
+  final int effectValue;
 
   const Jutsu({
     required this.id,
@@ -445,63 +458,221 @@ class Jutsu {
     required this.effectDescription,
     required this.costRyo,
     required this.color,
+    this.minRankIndex = 0,
+    this.availableInVillage = true,
+    this.type = JutsuType.damage,
+    this.effectValue = 0,
   });
 }
 
+// 17 Pełnych Technik Jutsu
 final List<Jutsu> allJutsuPool = [
+  // Akademia / Nowicjusz (Rank 0)
   const Jutsu(
     id: 'j_taijutsu',
-    name: 'Seria Ciosów Taijutsu',
+    name: 'Taijutsu: Seria Ciosów',
     chakraCost: 0,
     powerMultiplier: 1.0,
     effectDescription: 'Podstawowe ataki wręcz. Nie zużywa czakry.',
     costRyo: 0,
     color: Color(0xFFB0BEC5),
+    minRankIndex: 0,
+    availableInVillage: true,
+  ),
+  const Jutsu(
+    id: 'j_reppusho',
+    name: 'Fūton: Dmuch Wiatru (Reppūshō)',
+    chakraCost: 12,
+    powerMultiplier: 1.3,
+    effectDescription: 'Szybki podmuch sprężonego powietrza o niskim koszcie.',
+    costRyo: 50,
+    color: Color(0xFF81C784),
+    minRankIndex: 0,
+    availableInVillage: true,
+  ),
+
+  // Genin (Rank 1)
+  const Jutsu(
+    id: 'j_shosen',
+    name: 'Shōsen Jutsu (Mistyczna Dłoń)',
+    chakraCost: 20,
+    powerMultiplier: 0.5,
+    effectDescription: 'Odnawia 25% Max HP i zadaje drobne cięcie czakrą.',
+    costRyo: 80,
+    color: Color(0xFF66BB6A),
+    minRankIndex: 1,
+    availableInVillage: true,
+    type: JutsuType.healing,
+    effectValue: 25,
   ),
   const Jutsu(
     id: 'j_fireball',
-    name: 'Katon: Kula Ognia',
+    name: 'Katon: Kula Ognia (Gōkakyū)',
     chakraCost: 20,
     powerMultiplier: 1.6,
     effectDescription: 'Klasyczna technika Uchiha o wysokiej sile ognia.',
     costRyo: 80,
     color: Color(0xFFFF7043),
+    minRankIndex: 1,
+    availableInVillage: true,
   ),
+  const Jutsu(
+    id: 'j_doryuheki',
+    name: 'Doton: Kamienny Pancerz',
+    chakraCost: 22,
+    powerMultiplier: 0.8,
+    effectDescription: 'Twardy kamienny blok redukujący obrażenia wroga.',
+    costRyo: 110,
+    color: Color(0xFF8D6E63),
+    minRankIndex: 1,
+    availableInVillage: false,
+    type: JutsuType.shield,
+    effectValue: 8,
+  ),
+  const Jutsu(
+    id: 'j_wire_trap',
+    name: 'Żyłkowa Pułapka Kunai',
+    chakraCost: 18,
+    powerMultiplier: 1.3,
+    effectDescription: 'Unieruchamia wroga (ogłuszenie na 1 turę).',
+    costRyo: 100,
+    color: Color(0xFF90A4AE),
+    minRankIndex: 1,
+    availableInVillage: false,
+    type: JutsuType.stun,
+  ),
+
+  // Chūnin (Rank 2)
   const Jutsu(
     id: 'j_water_dragon',
     name: 'Suiton: Smoczy Wodospad',
-    chakraCost: 25,
-    powerMultiplier: 1.8,
+    chakraCost: 28,
+    powerMultiplier: 1.9,
     effectDescription: 'Masywny wodny wir kruszący obronę przeciwnika.',
-    costRyo: 150,
+    costRyo: 160,
     color: Color(0xFF42A5F5),
+    minRankIndex: 2,
+    availableInVillage: true,
   ),
+  const Jutsu(
+    id: 'j_lightning_hound',
+    name: 'Raiton: Błyskawiczny Ogar',
+    chakraCost: 26,
+    powerMultiplier: 1.85,
+    effectDescription: 'Szybki kieł piorunowy paraliżujący gardę rywala.',
+    costRyo: 150,
+    color: Color(0xFFFFD54F),
+    minRankIndex: 2,
+    availableInVillage: true,
+  ),
+  const Jutsu(
+    id: 'j_saisei_kassei',
+    name: 'Saisei Kassei (Regeneracja Komórkowa)',
+    chakraCost: 42,
+    powerMultiplier: 0.0,
+    effectDescription: 'Przywraca natychmiast 45% Max HP.',
+    costRyo: 220,
+    color: Color(0xFF26A69A),
+    minRankIndex: 2,
+    availableInVillage: false,
+    type: JutsuType.healing,
+    effectValue: 45,
+  ),
+  const Jutsu(
+    id: 'j_kokuangyo',
+    name: 'Genjutsu: Ciemność Cienia',
+    chakraCost: 32,
+    powerMultiplier: 1.2,
+    effectDescription: 'Zdezorientowany wróg ma zredukowany atak.',
+    costRyo: 200,
+    color: Color(0xFF5C6BC0),
+    minRankIndex: 2,
+    availableInVillage: false,
+  ),
+
+  // Tokubetsu Jōnin (Rank 3)
   const Jutsu(
     id: 'j_chidori',
     name: 'Raiton: Chidori (Tysiąc Ptaków)',
-    chakraCost: 35,
+    chakraCost: 36,
     powerMultiplier: 2.3,
     effectDescription: 'Skupione cięcie błyskawicy penetrujące pancerz.',
     costRyo: 280,
     color: Color(0xFFFFEE58),
+    minRankIndex: 3,
+    availableInVillage: true,
   ),
   const Jutsu(
     id: 'j_rasengan',
     name: 'Rasengan (Wirująca Sfera)',
-    chakraCost: 40,
+    chakraCost: 42,
     powerMultiplier: 2.6,
-    effectDescription: 'Skondensowana czakra bez pieczęci o dewastującej mocy.',
+    effectDescription: 'Skondensowana rotacja czakry o dewastującej mocy.',
     costRyo: 400,
     color: Color(0xFF26C6DA),
+    minRankIndex: 3,
+    availableInVillage: false,
   ),
+  const Jutsu(
+    id: 'j_hana_shuriken',
+    name: 'Kwiecisty Huragan Ostrzy',
+    chakraCost: 34,
+    powerMultiplier: 2.1,
+    effectDescription: 'Trąba wirujących ostrzy o podwyższonej szansie na krytyk.',
+    costRyo: 300,
+    color: Color(0xFFEC407A),
+    minRankIndex: 3,
+    availableInVillage: false,
+  ),
+
+  // Jōnin Bojowy (Rank 4)
+  const Jutsu(
+    id: 'j_goryuka',
+    name: 'Katon: Smoczy Płomień (Gōryūka)',
+    chakraCost: 50,
+    powerMultiplier: 2.9,
+    effectDescription: 'Smocza paszcza ognia wypalająca pole bitwy.',
+    costRyo: 450,
+    color: Color(0xFFFF5722),
+    minRankIndex: 4,
+    availableInVillage: true,
+  ),
+  const Jutsu(
+    id: 'j_byakugo',
+    name: 'Sōzō Saisei (Pieczęć Byakugō)',
+    chakraCost: 65,
+    powerMultiplier: 0.0,
+    effectDescription: 'Uwalnia 80% Max HP (100% gdy jesteś na krawędzi śmierci).',
+    costRyo: 550,
+    color: Color(0xFFAB47BC),
+    minRankIndex: 4,
+    availableInVillage: false,
+    type: JutsuType.healing,
+    effectValue: 80,
+  ),
+  const Jutsu(
+    id: 'j_moon_dance',
+    name: 'Konoha Ryū: Taniec Księżyca',
+    chakraCost: 48,
+    powerMultiplier: 2.8,
+    effectDescription: 'Zmylające cięcia białej klingi ignorujące tarczę.',
+    costRyo: 480,
+    color: Color(0xFFE0E0E0),
+    minRankIndex: 4,
+    availableInVillage: false,
+  ),
+
+  // Elita ANBU / Sannin (Rank 5+)
   const Jutsu(
     id: 'j_kirin',
     name: 'Raiton: Kirin (Bestia Błyskawic)',
-    chakraCost: 65,
-    powerMultiplier: 3.5,
-    effectDescription: 'Prawdziwy piorun ściągnięty z niebios. Niszczycielska siła.',
-    costRyo: 750,
+    chakraCost: 75,
+    powerMultiplier: 3.6,
+    effectDescription: 'Prawdziwy piorun ściągnięty z niebios. Niszczycielska potęga.',
+    costRyo: 850,
     color: Color(0xFFE040FB),
+    minRankIndex: 5,
+    availableInVillage: false,
   ),
 ];
 
